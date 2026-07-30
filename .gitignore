@@ -1,0 +1,23 @@
+# Build directories and binaries
+build/
+flowui/build/
+dist/
+Flow_Release.zip
+*.exe
+*.obj
+*.o
+*.a
+*.lib
+*.dll
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.user
+*.user.*
+.qt/
+.antigravity/
+
+# Temporary and log files
+*.tmp
+*.log

@@ -1,0 +1,689 @@
+import QtQuick
+import QtQuick.Controls
+
+Item {
+    id: root
+
+    property bool isOpen: false
+
+    // ESC Key Shortcut to Close Formula Modal
+    Shortcut {
+        sequence: "Esc"
+        enabled: root.isOpen
+        onActivated: {
+            root.isOpen = false
+        }
+    }
+    property int selectedYear: 2026
+    property string targetMidUuid: ""
+    property string targetMidName: ""
+    property int targetMonth: 0 // 0 = 전체 월 동시 적용, 1~12 = 개별 월
+
+    property real popoverX: 100
+    property real popoverY: 100
+    property real tailX: 300
+    property bool tailOnTop: true
+
+    property string selectedOp: "+"
+
+    property var operatorDocs: ({
+        "+": { name: "+ (더하기)", category: "산술 연산자", desc: "두 값을 더합니다.", example: "예시: 매출 + 지원금  🡲  1,000 + 500 = 1,500" },
+        "-": { name: "- (빼기)", category: "산술 연산자", desc: "왼쪽 값에서 오른쪽 값을 땁니다.", example: "예시: 매출 - 원가  🡲  1,000 - 300 = 700" },
+        "*": { name: "* (곱하기)", category: "산술 연산자", desc: "두 값을 곱합니다.", example: "예시: 수량 * 단가  🡲  10 * 50 = 500" },
+        "/": { name: "/ (나누기)", category: "산술 연산자", desc: "왼쪽 값을 오른쪽 값으로 나눕니다.", example: "예시: 총액 / 인원수  🡲  1,000 / 4 = 250" },
+        "$": { name: "$ (고정/참조)", category: "산술 연산자", desc: "셀 또는 기준값을 고정 참조합니다.", example: "예시: $기본급 + 수당  🡲  $5,000 + 200 = 5,200" },
+        "%": { name: "% (백분율)", category: "산술 연산자", desc: "백분율(비율)을 계산합니다.", example: "예시: 매출 * 10%  🡲  1,000 * 0.1 = 100" },
+        "^": { name: "^ (거듭제곱)", category: "산술 연산자", desc: "왼쪽 값의 승수를 계산합니다.", example: "예시: 1.05 ^ 2  🡲  1.05의 2승 = 1.1025" },
+
+        "=": { name: "= (같음)", category: "비교 연산자", desc: "두 값이 같은지 비교합니다 (참: 1, 거짓: 0).", example: "예시: 목표 = 달성액  🡲  1,000 = 1,000 (참: 1)" },
+        "!=": { name: "!= (같지 않음)", category: "비교 연산자", desc: "두 값이 다른지 비교합니다.", example: "예시: 재고 != 0  🡲  5 != 0 (참: 1)" },
+        "<": { name: "< (작음)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 작은지 비교합니다.", example: "예시: 지출 < 예산  🡲  800 < 1,000 (참: 1)" },
+        "<=": { name: "<= (작거나 같음)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 작거나 같은지 비교합니다.", example: "예시: 연체일 <= 30  🡲  15 <= 30 (참: 1)" },
+        ">": { name: "> (큼)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 큰지 비교합니다.", example: "예시: 매출 > 목표  🡲  1,200 > 1,000 (참: 1)" },
+        ">=": { name: ">= (크거나 같음)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 크거나 같은지 비교합니다.", example: "예시: 점수 >= 80  🡲  85 >= 80 (참: 1)" },
+
+        "(": { name: "( (여는 괄호)", category: "구분자 및 특수 기호", desc: "우선순위 연산을 위한 괄호를 시작합니다.", example: "예시: (매출 - 원가) * 0.1  🡲  (1,000 - 400) * 0.1 = 60" },
+        ")": { name: ") (닫는 괄호)", category: "구분자 및 특수 기호", desc: "우선순위 연산 괄호를 닫습니다.", example: "예시: (A + B) / C" },
+        ",": { name: ", (쉼표)", category: "구분자 및 특수 기호", desc: "함수의 인자를 구분합니다.", example: "예시: SUM(A, B, C)" },
+        ":": { name: ": (콜론)", category: "구분자 및 특수 기호", desc: "범위를 지정하는 구분자입니다.", example: "예시: SUM(블록1 : 블록5)" }
+    })
+
+    signal formulaApplied()
+    signal closed()
+
+    anchors.fill: parent
+    visible: isOpen
+    z: 2000
+
+    function updateFormulaInputText() {
+        if (typeof dbController !== "undefined" && root.targetMidUuid !== "") {
+            var m = root.targetMonth === 0 ? 1 : root.targetMonth
+            var existing = dbController.getMIDMonthFormula(root.selectedYear, root.targetMidUuid, m)
+            formulaInput.text = existing ? existing : ""
+        }
+    }
+
+    onTargetMonthChanged: {
+        updateFormulaInputText()
+    }
+
+    function openModal(year, midUuid, midName, currentMonth, buttonItem) {
+        selectedYear = year
+        targetMidUuid = midUuid
+        targetMidName = midName
+        targetMonth = currentMonth !== undefined ? currentMonth : 0
+        selectedOp = "+"
+        updateFormulaInputText()
+
+        if (buttonItem && typeof buttonItem.mapToItem === "function") {
+            var globalPos = buttonItem.mapToItem(root, 0, 0)
+            var btnCenterX = globalPos.x + buttonItem.width / 2
+            var btnCenterY = globalPos.y + buttonItem.height / 2
+
+            var cardW = popoverCard.width
+            var cardH = popoverCard.height
+
+            var prefX = btnCenterX - cardW + 40
+            popoverX = Math.max(16, Math.min(root.width - cardW - 16, prefX))
+
+            if (btnCenterY + cardH + 20 <= root.height) {
+                popoverY = btnCenterY + 16
+                tailOnTop = true
+            } else {
+                popoverY = Math.max(16, btnCenterY - cardH - 16)
+                tailOnTop = false
+            }
+
+            tailX = Math.max(24, Math.min(cardW - 24, btnCenterX - popoverX))
+        } else {
+            popoverX = (root.width - popoverCard.width) / 2
+            popoverY = (root.height - popoverCard.height) / 2
+            tailX = popoverCard.width / 2
+            tailOnTop = true
+        }
+
+        isOpen = true
+    }
+
+    function closeModal() {
+        isOpen = false
+        closed()
+    }
+
+    function applyFormula() {
+        if (!root.isOpen) return
+        var expr = formulaInput.text.trim()
+        if (typeof dbController !== "undefined" && root.targetMidUuid !== "") {
+            if (root.targetMonth === 0) {
+                for (var m = 1; m <= 12; m++) {
+                    dbController.setMIDMonthFormula(root.selectedYear, root.targetMidUuid, m, expr)
+                }
+            } else {
+                dbController.setMIDMonthFormula(root.selectedYear, root.targetMidUuid, root.targetMonth, expr)
+            }
+            root.formulaApplied()
+            root.closeModal()
+        }
+    }
+
+    function insertSymbol(sym) {
+        var current = formulaInput.text
+        if (current.length > 0 && !current.endsWith(" ")) {
+            current += " "
+        }
+        formulaInput.text = current + sym + " "
+    }
+
+    // Backdrop overlay (transparent, click outside to apply & close)
+    Rectangle {
+        anchors.fill: parent
+        color: "#15000000"
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: root.applyFormula()
+        }
+    }
+
+    // ─── Speech Bubble Popover Container ───
+    Item {
+        id: popoverWrapper
+        x: root.popoverX
+        y: root.popoverY
+        width: popoverCard.width
+        height: popoverCard.height
+
+        scale: root.isOpen ? 1.0 : 0.85
+        opacity: root.isOpen ? 1.0 : 0.0
+
+        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 180 } }
+
+        // Main Popover Card
+        Rectangle {
+            id: popoverCard
+            width: 540
+            height: 480
+            radius: 18
+            color: "#1F1F1F"
+            border.width: 1.5
+            border.color: "#343434"
+            z: 1
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {} // Prevent click-through
+            }
+
+            // Header Section
+            Rectangle {
+                id: headerArea
+                width: parent.width
+                height: 48
+                radius: 18
+                color: "transparent"
+
+                Row {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 18
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 10
+
+                    // f Icon Circle - White Background & Inverted Text Color
+                    Rectangle {
+                        width: 32
+                        height: 32
+                        radius: 16
+                        color: "#FFFFFF"
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "f"
+                            color: "#121212"
+                            font.pixelSize: 16
+                            font.bold: true
+                            font.italic: true
+                        }
+                    }
+
+                    Column {
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+                        Text {
+                            text: "수식 설정 (Formula Definition)"
+                            color: "#FFFFFF"
+                            font.pixelSize: 15
+                            font.bold: true
+                        }
+                        Text {
+                            text: root.targetMidName + " (" + root.selectedYear + "년)"
+                            color: "#8E8E93"
+                            font.pixelSize: 12
+                        }
+                    }
+                }
+
+                // Close Button (×) - Unified with Graph Analytics Card Close Button
+                Rectangle {
+                    width: 30
+                    height: 30
+                    radius: 15
+                    color: closeHover.containsMouse ? "#FFFFFF" : "#3A3A3A"
+                    border.width: 1
+                    border.color: closeHover.containsMouse ? "#FFFFFF" : "#4A4A4A"
+                    scale: closeHover.containsMouse ? 1.08 : 1.0
+
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
+                    Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+
+                    anchors {
+                        right: parent.right
+                        rightMargin: 16
+                        verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "×"
+                        color: closeHover.containsMouse ? "#121212" : "#DDDDDD"
+                        font.pixelSize: 16
+                        font.bold: true
+
+                        Behavior on color { ColorAnimation { duration: 150 } }
+                    }
+
+                    MouseArea {
+                        id: closeHover
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.closeModal()
+                    }
+                }
+            }
+
+            // Divider Line - Unified with Graph Analytics Card Line
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: headerArea.bottom
+                height: 1
+                color: "#343434"
+            }
+
+            // Content Column
+            Column {
+                anchors {
+                    top: headerArea.bottom
+                    topMargin: 14
+                    left: parent.left
+                    leftMargin: 18
+                    right: parent.right
+                    rightMargin: 18
+                }
+                spacing: 10
+
+                // ─── 1. 수식 구문 입력 (TOP) ───
+                Text {
+                    text: "수식 구문 입력"
+                    color: "#CCCCCC"
+                    font.pixelSize: 12
+                    font.bold: true
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: 38
+                    radius: 8
+                    color: "#1F1F1F"
+                    border.width: 1.5
+                    border.color: "#343434"
+
+                    TextField {
+                        id: formulaInput
+                        anchors.fill: parent
+                        anchors.margins: 4
+                        verticalAlignment: TextInput.AlignVCenter
+
+                        color: "#FFFFFF"
+                        font.pixelSize: 14
+                        placeholderText: "예: ID 블록 1 - ID 블록 2"
+                        placeholderTextColor: "#555555"
+
+                        selectByMouse: true
+                        selectedTextColor: "#121212"
+                        selectionColor: "#FFFFFF"
+
+                        onAccepted: root.applyFormula()
+                        onEditingFinished: {
+                            if (root.isOpen) root.applyFormula()
+                        }
+
+                        Keys.onReturnPressed: root.applyFormula()
+                        Keys.onEnterPressed: root.applyFormula()
+
+                        background: Rectangle {
+                            color: "transparent"
+                        }
+                    }
+                }
+
+                // ─── 2. 사용 가능한 기호 & 연산자 (White Active Theme) ───
+                Rectangle {
+                    width: parent.width
+                    height: 124
+                    radius: 10
+                    color: "#1F1F1F"
+                    border.width: 1.5
+                    border.color: "#343434"
+
+                    Column {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 6
+
+                        // Row 1: 산술 연산자
+                        Row {
+                            spacing: 6
+                            Text {
+                                text: "산술 연산자:"
+                                color: "#CCCCCC"
+                                font.pixelSize: 11
+                                font.bold: true
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 72
+                            }
+                            Repeater {
+                                model: ["+", "-", "*", "/", "$", "%", "^"]
+                                delegate: Rectangle {
+                                    width: 26
+                                    height: 24
+                                    radius: 6
+                                    color: root.selectedOp === modelData ? "#FFFFFF" : (opHover.containsMouse ? "#3A3A3A" : "#282828")
+                                    border.width: 1
+                                    border.color: root.selectedOp === modelData ? "#FFFFFF" : "#404040"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: modelData
+                                        color: root.selectedOp === modelData ? "#121212" : "#CCCCCC"
+                                        font.pixelSize: 12
+                                        font.bold: true
+                                    }
+
+                                    MouseArea {
+                                        id: opHover
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.selectedOp = modelData
+                                        onDoubleClicked: root.insertSymbol(modelData)
+                                    }
+                                }
+                            }
+                        }
+
+                        // Row 2: 비교 연산자
+                        Row {
+                            spacing: 6
+                            Text {
+                                text: "비교 연산자:"
+                                color: "#CCCCCC"
+                                font.pixelSize: 11
+                                font.bold: true
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 72
+                            }
+                            Repeater {
+                                model: ["=", "!=", "<", "<=", ">", ">="]
+                                delegate: Rectangle {
+                                    width: modelData.length > 1 ? 32 : 26
+                                    height: 24
+                                    radius: 6
+                                    color: root.selectedOp === modelData ? "#FFFFFF" : (opHover2.containsMouse ? "#3A3A3A" : "#282828")
+                                    border.width: 1
+                                    border.color: root.selectedOp === modelData ? "#FFFFFF" : "#404040"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: modelData
+                                        color: root.selectedOp === modelData ? "#121212" : "#CCCCCC"
+                                        font.pixelSize: 12
+                                        font.bold: true
+                                    }
+
+                                    MouseArea {
+                                        id: opHover2
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.selectedOp = modelData
+                                        onDoubleClicked: root.insertSymbol(modelData)
+                                    }
+                                }
+                            }
+                        }
+
+                        // Row 3: 구분자 및 기호
+                        Row {
+                            spacing: 6
+                            Text {
+                                text: "구분자/기호:"
+                                color: "#CCCCCC"
+                                font.pixelSize: 11
+                                font.bold: true
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 72
+                            }
+                            Repeater {
+                                model: ["(", ")", ",", ":"]
+                                delegate: Rectangle {
+                                    width: 26
+                                    height: 24
+                                    radius: 6
+                                    color: root.selectedOp === modelData ? "#FFFFFF" : (opHover3.containsMouse ? "#3A3A3A" : "#282828")
+                                    border.width: 1
+                                    border.color: root.selectedOp === modelData ? "#FFFFFF" : "#404040"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: modelData
+                                        color: root.selectedOp === modelData ? "#121212" : "#CCCCCC"
+                                        font.pixelSize: 12
+                                        font.bold: true
+                                    }
+
+                                    MouseArea {
+                                        id: opHover3
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.selectedOp = modelData
+                                        onDoubleClicked: root.insertSymbol(modelData)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ─── 3. 선택된 기호 설명 및 사용법 예시 카드 (No Green Theme) ───
+                Rectangle {
+                    id: explanationCard
+                    width: parent.width
+                    height: 82
+                    radius: 10
+                    color: "#1F1F1F"
+                    border.width: 1.5
+                    border.color: "#343434"
+
+                    property var currentDoc: root.operatorDocs[root.selectedOp] ? root.operatorDocs[root.selectedOp] : root.operatorDocs["+"]
+
+                    Column {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 4
+
+                        Item {
+                            width: parent.width
+                            height: 20
+
+                            Text {
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: explanationCard.currentDoc.name
+                                color: "#FFFFFF"
+                                font.pixelSize: 12
+                                font.bold: true
+                            }
+
+                            // Insert into formula button - White hover theme
+                            Rectangle {
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 76
+                                height: 20
+                                radius: 10
+                                color: addSymHover.containsMouse ? "#FFFFFF" : "#3A3A3A"
+                                border.width: 1
+                                border.color: addSymHover.containsMouse ? "#FFFFFF" : "#666666"
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "+ 수식에 추가"
+                                    color: addSymHover.containsMouse ? "#121212" : "#FFFFFF"
+                                    font.pixelSize: 10
+                                    font.bold: true
+                                }
+
+                                MouseArea {
+                                    id: addSymHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.insertSymbol(root.selectedOp)
+                                }
+                            }
+                        }
+
+                        Text {
+                            text: explanationCard.currentDoc.desc
+                            color: "#DDDDDD"
+                            font.pixelSize: 11
+                        }
+
+                        Text {
+                            text: explanationCard.currentDoc.example
+                            color: "#FFD54F"
+                            font.pixelSize: 11
+                            font.bold: true
+                        }
+                    }
+                }
+
+                // ─── 4. 대상 월 선택 (White Theme Circular Buttons) ───
+                Text {
+                    text: "대상 월 선택"
+                    color: "#CCCCCC"
+                    font.pixelSize: 12
+                    font.bold: true
+                }
+
+                Flickable {
+                    id: monthFlickable
+                    width: parent.width
+                    height: 32
+                    contentWidth: monthRow.width
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    Row {
+                        id: monthRow
+                        spacing: 5
+
+                        // "전체" button (Pill - White Active)
+                        Rectangle {
+                            width: 50
+                            height: 28
+                            radius: 14
+                            color: root.targetMonth === 0 ? "#FFFFFF" : "#2C2C2C"
+                            border.width: 1
+                            border.color: root.targetMonth === 0 ? "#FFFFFF" : "#3D3D3D"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "전체"
+                                color: root.targetMonth === 0 ? "#121212" : "#AAAAAA"
+                                font.pixelSize: 11
+                                font.bold: root.targetMonth === 0
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.targetMonth = 0
+                            }
+                        }
+
+                        // 1~12 Circle buttons (White Active)
+                        Repeater {
+                            model: 12
+                            delegate: Rectangle {
+                                width: 28
+                                height: 28
+                                radius: 14
+                                color: root.targetMonth === index + 1 ? "#FFFFFF" : "#2C2C2C"
+                                border.width: 1
+                                border.color: root.targetMonth === index + 1 ? "#FFFFFF" : "#3D3D3D"
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: (index + 1).toString()
+                                    color: root.targetMonth === index + 1 ? "#121212" : "#AAAAAA"
+                                    font.pixelSize: 12
+                                    font.bold: root.targetMonth === index + 1
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.targetMonth = index + 1
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ─── 5. Action Buttons (Clear, Apply) ───
+                Row {
+                    anchors.right: parent.right
+                    spacing: 8
+
+                    // Clear Button
+                    Rectangle {
+                        width: 80
+                        height: 32
+                        radius: 8
+                        color: clearHover.containsMouse ? "#3A2A2A" : "#2A1A1A"
+                        border.width: 1
+                        border.color: "#FF5F57"
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "수식 삭제"
+                            color: "#FF5F57"
+                            font.pixelSize: 12
+                            font.bold: true
+                        }
+
+                        MouseArea {
+                            id: clearHover
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                if (typeof dbController !== "undefined" && root.targetMidUuid !== "") {
+                                    if (root.targetMonth === 0) {
+                                        for (var m = 1; m <= 12; m++) {
+                                            dbController.setMIDMonthFormula(root.selectedYear, root.targetMidUuid, m, "")
+                                        }
+                                    } else {
+                                        dbController.setMIDMonthFormula(root.selectedYear, root.targetMidUuid, root.targetMonth, "")
+                                    }
+                                    root.formulaApplied()
+                                    root.closeModal()
+                                }
+                            }
+                        }
+                    }
+
+                    // Apply Button - High Contrast White Theme
+                    Rectangle {
+                        width: 100
+                        height: 32
+                        radius: 8
+                        color: applyHover.containsMouse ? "#E0E0E0" : "#FFFFFF"
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "수식 적용"
+                            color: "#121212"
+                            font.pixelSize: 13
+                            font.bold: true
+                        }
+
+                        MouseArea {
+                            id: applyHover
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.applyFormula()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
