@@ -2,7 +2,6 @@
 build/
 flowui/build/
 dist/
-Flow_Release.zip
 *.exe
 *.obj
 *.o
