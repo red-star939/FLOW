@@ -337,14 +337,15 @@ Item {
                 }
 
                 // Hamburger Menu Icon Area (Top-Right of Top Dashboard - Hover Mode)
+                // 우측 상단 -> 좌측 상단 메뉴 버튼
                 Item {
                     width: 60
                     height: 60
                     anchors {
                         top: parent.top
-                        right: parent.right
+                        left: parent.left
                         topMargin: 5
-                        rightMargin: 10
+                        leftMargin: 10
                     }
 
                     HoverHandler {
