@@ -89,9 +89,10 @@ Rectangle {
     Connections {
         target: typeof dbController !== "undefined" ? dbController : null
         function onDailyDataChanged(y, m, d) {
-            if (y === rightdashRoot.selectedYear && m === rightdashRoot.activeMonth) {
-                rightdashRoot.refreshDailyData()
-            }
+            rightdashRoot.refreshDailyData()
+        }
+        function onIdDataChanged(y, m) {
+            rightdashRoot.refreshDailyData()
         }
     }
 

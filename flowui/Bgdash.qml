@@ -217,6 +217,10 @@ Item {
                         console.log("Selected Year from Wheel:", yr)
                         bgdashRoot.refreshIDData()
                         bgdashRoot.refreshMIDData()
+                        if (typeof rightDash !== "undefined" && typeof rightDash.refreshDailyData === "function") {
+                            rightDash.selectedYear = yr
+                            rightDash.refreshDailyData()
+                        }
                     }
                 }
 
@@ -233,6 +237,10 @@ Item {
                     onMonthChanged: (m) => {
                         console.log("Selected Month for Year", yearWheel.selectedYear, ":", m)
                         bgdashRoot.refreshIDData()
+                        if (typeof rightDash !== "undefined" && typeof rightDash.refreshDailyData === "function") {
+                            rightDash.selectedMonth = m
+                            rightDash.refreshDailyData()
+                        }
                     }
                 }
 
