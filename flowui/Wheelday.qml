@@ -34,8 +34,21 @@ Item {
         }
     }
 
-    onSelectedYearChanged: syncDayIndex()
-    onSelectedMonthChanged: syncDayIndex()
+    onSelectedYearChanged: {
+        var d = new Date()
+        if (d.getFullYear() === selectedYear && (d.getMonth() + 1) === selectedMonth) {
+            selectedDay = d.getDate()
+        }
+        syncDayIndex()
+    }
+
+    onSelectedMonthChanged: {
+        var d = new Date()
+        if (d.getFullYear() === selectedYear && (d.getMonth() + 1) === selectedMonth) {
+            selectedDay = d.getDate()
+        }
+        syncDayIndex()
+    }
 
     Component.onCompleted: {
         var d = new Date()

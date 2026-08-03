@@ -31,11 +31,19 @@ Rectangle {
         if (selectedMonth > 0) {
             lastValidMonth = selectedMonth
         }
+        var today = new Date()
+        if (today.getFullYear() === selectedYear && (today.getMonth() + 1) === activeMonth) {
+            selectedDay = today.getDate()
+        }
         refreshDailyData()
     }
 
     onSelectedYearChanged: {
         rightdashRoot.isInternalEdit = false
+        var today = new Date()
+        if (today.getFullYear() === selectedYear && (today.getMonth() + 1) === activeMonth) {
+            selectedDay = today.getDate()
+        }
         refreshDailyData()
     }
 

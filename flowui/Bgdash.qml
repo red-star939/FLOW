@@ -219,6 +219,10 @@ Item {
                         bgdashRoot.refreshMIDData()
                         if (typeof rightDash !== "undefined" && typeof rightDash.refreshDailyData === "function") {
                             rightDash.selectedYear = yr
+                            var today = new Date()
+                            if (today.getFullYear() === yr && (today.getMonth() + 1) === rightDash.activeMonth) {
+                                rightDash.selectedDay = today.getDate()
+                            }
                             rightDash.refreshDailyData()
                         }
                     }
@@ -239,6 +243,10 @@ Item {
                         bgdashRoot.refreshIDData()
                         if (typeof rightDash !== "undefined" && typeof rightDash.refreshDailyData === "function") {
                             rightDash.selectedMonth = m
+                            var today = new Date()
+                            if (today.getFullYear() === rightDash.selectedYear && (today.getMonth() + 1) === rightDash.activeMonth) {
+                                rightDash.selectedDay = today.getDate()
+                            }
                             rightDash.refreshDailyData()
                         }
                     }
