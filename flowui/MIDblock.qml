@@ -470,14 +470,29 @@ Item {
                         }
                     }
                 }
-                function onMonthsDataChanged() {
-                    if (root.selectedMonth > 0) {
-                        var targetIdx = root.selectedMonth - 1
-                        if (monthCellsWheel.currentIndex !== targetIdx) {
-                            monthCellsWheel.currentIndex = targetIdx
-                        }
-                    }
+    function calculateAnnualSum() {
+        var sum = 0.0
+        if (monthsData && monthsData.length > 0) {
+            for (var i = 0; i < monthsData.length; i++) {
+                var mObj = monthsData[i]
+                if (mObj) {
+                    var val = mObj.value !== undefined ? Number(mObj.value) : (mObj.formula_result !== undefined ? Number(mObj.formula_result) : 0.0)
+                    if (!isNaN(val)) sum += val
                 }
+            }
+        }
+        root.totalValue = sum
+    }
+
+    onMonthsDataChanged: {
+        calculateAnnualSum()
+        if (root.selectedMonth > 0 && typeof monthCellsWheel !== "undefined") {
+            var targetIdx = root.selectedMonth - 1
+            if (monthCellsWheel.currentIndex !== targetIdx) {
+                monthCellsWheel.currentIndex = targetIdx
+            }
+        }
+    }
             }
 
             path: Path {
@@ -563,56 +578,40 @@ Item {
             }
         }
 
-    readonly property real computedTotal: {
-        var sum = 0
-        if (root.monthsData && root.monthsData.length > 0) {
-            for (var i = 0; i < root.monthsData.length; i++) {
-                var mObj = root.monthsData[i]
-                if (mObj && mObj.formula_result !== undefined) {
-                    sum += Number(mObj.formula_result)
-                } else if (mObj && mObj.value !== undefined) {
-                    sum += Number(mObj.value)
+        // ─── 13th Sum Cell (기존 디자인 유지: 우측 고정) ───
+        Item {
+            id: sumCell
+            anchors.right: parent.right
+            anchors.rightMargin: 65
+            width: root.cellWidth
+            height: parent.height
+
+            HoverHandler {
+                id: sumHoverHandler
+            }
+
+            Rectangle {
+                anchors.centerIn: parent
+                width: parent.width - 2
+                height: parent.height - 8
+                radius: 6
+                color: "transparent"
+                border.width: 0
+
+                Text {
+                    anchors.centerIn: parent
+                    text: Number(root.totalValue).toLocaleString(Qt.locale("ko_KR"), "f", 0)
+                    color: root.selectedMonth === 0
+                           ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
+                           : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
+                    font.pixelSize: (root.selectedMonth === 0) ? 18 : 16
+                    font.bold: true
+                    scale: sumHoverHandler.hovered ? 1.18 : 1.0
+                    Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
+                    Behavior on color { ColorAnimation { duration: 250 } }
+                    Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
                 }
             }
-            return sum
-        }
-        return root.totalValue
-    }
-
-    // ─── 13th Sum Cell (기존 디자인 유지: 우측 고정) ───
-    Item {
-        id: sumCell
-        anchors.right: parent.right
-        anchors.rightMargin: 65
-        width: root.cellWidth
-        height: parent.height
-
-        HoverHandler {
-            id: sumHoverHandler
-        }
-
-        Rectangle {
-            anchors.centerIn: parent
-            width: parent.width - 2
-            height: parent.height - 8
-            radius: 6
-            color: "transparent"
-            border.width: 0
-
-            Text {
-                anchors.centerIn: parent
-                text: Number(root.computedTotal).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                color: root.selectedMonth === 0
-                       ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
-                       : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
-                font.pixelSize: (root.selectedMonth === 0) ? 18 : 16
-                font.bold: true
-                scale: sumHoverHandler.hovered ? 1.18 : 1.0
-                Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
-                Behavior on color { ColorAnimation { duration: 250 } }
-                Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
-            }
-        }
 
             MouseArea {
                 anchors.fill: parent

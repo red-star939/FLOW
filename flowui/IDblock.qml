@@ -541,6 +541,20 @@ Item {
                                 if (typeof bgdashRoot !== "undefined") bgdashRoot.isInternalEdit = false;
                             }
                         }
+                        onValueInputRealtime: function(newValue) {
+                            var targetSubUuid = (uuid && uuid !== "") ? uuid : (model.uuid !== undefined ? model.uuid : model.title)
+                            subBlockModel.setProperty(index, "value", newValue)
+                            root.updateTotal()
+                            root.dataChanged()
+                            if (typeof dbController !== "undefined" && root.selectedYear > 0) {
+                                var t = model.title !== undefined ? model.title : "새 항목"
+                                var val = parseFloat(newValue)
+                                if (isNaN(val)) val = 0.0
+                                var parentBlockId = (root.uuid && root.uuid !== "") ? root.uuid : root.idName
+                                if (typeof bgdashRoot !== "undefined") bgdashRoot.isInternalEdit = true;
+                                dbController.updateSubID(root.selectedYear, root.selectedMonth, parentBlockId, targetSubUuid, t, val)
+                            }
+                        }
                         onValueEdited: function(newValue) {
                             var targetSubUuid = (uuid && uuid !== "") ? uuid : (model.uuid !== undefined ? model.uuid : model.title)
                             subBlockModel.setProperty(index, "value", newValue)
