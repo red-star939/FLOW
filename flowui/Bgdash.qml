@@ -98,7 +98,8 @@ Item {
 
     function refreshMIDData() {
         if (typeof dbController !== "undefined" && typeof yearWheel !== "undefined") {
-            bgdashRoot.midDataList = dbController.getMIDItems(yearWheel.selectedYear)
+            var items = dbController.getMIDItems(yearWheel.selectedYear)
+            bgdashRoot.midDataList = items ? items.slice() : []
         }
     }
 
