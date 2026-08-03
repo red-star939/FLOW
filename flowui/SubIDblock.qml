@@ -143,7 +143,11 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.removeRequested(root.blockIndex)
+                    onClicked: {
+                        valueInput.focus = false
+                        directInputField.focus = false
+                        root.removeRequested(root.blockIndex)
+                    }
                 }
             }
         }

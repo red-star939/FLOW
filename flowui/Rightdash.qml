@@ -255,9 +255,11 @@ Rectangle {
                 }
 
                 onRemoveRequested: function(subIndex) {
+                    rightdashRoot.isInternalEdit = false
                     if (typeof dbController !== "undefined") {
                         dbController.removeDailyItem(rightdashRoot.selectedYear, rightdashRoot.activeMonth, rightdashRoot.selectedDay, modelData.uuid)
                     }
+                    rightdashRoot.refreshDailyData()
                 }
             }
 
