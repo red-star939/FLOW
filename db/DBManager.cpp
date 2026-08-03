@@ -136,16 +136,53 @@ namespace {
                 query_key == "DAILY" || query_key == "DAILYEXPENSES" || query_key == "DAILYEXPENSE") {
                 QSettings settings("HONG_ST", "FlowUI");
                 double dailyMonthlyTotal = 0.0;
-                for (int day = 1; day <= 31; ++day) {
-                    QString key = QString("DailyExpenses/%1_%2_%3").arg(year_).arg(month_).arg(day);
-                    QByteArray data = settings.value(key).toByteArray();
+                if (month_ >= 1 && month_ <= 12) {
+                    QString monthKey = QString("DailyExpenses/%1_%2").arg(year_).arg(month_);
+                    QByteArray data = settings.value(monthKey).toByteArray();
                     if (!data.isEmpty()) {
                         QJsonDocument doc = QJsonDocument::fromJson(data);
                         if (doc.isArray()) {
-                            QJsonArray arr = doc.array();
-                            for (const auto& val : arr) {
-                                QJsonObject obj = val.toObject();
-                                dailyMonthlyTotal += obj["value"].toDouble();
+                            for (const auto& val : doc.array()) {
+                                dailyMonthlyTotal += val.toObject()["value"].toDouble();
+                            }
+                        }
+                    } else {
+                        for (int day = 1; day <= 31; ++day) {
+                            QString key = QString("DailyExpenses/%1_%2_%3").arg(year_).arg(month_).arg(day);
+                            QByteArray dayData = settings.value(key).toByteArray();
+                            if (!dayData.isEmpty()) {
+                                QJsonDocument doc = QJsonDocument::fromJson(dayData);
+                                if (doc.isArray()) {
+                                    for (const auto& val : doc.array()) {
+                                        dailyMonthlyTotal += val.toObject()["value"].toDouble();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    for (int m = 1; m <= 12; ++m) {
+                        QString monthKey = QString("DailyExpenses/%1_%2").arg(year_).arg(m);
+                        QByteArray data = settings.value(monthKey).toByteArray();
+                        if (!data.isEmpty()) {
+                            QJsonDocument doc = QJsonDocument::fromJson(data);
+                            if (doc.isArray()) {
+                                for (const auto& val : doc.array()) {
+                                    dailyMonthlyTotal += val.toObject()["value"].toDouble();
+                                }
+                            }
+                        } else {
+                            for (int day = 1; day <= 31; ++day) {
+                                QString key = QString("DailyExpenses/%1_%2_%3").arg(year_).arg(m).arg(day);
+                                QByteArray dayData = settings.value(key).toByteArray();
+                                if (!dayData.isEmpty()) {
+                                    QJsonDocument doc = QJsonDocument::fromJson(dayData);
+                                    if (doc.isArray()) {
+                                        for (const auto& val : doc.array()) {
+                                            dailyMonthlyTotal += val.toObject()["value"].toDouble();
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
