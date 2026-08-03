@@ -9,6 +9,9 @@ Rectangle {
     property int selectedDay: 15
     property var midList: []
 
+    property int lastValidMonth: 8
+    readonly property int activeMonth: selectedMonth > 0 ? selectedMonth : (lastValidMonth > 0 ? lastValidMonth : 1)
+
     property var dailyItems: []
     property real totalDailyExpense: 0
     property real totalMonthlyDailyExpense: 0
@@ -22,6 +25,13 @@ Rectangle {
     Behavior on color { ColorAnimation { duration: 250 } }
     Behavior on border.color { ColorAnimation { duration: 250 } }
     clip: true
+
+    onSelectedMonthChanged: {
+        if (selectedMonth > 0) {
+            lastValidMonth = selectedMonth
+        }
+        refreshDailyData()
+    }
 
     function recalculateTotals() {
         var sum = 0
@@ -42,7 +52,7 @@ Rectangle {
     function refreshDailyData() {
         if (typeof dbController !== "undefined" && typeof dbController.getDailyItems === "function") {
             if (!rightdashRoot.isInternalEdit) {
-                var items = dbController.getDailyItems(selectedYear, selectedMonth, selectedDay)
+                var items = dbController.getDailyItems(selectedYear, activeMonth, selectedDay)
                 dailyItems = items ? items : []
             }
             rightdashRoot.isInternalEdit = false;
@@ -50,7 +60,7 @@ Rectangle {
             recalculateTotals()
 
             if (typeof dbController.getMonthlyDailyTotal === "function") {
-                totalMonthlyDailyExpense = dbController.getMonthlyDailyTotal(selectedYear, selectedMonth)
+                totalMonthlyDailyExpense = dbController.getMonthlyDailyTotal(selectedYear, activeMonth)
             } else {
                 totalMonthlyDailyExpense = totalDailyExpense
             }
@@ -58,13 +68,14 @@ Rectangle {
     }
 
     onSelectedYearChanged: refreshDailyData()
-    onSelectedMonthChanged: refreshDailyData()
     onSelectedDayChanged: refreshDailyData()
 
     Component.onCompleted: {
         var d = new Date()
         selectedYear = d.getFullYear()
-        selectedMonth = d.getMonth() + 1
+        var m = d.getMonth() + 1
+        selectedMonth = m
+        lastValidMonth = m
         selectedDay = d.getDate()
         refreshDailyData()
     }
@@ -182,7 +193,7 @@ Rectangle {
                     if (typeof dbController !== "undefined") {
                         rightdashRoot.isInternalEdit = true
                         var val = Number(value.replace(/[^0-9.-]+/g, ""))
-                        dbController.updateDailyItem(rightdashRoot.selectedYear, rightdashRoot.selectedMonth, rightdashRoot.selectedDay, modelData.uuid, newTitle, isNaN(val) ? 0 : val)
+                        dbController.updateDailyItem(rightdashRoot.selectedYear, rightdashRoot.activeMonth, rightdashRoot.selectedDay, modelData.uuid, newTitle, isNaN(val) ? 0 : val)
                     }
                 }
 
@@ -196,20 +207,20 @@ Rectangle {
 
                     if (typeof dbController !== "undefined") {
                         rightdashRoot.isInternalEdit = true
-                        dbController.updateDailyItem(rightdashRoot.selectedYear, rightdashRoot.selectedMonth, rightdashRoot.selectedDay, modelData.uuid, title, cleanVal)
+                        dbController.updateDailyItem(rightdashRoot.selectedYear, rightdashRoot.activeMonth, rightdashRoot.selectedDay, modelData.uuid, title, cleanVal)
                     }
                 }
 
                 onMoveRequested: function(fromIndex, toIndex) {
                     var clampedTo = Math.max(0, Math.min(rightdashRoot.dailyItems.length - 1, toIndex))
                     if (fromIndex !== clampedTo && typeof dbController !== "undefined") {
-                        dbController.moveDailyItem(rightdashRoot.selectedYear, rightdashRoot.selectedMonth, rightdashRoot.selectedDay, fromIndex, clampedTo)
+                        dbController.moveDailyItem(rightdashRoot.selectedYear, rightdashRoot.activeMonth, rightdashRoot.selectedDay, fromIndex, clampedTo)
                     }
                 }
 
                 onRemoveRequested: function(subIndex) {
                     if (typeof dbController !== "undefined") {
-                        dbController.removeDailyItem(rightdashRoot.selectedYear, rightdashRoot.selectedMonth, rightdashRoot.selectedDay, modelData.uuid)
+                        dbController.removeDailyItem(rightdashRoot.selectedYear, rightdashRoot.activeMonth, rightdashRoot.selectedDay, modelData.uuid)
                     }
                 }
             }
@@ -252,7 +263,7 @@ Rectangle {
 
                         onClicked: {
                             if (typeof dbController !== "undefined") {
-                                dbController.addDailyItem(rightdashRoot.selectedYear, rightdashRoot.selectedMonth, rightdashRoot.selectedDay, "새 항목", 0)
+                                dbController.addDailyItem(rightdashRoot.selectedYear, rightdashRoot.activeMonth, rightdashRoot.selectedDay, "새 항목", 0)
                             }
                         }
                     }
@@ -315,7 +326,7 @@ Rectangle {
                         anchors.left: parent.left
                         anchors.leftMargin: 8
                         anchors.verticalCenter: parent.verticalCenter
-                        text: rightdashRoot.selectedMonth + "월 총합계"
+                        text: rightdashRoot.activeMonth + "월 총합계"
                         color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"
                         font.pixelSize: 12
                         font.bold: true

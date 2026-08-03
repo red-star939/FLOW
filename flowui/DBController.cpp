@@ -579,8 +579,12 @@ bool DBController::saveMonthlyNote(int year, int month, const QString& note) {
 }
 
 QVariantList DBController::getDailyItems(int year, int month, int day) {
+    if (year <= 0) year = 2026;
+    int targetMonth = (month <= 0 || month > 12) ? 1 : month;
+    int targetDay = (day <= 0 || day > 31) ? 1 : day;
+
     QSettings settings("HONG_ST", "FlowUI");
-    QString key = QString("DailyExpenses/%1_%2_%3").arg(year).arg(month).arg(day);
+    QString key = QString("DailyExpenses/%1_%2_%3").arg(year).arg(targetMonth).arg(targetDay);
     QByteArray data = settings.value(key).toByteArray();
     if (data.isEmpty()) return QVariantList();
 
@@ -590,9 +594,12 @@ QVariantList DBController::getDailyItems(int year, int month, int day) {
 }
 
 double DBController::getMonthlyDailyTotal(int year, int month) {
+    if (year <= 0) year = 2026;
+    int targetMonth = (month <= 0 || month > 12) ? 1 : month;
+
     double total = 0.0;
     for (int day = 1; day <= 31; ++day) {
-        QVariantList items = getDailyItems(year, month, day);
+        QVariantList items = getDailyItems(year, targetMonth, day);
         for (const QVariant& item : items) {
             QVariantMap map = item.toMap();
             total += map["value"].toDouble();
@@ -602,9 +609,13 @@ double DBController::getMonthlyDailyTotal(int year, int month) {
 }
 
 QString DBController::addDailyItem(int year, int month, int day, const QString& name, double value) {
+    if (year <= 0) year = 2026;
+    int targetMonth = (month <= 0 || month > 12) ? 1 : month;
+    int targetDay = (day <= 0 || day > 31) ? 1 : day;
+
     QSettings settings("HONG_ST", "FlowUI");
-    QString key = QString("DailyExpenses/%1_%2_%3").arg(year).arg(month).arg(day);
-    QVariantList list = getDailyItems(year, month, day);
+    QString key = QString("DailyExpenses/%1_%2_%3").arg(year).arg(targetMonth).arg(targetDay);
+    QVariantList list = getDailyItems(year, targetMonth, targetDay);
 
     QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
     QVariantMap item;
@@ -616,11 +627,12 @@ QString DBController::addDailyItem(int year, int month, int day, const QString& 
 
     QJsonArray arr = QJsonArray::fromVariantList(list);
     settings.setValue(key, QJsonDocument(arr).toJson(QJsonDocument::Compact));
-    emit dailyDataChanged(year, month, day);
+    emit dailyDataChanged(year, targetMonth, targetDay);
+    syncDailyToSubID(year, targetMonth);
 
     DB::YearData* ydata = m_dbManager.get_year(year);
     if (ydata) {
-        m_dbManager.recalculate_all_formulas_for_month(*ydata, month);
+        m_dbManager.recalculate_all_formulas_for_month(*ydata, targetMonth);
     }
     emit midDataChanged(year);
     return uuid;
