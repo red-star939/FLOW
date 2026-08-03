@@ -89,10 +89,14 @@ Rectangle {
     Connections {
         target: typeof dbController !== "undefined" ? dbController : null
         function onDailyDataChanged(y, m, d) {
-            rightdashRoot.refreshDailyData()
+            if (!rightdashRoot.isInternalEdit) {
+                rightdashRoot.refreshDailyData()
+            }
         }
         function onIdDataChanged(y, m) {
-            rightdashRoot.refreshDailyData()
+            if (!rightdashRoot.isInternalEdit) {
+                rightdashRoot.refreshDailyData()
+            }
         }
     }
 
@@ -224,6 +228,11 @@ Rectangle {
                     if (fromIndex !== clampedTo && typeof dbController !== "undefined") {
                         dbController.moveDailyItem(rightdashRoot.selectedYear, rightdashRoot.activeMonth, rightdashRoot.selectedDay, fromIndex, clampedTo)
                     }
+                }
+
+                onEditingFinished: function() {
+                    rightdashRoot.isInternalEdit = false
+                    rightdashRoot.refreshDailyData()
                 }
 
                 onRemoveRequested: function(subIndex) {

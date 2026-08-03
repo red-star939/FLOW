@@ -433,7 +433,6 @@ Item {
 
                     onTextEdited: {
                         root.value = text
-                        root.valueEdited(text)
                     }
 
                     onAccepted: commitValue()
