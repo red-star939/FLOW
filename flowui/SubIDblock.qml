@@ -14,6 +14,7 @@ Item {
     signal moveRequested(int fromIndex, int toIndex)
     signal titleEdited(string newTitle)
     signal valueEdited(string newValue)
+    signal valueInputRealtime(string newValue)
     signal editingFinished()
 
     Component.onCompleted: {
@@ -433,6 +434,7 @@ Item {
 
                     onTextEdited: {
                         root.value = text
+                        root.valueInputRealtime(text)
                     }
 
                     onAccepted: commitValue()

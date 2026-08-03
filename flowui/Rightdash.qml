@@ -98,6 +98,11 @@ Rectangle {
                 rightdashRoot.refreshDailyData()
             }
         }
+        function onMidDataChanged(y) {
+            if (typeof bgdashRoot !== "undefined" && typeof bgdashRoot.refreshMIDData === "function") {
+                bgdashRoot.refreshMIDData()
+            }
+        }
     }
 
     Column {
@@ -206,6 +211,20 @@ Rectangle {
                         rightdashRoot.isInternalEdit = true
                         var val = Number(value.replace(/[^0-9.-]+/g, ""))
                         dbController.updateDailyItem(rightdashRoot.selectedYear, rightdashRoot.activeMonth, rightdashRoot.selectedDay, modelData.uuid, newTitle, isNaN(val) ? 0 : val)
+                    }
+                }
+
+                onValueInputRealtime: function(newValue) {
+                    var rawNum = Number(newValue.replace(/[^0-9.-]+/g, ""))
+                    var cleanVal = isNaN(rawNum) ? 0 : rawNum
+                    if (rightdashRoot.dailyItems && index >= 0 && index < rightdashRoot.dailyItems.length) {
+                        rightdashRoot.dailyItems[index].value = cleanVal
+                    }
+                    rightdashRoot.recalculateTotals()
+
+                    if (typeof dbController !== "undefined") {
+                        rightdashRoot.isInternalEdit = true
+                        dbController.updateDailyItem(rightdashRoot.selectedYear, rightdashRoot.activeMonth, rightdashRoot.selectedDay, modelData.uuid, title, cleanVal)
                     }
                 }
 
