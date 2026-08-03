@@ -586,12 +586,28 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: Number(root.totalValue).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                    color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"
-                    font.pixelSize: 16
+                    color: root.selectedMonth === 0
+                           ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
+                           : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
+                    font.pixelSize: (root.selectedMonth === 0) ? 18 : 16
                     font.bold: true
                     scale: sumHoverHandler.hovered ? 1.18 : 1.0
                     Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
                     Behavior on color { ColorAnimation { duration: 250 } }
+                    Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    if (typeof bgdashRoot !== "undefined" && typeof monthSelector !== "undefined") {
+                        monthSelector.selectedMonth = 0
+                        monthSelector.monthChanged(0)
+                    } else if (root.selectedMonth !== 0) {
+                        root.selectedMonth = 0
+                    }
                 }
             }
         }

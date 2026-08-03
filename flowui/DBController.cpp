@@ -259,6 +259,47 @@ QVariantList DBController::getIDItems(int year, int month) {
                 list.append(itemMap);
             }
         }
+    } else if (month == 0) {
+        // month 0: 합계 (All 12 Months Annual Sum of ID blocks)
+        std::map<std::string, std::pair<std::string, double>> aggregatedTotals; // id -> {uuid, sumTotal}
+        std::map<std::string, std::map<std::string, double>> aggregatedSubItems; // id -> (subId -> sumVal)
+        std::vector<std::string> idOrder;
+
+        for (int m = 1; m <= 12; ++m) {
+            auto m_it = ydata->months.find(m);
+            if (m_it != ydata->months.end()) {
+                for (const auto& item_data : m_it->second.items) {
+                    if (aggregatedTotals.find(item_data.id) == aggregatedTotals.end()) {
+                        idOrder.push_back(item_data.id);
+                        aggregatedTotals[item_data.id] = {item_data.uuid, 0.0};
+                    }
+                    aggregatedTotals[item_data.id].second += item_data.total_value;
+
+                    for (const auto& sub : item_data.sub_items) {
+                        aggregatedSubItems[item_data.id][sub.sub_id] += sub.value;
+                    }
+                }
+            }
+        }
+
+        for (const auto& idName : idOrder) {
+            QVariantMap itemMap;
+            itemMap["uuid"] = QString::fromStdString(aggregatedTotals[idName].first);
+            itemMap["id"] = QString::fromStdString(idName);
+            itemMap["totalValue"] = aggregatedTotals[idName].second;
+
+            QVariantList subList;
+            for (const auto& subPair : aggregatedSubItems[idName]) {
+                QVariantMap subMap;
+                subMap["uuid"] = QString::fromStdString("sub_" + subPair.first);
+                subMap["title"] = QString::fromStdString(subPair.first);
+                subMap["subId"] = QString::fromStdString(subPair.first);
+                subMap["value"] = subPair.second;
+                subList.append(subMap);
+            }
+            itemMap["subItems"] = subList;
+            list.append(itemMap);
+        }
     }
     return list;
 }

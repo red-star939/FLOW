@@ -299,7 +299,7 @@ Rectangle {
                         anchors.rightMargin: 12
                         anchors.verticalCenter: parent.verticalCenter
                         text: Number(rightdashRoot.totalDailyExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                        color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"
+                        color: "#FF453A"
                         font.pixelSize: 13
                         font.bold: true
                         Behavior on color { ColorAnimation { duration: 250 } }
@@ -327,7 +327,7 @@ Rectangle {
                         anchors.rightMargin: 12
                         anchors.verticalCenter: parent.verticalCenter
                         text: Number(rightdashRoot.totalMonthlyDailyExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                        color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"
+                        color: "#FF453A"
                         font.pixelSize: 14
                         font.bold: true
                         Behavior on color { ColorAnimation { duration: 250 } }
