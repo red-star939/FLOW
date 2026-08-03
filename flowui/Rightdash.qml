@@ -27,9 +27,20 @@ Rectangle {
     clip: true
 
     onSelectedMonthChanged: {
+        rightdashRoot.isInternalEdit = false
         if (selectedMonth > 0) {
             lastValidMonth = selectedMonth
         }
+        refreshDailyData()
+    }
+
+    onSelectedYearChanged: {
+        rightdashRoot.isInternalEdit = false
+        refreshDailyData()
+    }
+
+    onSelectedDayChanged: {
+        rightdashRoot.isInternalEdit = false
         refreshDailyData()
     }
 
@@ -51,10 +62,8 @@ Rectangle {
 
     function refreshDailyData() {
         if (typeof dbController !== "undefined" && typeof dbController.getDailyItems === "function") {
-            if (!rightdashRoot.isInternalEdit) {
-                var items = dbController.getDailyItems(selectedYear, activeMonth, selectedDay)
-                dailyItems = items ? items : []
-            }
+            var items = dbController.getDailyItems(selectedYear, activeMonth, selectedDay)
+            dailyItems = items ? items.slice() : []
             rightdashRoot.isInternalEdit = false;
 
             recalculateTotals()
@@ -66,9 +75,6 @@ Rectangle {
             }
         }
     }
-
-    onSelectedYearChanged: refreshDailyData()
-    onSelectedDayChanged: refreshDailyData()
 
     Component.onCompleted: {
         var d = new Date()
@@ -83,7 +89,7 @@ Rectangle {
     Connections {
         target: typeof dbController !== "undefined" ? dbController : null
         function onDailyDataChanged(y, m, d) {
-            if (y === rightdashRoot.selectedYear && m === rightdashRoot.selectedMonth) {
+            if (y === rightdashRoot.selectedYear && m === rightdashRoot.activeMonth) {
                 rightdashRoot.refreshDailyData()
             }
         }
@@ -158,7 +164,8 @@ Rectangle {
                 width: 105
                 height: 38
                 selectedYear: rightdashRoot.selectedYear
-                selectedMonth: rightdashRoot.selectedMonth
+                selectedMonth: rightdashRoot.activeMonth
+                selectedDay: rightdashRoot.selectedDay
 
                 onDayChanged: (d) => {
                     rightdashRoot.selectedDay = d
