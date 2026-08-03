@@ -95,82 +95,22 @@ Item {
             }
         }
 
-        // ─── Left hover area (delete button + drag handle) ───
+        HoverHandler {
+            id: cardHover
+        }
+
+        // ─── Left hover area (Delete button ONLY on the left) ───
         Item {
             id: leftHoverArea
-            width: 70
+            width: 32
             height: parent.height
+            z: 10
 
             HoverHandler {
                 id: leftHoverHandler
             }
 
-            // Drag reorder handle (2x3 dots)
-            Item {
-                id: subDragHandle
-                width: 16
-                height: 20
-
-                anchors {
-                    left: parent.left
-                    leftMargin: 4
-                    verticalCenter: parent.verticalCenter
-                }
-
-                opacity: leftHoverHandler.hovered ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 150 } }
-
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 2
-
-                    Repeater {
-                        model: 3
-                        Row {
-                            spacing: 2
-                            Repeater {
-                                model: 2
-                                Rectangle {
-                                    width: 2.5
-                                    height: 2.5
-                                    radius: 1.25
-                                    color: "#666666"
-                                }
-                            }
-                        }
-                    }
-                }
-
-                MouseArea {
-                    id: subDragMouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.OpenHandCursor
-
-                    drag.target: subContentWrapper
-                    drag.axis: Drag.YAxis
-
-                    onPressed: {
-                        cursorShape = Qt.ClosedHandCursor
-                        if (root.parentFlickable) {
-                            root.parentFlickable.interactive = false
-                        }
-                    }
-                    onReleased: {
-                        cursorShape = Qt.OpenHandCursor
-                        if (root.parentFlickable) {
-                            root.parentFlickable.interactive = true
-                        }
-
-                        var targetIndex = root.blockIndex + Math.round(subContentWrapper.y / (root.height + 8))
-                        root.moveRequested(root.blockIndex, targetIndex)
-
-                        subContentWrapper.y = 0
-                    }
-                }
-            }
-
-            // Hover Delete Button
+            // Hover Delete Button (Red #FF5F57 circle with ×)
             Rectangle {
                 id: deleteButton
                 width: 16
@@ -179,12 +119,12 @@ Item {
                 color: "#FF5F57"
 
                 anchors {
-                    left: subDragHandle.right
-                    leftMargin: 6
+                    left: parent.left
+                    leftMargin: 8
                     verticalCenter: parent.verticalCenter
                 }
 
-                opacity: leftHoverHandler.hovered ? 1.0 : 0.0
+                opacity: (leftHoverHandler.hovered || cardHover.hovered) ? 1.0 : 0.0
                 visible: opacity > 0.0
 
                 Behavior on opacity { NumberAnimation { duration: 150 } }
@@ -212,7 +152,7 @@ Item {
             id: titlePillBadge
             anchors {
                 left: parent.left
-                leftMargin: 46
+                leftMargin: 32
                 right: verticalDivider.left
                 rightMargin: 8
                 verticalCenter: parent.verticalCenter
@@ -451,8 +391,8 @@ Item {
             anchors {
                 left: verticalDivider.right
                 leftMargin: 8
-                right: parent.right
-                rightMargin: 24
+                right: subDragHandle.left
+                rightMargin: 4
                 top: parent.top
                 bottom: parent.bottom
             }
@@ -505,6 +445,72 @@ Item {
                             commitValue()
                         }
                     }
+                }
+            }
+        }
+
+        // ─── Right hover area (Drag reorder handle ONLY on the right) ───
+        Item {
+            id: subDragHandle
+            width: 20
+            height: 24
+            z: 10
+
+            anchors {
+                right: parent.right
+                rightMargin: 6
+                verticalCenter: parent.verticalCenter
+            }
+
+            opacity: (cardHover.hovered || subDragMouseArea.containsMouse) ? 1.0 : 0.35
+            Behavior on opacity { NumberAnimation { duration: 150 } }
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 2
+
+                Repeater {
+                    model: 3
+                    Row {
+                        spacing: 2
+                        Repeater {
+                            model: 2
+                            Rectangle {
+                                width: 2.5
+                                height: 2.5
+                                radius: 1.25
+                                color: subDragMouseArea.containsMouse ? "#FFFFFF" : "#777777"
+                            }
+                        }
+                    }
+                }
+            }
+
+            MouseArea {
+                id: subDragMouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.OpenHandCursor
+
+                drag.target: subContentWrapper
+                drag.axis: Drag.YAxis
+
+                onPressed: {
+                    cursorShape = Qt.ClosedHandCursor
+                    if (root.parentFlickable) {
+                        root.parentFlickable.interactive = false
+                    }
+                }
+                onReleased: {
+                    cursorShape = Qt.OpenHandCursor
+                    if (root.parentFlickable) {
+                        root.parentFlickable.interactive = true
+                    }
+
+                    var targetIndex = root.blockIndex + Math.round(subContentWrapper.y / (root.height + 8))
+                    root.moveRequested(root.blockIndex, targetIndex)
+
+                    subContentWrapper.y = 0
                 }
             }
         }

@@ -4,7 +4,7 @@ import QtQuick.Controls
 Item {
     id: root
 
-    property int selectedMonth: 1
+    property int selectedMonth: 1 // 0 = 합계, 1~12 = 1월~12월
     property int selectedYear: 2026
 
     signal monthChanged(int month)
@@ -12,83 +12,136 @@ Item {
     height: 60
     width: parent ? parent.width : 1000
 
-    // Math for precise layout matching grid alignment
     readonly property real gap: 20
     readonly property real availableWidth: Math.max(300, width - 160 - 60)
     readonly property real cellWidth: (availableWidth - gap) / 13
 
-    // Mouse Wheel Scroll Handler for Month selection (0 = 합계, 1~12 = 1월~12월)
-    MouseArea {
-        anchors.fill: parent
-        z: -1
-        acceptedButtons: Qt.NoButton
-        onWheel: (wheel) => {
-            var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-            if (delta < 0) {
-                // Scroll down: move forward (1 -> 2 -> ... -> 12 -> 0 -> 1)
-                var nextM = root.selectedMonth + 1
-                if (nextM > 12) nextM = 0
-                if (nextM !== root.selectedMonth) {
-                    root.selectedMonth = nextM
-                    root.monthChanged(root.selectedMonth)
-                }
-            } else if (delta > 0) {
-                // Scroll up: move backward (1 -> 0 -> 12 -> 11 -> ... -> 1)
-                var prevM = root.selectedMonth - 1
-                if (prevM < 0) prevM = 12
-                if (prevM !== root.selectedMonth) {
-                    root.selectedMonth = prevM
-                    root.monthChanged(root.selectedMonth)
+    readonly property var monthNames: ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"]
+
+    // ─── 3D Horizontal Month Wheel Cylinder (1월 ~ 12월) ───
+    PathView {
+        id: pathView
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: Math.min(800, parent.width - 120)
+
+        model: 12
+        pathItemCount: 3
+        preferredHighlightBegin: 0.5
+        preferredHighlightEnd: 0.5
+        highlightRangeMode: PathView.StrictlyEnforceRange
+        dragMargin: width / 3
+
+        onCurrentIndexChanged: {
+            if (root.selectedMonth > 0) {
+                var m = currentIndex + 1
+                if (root.selectedMonth !== m) {
+                    root.selectedMonth = m
+                    root.monthChanged(m)
                 }
             }
         }
-    }
 
-    // 1~12 Months Row
-    Row {
-        id: monthsRow
-        anchors.left: parent.left
-        anchors.leftMargin: 160
-        width: cellWidth * 12
-        height: parent.height
-        spacing: 0
-
-        Repeater {
-            model: 12
-
-            delegate: Item {
-                width: root.cellWidth
-                height: parent.height
-
-                Text {
-                    anchors.centerIn: parent
-                    text: index + 1
-
-                    // Size transition matching active states
-                    font.pixelSize: root.selectedMonth === index + 1 ? 28 : 22
-                    font.bold: true
-
-                    color: root.selectedMonth === index + 1 ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#555555"
-
-                    Behavior on color { ColorAnimation { duration: 250 } }
-                    Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-
-                    onClicked: {
-                        root.selectedMonth = index + 1
-                        root.monthChanged(root.selectedMonth)
+        Connections {
+            target: root
+            function onSelectedMonthChanged() {
+                if (root.selectedMonth > 0) {
+                    var targetIdx = root.selectedMonth - 1
+                    if (pathView.currentIndex !== targetIdx) {
+                        pathView.currentIndex = targetIdx
                     }
                 }
             }
         }
+
+        path: Path {
+            startX: 80
+            startY: pathView.height / 2
+
+            PathAttribute { name: "itemScale"; value: 0.75 }
+            PathAttribute { name: "itemOpacity"; value: 0.35 }
+            PathAttribute { name: "itemAngle"; value: 30 }
+            PathAttribute { name: "itemZ"; value: 1 }
+
+            PathLine {
+                x: pathView.width / 2
+                y: pathView.height / 2
+            }
+
+            PathAttribute { name: "itemScale"; value: 1.0 }
+            PathAttribute { name: "itemOpacity"; value: 1.0 }
+            PathAttribute { name: "itemAngle"; value: 0 }
+            PathAttribute { name: "itemZ"; value: 10 }
+
+            PathLine {
+                x: pathView.width - 80
+                y: pathView.height / 2
+            }
+
+            PathAttribute { name: "itemScale"; value: 0.75 }
+            PathAttribute { name: "itemOpacity"; value: 0.35 }
+            PathAttribute { name: "itemAngle"; value: -30 }
+            PathAttribute { name: "itemZ"; value: 1 }
+        }
+
+        delegate: Item {
+            width: 100
+            height: 50
+            scale: PathView.itemScale ? PathView.itemScale : 1.0
+            opacity: PathView.itemOpacity ? PathView.itemOpacity : 1.0
+            z: PathView.itemZ ? PathView.itemZ : 1
+
+            transform: Rotation {
+                origin.x: 50
+                origin.y: 25
+                axis { x: 0; y: 1; z: 0 }
+                angle: PathView.itemAngle ? PathView.itemAngle : 0
+            }
+
+            Text {
+                anchors.centerIn: parent
+                text: root.monthNames[index]
+                font.pixelSize: (index === (root.selectedMonth - 1)) ? 32 : 22
+                font.bold: true
+                color: (index === (root.selectedMonth - 1)) ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#666666"
+
+                Behavior on color { ColorAnimation { duration: 200 } }
+                Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    var clickedMonth = index + 1
+                    if (root.selectedMonth !== clickedMonth) {
+                        root.selectedMonth = clickedMonth
+                        root.monthChanged(clickedMonth)
+                    }
+                    if (pathView.currentIndex !== index) {
+                        pathView.currentIndex = index
+                    }
+                }
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            z: -1
+            acceptedButtons: Qt.NoButton
+            onWheel: (wheel) => {
+                var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                if (delta < 0) {
+                    pathView.incrementCurrentIndex()
+                } else if (delta > 0) {
+                    pathView.decrementCurrentIndex()
+                }
+            }
+        }
     }
 
-    // Sum Header Cell (separated by a gap of 20px)
+    // ─── 기존 디자인 유지: 우측 고정 합계 헤더 ───
     Item {
         id: sumHeader
         anchors.right: parent.right

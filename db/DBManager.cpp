@@ -10,6 +10,11 @@
 #include <cctype>
 #include <chrono>
 #include <random>
+#include <QSettings>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QString>
 
 namespace DB {
 
@@ -79,23 +84,73 @@ namespace {
 
     class DBMonthContext : public Formula::IContext {
     public:
-        explicit DBMonthContext(const MonthData& mdata) : mdata_(mdata) {}
+        explicit DBMonthContext(const MonthData& mdata, const YearData* ydata = nullptr, int year = 2026, int month = 1)
+            : mdata_(mdata), ydata_(ydata), year_(year), month_(month) {}
 
         Formula::Value get_cell_value(const std::string& cell_name) const override {
             std::string query_key = strip_all_spaces_upper(cell_name);
 
+            // 1. ID Blocks (ID 블록)
             for (const auto& item : mdata_.items) {
                 if (strip_all_spaces_upper(item.id) == query_key) {
                     return item.total_value;
                 }
             }
 
+            // 2. SubID Items (ID 블록 내 SubID)
             for (const auto& item : mdata_.items) {
                 for (const auto& sub : item.sub_items) {
                     if (strip_all_spaces_upper(sub.sub_id) == query_key) {
                         return sub.value;
                     }
                 }
+            }
+
+            // 3. MID Blocks (MID 블록: 개별 월 수식 계산 시 해당 월 금액, 전체 월/합계 연산 시 연 총합계)
+            if (ydata_) {
+                for (const auto& mid : ydata_->mids) {
+                    if (strip_all_spaces_upper(mid.mid) == query_key) {
+                        if (month_ >= 1 && month_ <= 12) {
+                            auto mm_it = mid.months.find(month_);
+                            if (mm_it != mid.months.end()) {
+                                return mm_it->second.formula_result;
+                            }
+                            return 0.0;
+                        } else {
+                            double totalSum = 0.0;
+                            for (int m = 1; m <= 12; ++m) {
+                                auto mm_it = mid.months.find(m);
+                                if (mm_it != mid.months.end()) {
+                                    totalSum += mm_it->second.formula_result;
+                                }
+                            }
+                            return totalSum;
+                        }
+                    }
+                }
+            }
+
+            // 4. Daily Expenses (당일지출 / 당일 지출)
+            if (query_key == strip_all_spaces_upper("당일지출") ||
+                query_key == strip_all_spaces_upper("당일 지출") ||
+                query_key == "DAILY" || query_key == "DAILYEXPENSES" || query_key == "DAILYEXPENSE") {
+                QSettings settings("HONG_ST", "FlowUI");
+                double dailyMonthlyTotal = 0.0;
+                for (int day = 1; day <= 31; ++day) {
+                    QString key = QString("DailyExpenses/%1_%2_%3").arg(year_).arg(month_).arg(day);
+                    QByteArray data = settings.value(key).toByteArray();
+                    if (!data.isEmpty()) {
+                        QJsonDocument doc = QJsonDocument::fromJson(data);
+                        if (doc.isArray()) {
+                            QJsonArray arr = doc.array();
+                            for (const auto& val : arr) {
+                                QJsonObject obj = val.toObject();
+                                dailyMonthlyTotal += obj["value"].toDouble();
+                            }
+                        }
+                    }
+                }
+                return dailyMonthlyTotal;
             }
 
             return Formula::ErrorType::NullReference;
@@ -108,6 +163,9 @@ namespace {
 
     private:
         const MonthData& mdata_;
+        const YearData* ydata_;
+        int year_;
+        int month_;
     };
 }
 
@@ -451,8 +509,10 @@ double DBManager::evaluate_expression(int year, int month, const std::string& ex
     if (expr.empty()) return 0.0;
 
     const MonthData* target_mdata = nullptr;
+    const YearData* ydata_ptr = nullptr;
     auto y_it = years_.find(year);
     if (y_it != years_.end()) {
+        ydata_ptr = &y_it->second;
         auto mo_it = y_it->second.months.find(month);
         if (mo_it != y_it->second.months.end()) {
             target_mdata = &mo_it->second;
@@ -461,7 +521,7 @@ double DBManager::evaluate_expression(int year, int month, const std::string& ex
 
     MonthData empty_mdata;
     const MonthData& mdata = target_mdata ? *target_mdata : empty_mdata;
-    DBMonthContext context(mdata);
+    DBMonthContext context(mdata, ydata_ptr, year, month);
 
     try {
         Formula::Lexer lexer(expr);

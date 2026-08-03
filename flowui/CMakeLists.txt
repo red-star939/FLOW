@@ -54,6 +54,8 @@ qt_add_qml_module(appflowui
         QML_FILES Starttitle.qml
         QML_FILES Categoryset.qml
         QML_FILES Colorset.qml
+        QML_FILES Rightdash.qml
+        QML_FILES Wheelday.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

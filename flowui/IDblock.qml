@@ -188,7 +188,7 @@ Item {
         x: 0
 
         radius: 16
-        color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeIdCardBg : "#1F1F1F"
+        color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeDashBg : "#141414"
         border.width: 1.5
         border.color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeBorderColor : "#343434"
 

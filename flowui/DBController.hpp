@@ -62,10 +62,24 @@ public:
     Q_INVOKABLE QString getShareAnalysisMode();
     Q_INVOKABLE bool setShareAnalysisMode(const QString& mode);
 
+    // Monthly Quick Note API
+    Q_INVOKABLE QString getMonthlyNote(int year, int month);
+    Q_INVOKABLE bool saveMonthlyNote(int year, int month, const QString& note);
+
+    // Daily Expense Items API (일별 당일지출 API)
+    Q_INVOKABLE QVariantList getDailyItems(int year, int month, int day);
+    Q_INVOKABLE double getMonthlyDailyTotal(int year, int month);
+    Q_INVOKABLE QString addDailyItem(int year, int month, int day, const QString& name = "", double value = 0.0);
+    Q_INVOKABLE bool removeDailyItem(int year, int month, int day, const QString& uuid);
+    Q_INVOKABLE bool updateDailyItem(int year, int month, int day, const QString& uuid, const QString& newName, double value);
+    Q_INVOKABLE bool moveDailyItem(int year, int month, int day, int fromIndex, int toIndex);
+    Q_INVOKABLE bool syncDailyToSubID(int year, int month);
+
 signals:
     void yearRangeChanged(int startYear, int endYear);
     void idDataChanged(int year, int month);
     void midDataChanged(int year);
+    void dailyDataChanged(int year, int month, int day);
 
 private:
     DB::DBManager m_dbManager;

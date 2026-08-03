@@ -443,76 +443,127 @@ Item {
             }
         }
 
-        // ─── 12 Month Cells Row ───
-        Row {
-            id: cellsRow
-            anchors.left: parent.left
-            anchors.leftMargin: 160
-            width: root.cellWidth * 12
-            height: parent.height
-            spacing: 0
+        // ─── 3D Horizontal Month Cells Wheel Cylinder (Wheel View Sync) ───
+        PathView {
+            id: monthCellsWheel
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: Math.min(800, parent.width - 120)
 
-            Repeater {
-                model: 12
+            model: (root.monthsData && root.monthsData.length === 12) ? root.monthsData : 12
+            currentIndex: Math.max(0, Math.min(11, root.selectedMonth - 1))
+            highlightMoveDuration: 0
+            pathItemCount: 3
+            preferredHighlightBegin: 0.5
+            preferredHighlightEnd: 0.5
+            highlightRangeMode: PathView.StrictlyEnforceRange
+            dragMargin: width / 3
 
-                delegate: Item {
-                    width: root.cellWidth
-                    height: cellsRow.height
-
-                    property var monthData: (root.monthsData && root.monthsData.length > index)
-                                             ? root.monthsData[index]
-                                             : null
-                    property real val: monthData && monthData.value !== undefined ? monthData.value : 0.0
-
-                    TextField {
-                        id: cellInput
-                        anchors.centerIn: parent
-                        width: parent.width - 2
-                        height: parent.height - 8
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        font.pixelSize: 15
-                        font.bold: true
-
-                        readOnly: true
-                        selectByMouse: false
-
-                        text: parent.val !== 0
-                              ? Number(parent.val).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                              : "-"
-
-                        color: parent.val !== 0 ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#B0B0B0"
-
-                        scale: cellHoverHandler.hovered ? 1.18 : 1.0
-                        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
-                        Behavior on color { ColorAnimation { duration: 250 } }
-
-                        background: Rectangle {
-                            color: "transparent"
-                            radius: 6
-                            border.width: 0
-                            border.color: "transparent"
-                        }
-
-                        HoverHandler {
-                            id: cellHoverHandler
+            Connections {
+                target: root
+                function onSelectedMonthChanged() {
+                    if (root.selectedMonth > 0) {
+                        var targetIdx = root.selectedMonth - 1
+                        if (monthCellsWheel.currentIndex !== targetIdx) {
+                            monthCellsWheel.currentIndex = targetIdx
                         }
                     }
+                }
+                function onMonthsDataChanged() {
+                    if (root.selectedMonth > 0) {
+                        var targetIdx = root.selectedMonth - 1
+                        if (monthCellsWheel.currentIndex !== targetIdx) {
+                            monthCellsWheel.currentIndex = targetIdx
+                        }
+                    }
+                }
+            }
 
-                    // Vertical separator line between month cells
-                    Rectangle {
-                        visible: index < 11
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 1
-                        height: 20
-                        color: "#3A3A3A"
+            path: Path {
+                startX: 80
+                startY: monthCellsWheel.height / 2
+
+                PathAttribute { name: "itemScale"; value: 0.75 }
+                PathAttribute { name: "itemOpacity"; value: 0.35 }
+                PathAttribute { name: "itemAngle"; value: 30 }
+                PathAttribute { name: "itemZ"; value: 1 }
+
+                PathLine {
+                    x: monthCellsWheel.width / 2
+                    y: monthCellsWheel.height / 2
+                }
+
+                PathAttribute { name: "itemScale"; value: 1.0 }
+                PathAttribute { name: "itemOpacity"; value: 1.0 }
+                PathAttribute { name: "itemAngle"; value: 0 }
+                PathAttribute { name: "itemZ"; value: 10 }
+
+                PathLine {
+                    x: monthCellsWheel.width - 80
+                    y: monthCellsWheel.height / 2
+                }
+
+                PathAttribute { name: "itemScale"; value: 0.75 }
+                PathAttribute { name: "itemOpacity"; value: 0.35 }
+                PathAttribute { name: "itemAngle"; value: -30 }
+                PathAttribute { name: "itemZ"; value: 1 }
+            }
+
+            delegate: Item {
+                width: 100
+                height: 40
+                scale: PathView.itemScale ? PathView.itemScale : 1.0
+                opacity: PathView.itemOpacity ? PathView.itemOpacity : 1.0
+                z: PathView.itemZ ? PathView.itemZ : 1
+
+                property var itemObj: (typeof modelData === "object" && modelData)
+                                      ? modelData
+                                      : ((root.monthsData && root.monthsData.length > index) ? root.monthsData[index] : null)
+                property real val: itemObj && itemObj.value !== undefined
+                                   ? Number(itemObj.value)
+                                   : (itemObj && itemObj.formula_result !== undefined ? Number(itemObj.formula_result) : 0.0)
+
+                transform: Rotation {
+                    origin.x: 50
+                    origin.y: 20
+                    axis { x: 0; y: 1; z: 0 }
+                    angle: PathView.itemAngle ? PathView.itemAngle : 0
+                }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: parent.val !== 0
+                          ? Number(parent.val).toLocaleString(Qt.locale("ko_KR"), "f", 0)
+                          : "-"
+                    font.pixelSize: (index === (root.selectedMonth - 1)) ? 18 : 14
+                    font.bold: true
+                    color: parent.val !== 0 ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#666666"
+
+                    Behavior on color { ColorAnimation { duration: 200 } }
+                    Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        var clickedMonth = index + 1
+                        if (typeof bgdashRoot !== "undefined" && typeof monthSelector !== "undefined") {
+                            monthSelector.selectedMonth = clickedMonth
+                            monthSelector.monthChanged(clickedMonth)
+                        } else if (root.selectedMonth !== clickedMonth) {
+                            root.selectedMonth = clickedMonth
+                        }
+                        if (monthCellsWheel.currentIndex !== index) {
+                            monthCellsWheel.currentIndex = index
+                        }
                     }
                 }
             }
         }
 
-        // ─── 13th Sum Cell ───
+        // ─── 13th Sum Cell (기존 디자인 유지: 우측 고정) ───
         Item {
             id: sumCell
             anchors.right: parent.right

@@ -32,9 +32,9 @@ Item {
         if (typeof dbController !== "undefined" && typeof dbController.getSavedThemeIndex === "function") {
             var savedThemeIdx = dbController.getSavedThemeIndex();
             if (savedThemeIdx === 1) {
-                applyTheme("#578679", "#E0D9CF", "#C2A17B", "#090A0B", "#819E8A", "#578679", "#819E8A");
+                applyTheme("#578679", "#E0D9CF", "#C2A17B", "#090A0B", "#819E8A", "#578679", "#578679");
             } else {
-                applyTheme("#141414", "#1F1F1F", "#343434", "#FFFFFF", "#222222", "#141414", "#1F1F1F");
+                applyTheme("#141414", "#1F1F1F", "#343434", "#FFFFFF", "#222222", "#141414", "#141414");
             }
         }
     }
@@ -141,19 +141,24 @@ Item {
             Behavior on color { ColorAnimation { duration: 250 } }
         }
 
-        Column {
-            id: dashboardColumn
+        Row {
+            id: mainRow
             anchors {
                 fill: parent
-                margins: 20
+                margins: 18
             }
+            spacing: 16
 
-            spacing: 18
+            Column {
+                id: dashboardColumn
+                width: parent.width - rightDash.width - parent.spacing
+                height: parent.height
+                spacing: 16
 
-            // ==========================
-            // 상단 대시보드
-            // ==========================
-            Rectangle {
+                // ==========================
+                // 상단 대시보드
+                // ==========================
+                Rectangle {
                 id: topDashboard
                 width: parent.width
                 height: parent.height * 0.62
@@ -175,6 +180,7 @@ Item {
                         var d = new Date()
                         var sysYear = d.getFullYear()
                         var sysMonth = d.getMonth() + 1
+                        var sysDay = d.getDate()
 
                         if (typeof yearWheel !== "undefined" && yearWheel.selectedYear !== sysYear) {
                             yearWheel.selectedYear = sysYear
@@ -182,6 +188,11 @@ Item {
                         }
                         if (typeof monthSelector !== "undefined" && monthSelector.selectedMonth !== sysMonth) {
                             monthSelector.selectedMonth = sysMonth
+                        }
+                        if (typeof rightDash !== "undefined") {
+                            rightDash.selectedYear = sysYear
+                            rightDash.selectedMonth = sysMonth
+                            rightDash.selectedDay = sysDay
                         }
 
                         bgdashRoot.refreshIDData()
@@ -564,7 +575,20 @@ Item {
                 }
             }
         }
+
+        // ==========================
+        // 우측 대시보드
+        // ==========================
+        Rightdash {
+            id: rightDash
+            width: 270
+            height: parent.height
+            selectedYear: yearWheel.selectedYear
+            selectedMonth: monthSelector.selectedMonth
+            midList: bgdashRoot.midDataList
+        }
     }
+}
 
     // Global ESC Key Handler for Menu & Overlay Panels
     Shortcut {

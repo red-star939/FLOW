@@ -55,12 +55,35 @@ Item {
     visible: isOpen
     z: 2000
 
+    property var referenceBlocks: []
+
+    function refreshReferenceBlocks() {
+        var list = ["당일지출"]
+        if (typeof dbController !== "undefined") {
+            var mids = dbController.getMIDItems(selectedYear)
+            if (mids) {
+                for (var i = 0; i < mids.length; i++) {
+                    if (mids[i].name) list.push(mids[i].name)
+                }
+            }
+            var m = targetMonth === 0 ? 1 : targetMonth
+            var ids = dbController.getIDItems(selectedYear, m)
+            if (ids) {
+                for (var j = 0; j < ids.length; j++) {
+                    if (ids[j].id) list.push(ids[j].id)
+                }
+            }
+        }
+        referenceBlocks = list
+    }
+
     function updateFormulaInputText() {
         if (typeof dbController !== "undefined" && root.targetMidUuid !== "") {
             var m = root.targetMonth === 0 ? 1 : root.targetMonth
             var existing = dbController.getMIDMonthFormula(root.selectedYear, root.targetMidUuid, m)
             formulaInput.text = existing ? existing : ""
         }
+        refreshReferenceBlocks()
     }
 
     onTargetMonthChanged: {
@@ -74,6 +97,7 @@ Item {
         targetMonth = currentMonth !== undefined ? currentMonth : 0
         selectedOp = "+"
         updateFormulaInputText()
+        refreshReferenceBlocks()
 
         if (buttonItem && typeof buttonItem.mapToItem === "function") {
             var globalPos = buttonItem.mapToItem(root, 0, 0)
@@ -163,7 +187,7 @@ Item {
         Rectangle {
             id: popoverCard
             width: 540
-            height: 480
+            height: 550
             radius: 18
             color: "#1F1F1F"
             border.width: 1.5
@@ -543,7 +567,58 @@ Item {
                     }
                 }
 
-                // ─── 4. 대상 월 선택 (White Theme Circular Buttons) ───
+                // ─── 4. 사용 가능한 참조 항목 (ID / MID / 당일지출) ───
+                Text {
+                    text: "사용 가능한 참조 항목 (클릭 시 수식에 자동 삽입)"
+                    color: "#CCCCCC"
+                    font.pixelSize: 12
+                    font.bold: true
+                }
+
+                Flickable {
+                    id: refFlickable
+                    width: parent.width
+                    height: 32
+                    contentWidth: refRow.width
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    Row {
+                        id: refRow
+                        spacing: 6
+
+                        Repeater {
+                            model: root.referenceBlocks
+                            delegate: Rectangle {
+                                height: 28
+                                width: refText.implicitWidth + 18
+                                radius: 14
+                                color: refHover.containsMouse ? "#FFFFFF" : "#282828"
+                                border.width: 1
+                                border.color: refHover.containsMouse ? "#FFFFFF" : "#404040"
+
+                                Text {
+                                    id: refText
+                                    anchors.centerIn: parent
+                                    text: modelData === "당일지출" ? "💳 " + modelData : "🏷️ " + modelData
+                                    color: refHover.containsMouse ? "#121212" : "#CCCCCC"
+                                    font.pixelSize: 11
+                                    font.bold: true
+                                }
+
+                                MouseArea {
+                                    id: refHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.insertSymbol(modelData)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ─── 5. 대상 월 선택 (White Theme Circular Buttons) ───
                 Text {
                     text: "대상 월 선택"
                     color: "#CCCCCC"

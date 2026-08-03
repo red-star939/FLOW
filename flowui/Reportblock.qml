@@ -252,7 +252,7 @@ Item {
                 width: Math.max(460, Math.floor((parent.width - 16) * 0.63))
                 height: parent.height - 4
                 radius: 16
-                color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeCardBg : "#1F1F1F"
+                color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeDashBg : "#141414"
                 border.width: 1.5
                 border.color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeBorderColor : "#343434"
 
@@ -928,7 +928,7 @@ Item {
                 width: Math.max(300, (parent.width - 16) - Math.floor((parent.width - 16) * 0.63))
                 height: parent.height - 4
                 radius: 16
-                color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeCardBg : "#1F1F1F"
+                color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeDashBg : "#141414"
                 border.width: 1.5
                 border.color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeBorderColor : "#343434"
 

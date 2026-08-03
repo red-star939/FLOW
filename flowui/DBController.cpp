@@ -2,6 +2,9 @@
 #include <QDebug>
 #include <QSettings>
 #include <QDateTime>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QUuid>
 
 DBController::DBController(QObject *parent)
     : QObject(parent)
@@ -519,4 +522,194 @@ bool DBController::setShareAnalysisMode(const QString& mode) {
     QSettings settings("HONG_ST", "FlowUI");
     settings.setValue("ShareAnalysisMode", mode);
     return true;
+}
+
+QString DBController::getMonthlyNote(int year, int month) {
+    QSettings settings("HONG_ST", "FlowUI");
+    QString key = QString("Notes/%1_%2").arg(year).arg(month);
+    return settings.value(key, "").toString();
+}
+
+bool DBController::saveMonthlyNote(int year, int month, const QString& note) {
+    QSettings settings("HONG_ST", "FlowUI");
+    QString key = QString("Notes/%1_%2").arg(year).arg(month);
+    settings.setValue(key, note);
+    return true;
+}
+
+QVariantList DBController::getDailyItems(int year, int month, int day) {
+    QSettings settings("HONG_ST", "FlowUI");
+    QString key = QString("DailyExpenses/%1_%2_%3").arg(year).arg(month).arg(day);
+    QByteArray data = settings.value(key).toByteArray();
+    if (data.isEmpty()) return QVariantList();
+
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (!doc.isArray()) return QVariantList();
+    return doc.array().toVariantList();
+}
+
+double DBController::getMonthlyDailyTotal(int year, int month) {
+    double total = 0.0;
+    for (int day = 1; day <= 31; ++day) {
+        QVariantList items = getDailyItems(year, month, day);
+        for (const QVariant& item : items) {
+            QVariantMap map = item.toMap();
+            total += map["value"].toDouble();
+        }
+    }
+    return total;
+}
+
+QString DBController::addDailyItem(int year, int month, int day, const QString& name, double value) {
+    QSettings settings("HONG_ST", "FlowUI");
+    QString key = QString("DailyExpenses/%1_%2_%3").arg(year).arg(month).arg(day);
+    QVariantList list = getDailyItems(year, month, day);
+
+    QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    QVariantMap item;
+    item["uuid"] = uuid;
+    item["name"] = name.isEmpty() ? QString("지출 항목 %1").arg(list.size() + 1) : name;
+    item["value"] = value;
+
+    list.append(item);
+
+    QJsonArray arr = QJsonArray::fromVariantList(list);
+    settings.setValue(key, QJsonDocument(arr).toJson(QJsonDocument::Compact));
+    emit dailyDataChanged(year, month, day);
+
+    DB::YearData* ydata = m_dbManager.get_year(year);
+    if (ydata) {
+        m_dbManager.recalculate_all_formulas_for_month(*ydata, month);
+    }
+    emit midDataChanged(year);
+    return uuid;
+}
+
+bool DBController::removeDailyItem(int year, int month, int day, const QString& uuid) {
+    QSettings settings("HONG_ST", "FlowUI");
+    QString key = QString("DailyExpenses/%1_%2_%3").arg(year).arg(month).arg(day);
+    QVariantList list = getDailyItems(year, month, day);
+
+    bool found = false;
+    for (int i = 0; i < list.size(); ++i) {
+        QVariantMap map = list[i].toMap();
+        if (map["uuid"].toString() == uuid) {
+            list.removeAt(i);
+            found = true;
+            break;
+        }
+    }
+
+    if (found) {
+        QJsonArray arr = QJsonArray::fromVariantList(list);
+        settings.setValue(key, QJsonDocument(arr).toJson(QJsonDocument::Compact));
+        emit dailyDataChanged(year, month, day);
+        syncDailyToSubID(year, month);
+
+        DB::YearData* ydata = m_dbManager.get_year(year);
+        if (ydata) {
+            m_dbManager.recalculate_all_formulas_for_month(*ydata, month);
+        }
+        emit midDataChanged(year);
+    }
+    return found;
+}
+
+bool DBController::updateDailyItem(int year, int month, int day, const QString& uuid, const QString& newName, double value) {
+    QSettings settings("HONG_ST", "FlowUI");
+    QString key = QString("DailyExpenses/%1_%2_%3").arg(year).arg(month).arg(day);
+    QVariantList list = getDailyItems(year, month, day);
+
+    bool found = false;
+    for (int i = 0; i < list.size(); ++i) {
+        QVariantMap map = list[i].toMap();
+        if (map["uuid"].toString() == uuid) {
+            map["name"] = newName;
+            map["value"] = value;
+            list[i] = map;
+            found = true;
+            break;
+        }
+    }
+
+    if (found) {
+        QJsonArray arr = QJsonArray::fromVariantList(list);
+        settings.setValue(key, QJsonDocument(arr).toJson(QJsonDocument::Compact));
+        emit dailyDataChanged(year, month, day);
+        syncDailyToSubID(year, month);
+
+        DB::YearData* ydata = m_dbManager.get_year(year);
+        if (ydata) {
+            m_dbManager.recalculate_all_formulas_for_month(*ydata, month);
+        }
+        emit midDataChanged(year);
+    }
+    return found;
+}
+
+bool DBController::moveDailyItem(int year, int month, int day, int fromIndex, int toIndex) {
+    QSettings settings("HONG_ST", "FlowUI");
+    QString key = QString("DailyExpenses/%1_%2_%3").arg(year, month, day);
+
+    QVariantList list = getDailyItems(year, month, day);
+    if (fromIndex < 0 || fromIndex >= list.size()) return false;
+    int clampedTo = qBound(0, toIndex, list.size() - 1);
+    if (fromIndex == clampedTo) return false;
+
+    list.move(fromIndex, clampedTo);
+
+    QJsonArray arr = QJsonArray::fromVariantList(list);
+    settings.setValue(key, QJsonDocument(arr).toJson(QJsonDocument::Compact));
+    emit dailyDataChanged(year, month, day);
+
+    DB::YearData* ydata = m_dbManager.get_year(year);
+    if (ydata) {
+        m_dbManager.recalculate_all_formulas_for_month(*ydata, month);
+    }
+    emit midDataChanged(year);
+    return true;
+}
+
+bool DBController::syncDailyToSubID(int year, int month) {
+    if (year <= 0 || month <= 0 || month > 12) return false;
+
+    // 1. Calculate sum for each category across all days (1..31) of the month
+    QMap<QString, double> categorySums;
+    for (int d = 1; d <= 31; ++d) {
+        QVariantList dailyList = getDailyItems(year, month, d);
+        for (const auto& itemVar : dailyList) {
+            QVariantMap item = itemVar.toMap();
+            QString name = item["name"].toString().trimmed();
+            double val = item["value"].toDouble();
+            if (!name.isEmpty()) {
+                categorySums[name] += val;
+            }
+        }
+    }
+
+    // 2. Find matching SubID blocks in the ID blocks for that month and update their values
+    QVariantList idList = getIDItems(year, month);
+    bool updated = false;
+    for (const auto& idBlockVar : idList) {
+        QVariantMap idBlock = idBlockVar.toMap();
+        QString idUuid = idBlock["uuid"].toString();
+        QVariantList subList = idBlock["subBlockModel"].toList();
+        for (const auto& subVar : subList) {
+            QVariantMap subMap = subVar.toMap();
+            QString subUuid = subMap["uuid"].toString();
+            QString subName = subMap["name"].toString().trimmed();
+            if (categorySums.contains(subName)) {
+                double newSum = categorySums[subName];
+                if (m_dbManager.update_subid(year, month, idUuid.toStdString(), subUuid.toStdString(), subName.toStdString(), newSum)) {
+                    updated = true;
+                }
+            }
+        }
+    }
+
+    if (updated) {
+        m_dbManager.save_to_file("db/database.json");
+        emit idDataChanged(year, month);
+    }
+    return updated;
 }
