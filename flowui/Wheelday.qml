@@ -18,43 +18,39 @@ Item {
         return new Date(year, month, 0).getDate()
     }
 
-    readonly property int daysCount: getDaysInMonth(selectedYear, selectedMonth)
+    property bool isSyncing: false
 
     function syncDayIndex() {
-        var count = daysCount
-        if (root.selectedDay < 1) root.selectedDay = 1
-        if (root.selectedDay > count) root.selectedDay = count
+        if (isSyncing) return
+        isSyncing = true
+
+        var d = new Date()
+        if (d.getFullYear() === selectedYear && (d.getMonth() + 1) === selectedMonth) {
+            root.selectedDay = d.getDate()
+        } else {
+            var count = daysCount
+            if (root.selectedDay < 1) root.selectedDay = 1
+            if (root.selectedDay > count) root.selectedDay = count
+        }
 
         var targetIdx = root.selectedDay - 1
         if (targetIdx < 0) targetIdx = 0
-        if (targetIdx >= pathView.count) targetIdx = Math.max(0, pathView.count - 1)
+        if (targetIdx >= daysCount) targetIdx = Math.max(0, daysCount - 1)
 
         if (pathView.currentIndex !== targetIdx) {
             pathView.currentIndex = targetIdx
         }
+
+        Qt.callLater(function() {
+            root.isSyncing = false
+        })
     }
 
-    onSelectedYearChanged: {
-        var d = new Date()
-        if (d.getFullYear() === selectedYear && (d.getMonth() + 1) === selectedMonth) {
-            selectedDay = d.getDate()
-        }
-        syncDayIndex()
-    }
-
-    onSelectedMonthChanged: {
-        var d = new Date()
-        if (d.getFullYear() === selectedYear && (d.getMonth() + 1) === selectedMonth) {
-            selectedDay = d.getDate()
-        }
-        syncDayIndex()
-    }
+    onSelectedYearChanged: syncDayIndex()
+    onSelectedMonthChanged: syncDayIndex()
+    onSelectedDayChanged: syncDayIndex()
 
     Component.onCompleted: {
-        var d = new Date()
-        if (d.getFullYear() === selectedYear && (d.getMonth() + 1) === selectedMonth) {
-            selectedDay = d.getDate()
-        }
         syncDayIndex()
     }
 
@@ -72,6 +68,7 @@ Item {
         dragMargin: width / 3
 
         onCurrentIndexChanged: {
+            if (root.isSyncing) return
             var calcDay = currentIndex + 1
             if (root.selectedDay !== calcDay) {
                 root.selectedDay = calcDay
