@@ -19,11 +19,17 @@ Item {
     }
 
     readonly property int daysCount: getDaysInMonth(selectedYear, selectedMonth)
+    property bool isSyncing: false
 
     function syncDayIndex() {
-        var count = daysCount
-        if (root.selectedDay < 1) root.selectedDay = 1
-        if (root.selectedDay > count) root.selectedDay = count
+        isSyncing = true
+        var d = new Date()
+        if (d.getFullYear() === selectedYear && (d.getMonth() + 1) === selectedMonth) {
+            root.selectedDay = d.getDate()
+        } else {
+            if (root.selectedDay < 1) root.selectedDay = 1
+            if (root.selectedDay > daysCount) root.selectedDay = daysCount
+        }
 
         var targetIdx = root.selectedDay - 1
         if (targetIdx < 0) targetIdx = 0
@@ -32,34 +38,16 @@ Item {
         if (pathView.currentIndex !== targetIdx) {
             pathView.currentIndex = targetIdx
         }
+        isSyncing = false
     }
 
-    onSelectedYearChanged: {
-        var d = new Date()
-        if (d.getFullYear() === selectedYear && (d.getMonth() + 1) === selectedMonth) {
-            selectedDay = d.getDate()
-        }
-        syncDayIndex()
-    }
-
-    onSelectedMonthChanged: {
-        var d = new Date()
-        if (d.getFullYear() === selectedYear && (d.getMonth() + 1) === selectedMonth) {
-            selectedDay = d.getDate()
-        }
-        syncDayIndex()
-    }
-
-    onSelectedDayChanged: {
-        syncDayIndex()
-    }
+    onSelectedYearChanged: Qt.callLater(syncDayIndex)
+    onSelectedMonthChanged: Qt.callLater(syncDayIndex)
+    onSelectedDayChanged: Qt.callLater(syncDayIndex)
+    onDaysCountChanged: Qt.callLater(syncDayIndex)
 
     Component.onCompleted: {
-        var d = new Date()
-        if (d.getFullYear() === selectedYear && (d.getMonth() + 1) === selectedMonth) {
-            selectedDay = d.getDate()
-        }
-        syncDayIndex()
+        Qt.callLater(syncDayIndex)
     }
 
     PathView {
@@ -76,6 +64,7 @@ Item {
         dragMargin: width / 3
 
         onCurrentIndexChanged: {
+            if (root.isSyncing) return
             var calcDay = currentIndex + 1
             if (root.selectedDay !== calcDay) {
                 root.selectedDay = calcDay
