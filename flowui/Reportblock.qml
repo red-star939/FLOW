@@ -1094,16 +1094,11 @@ Item {
                     Row {
                         width: parent.width
                         height: 76
-                        spacing: 8
 
                         // Yesterday Card
-                        Rectangle {
-                            width: (parent.width - 8) / 2
+                        Item {
+                            width: (parent.width - 1) / 2
                             height: parent.height
-                            radius: 10
-                            color: "#1C1C1E"
-                            border.width: 1
-                            border.color: "#333333"
 
                             Column {
                                 anchors.centerIn: parent
@@ -1150,14 +1145,18 @@ Item {
                             }
                         }
 
-                        // Today Card
+                        // Vertical Divider between Yesterday & Today
                         Rectangle {
-                            width: (parent.width - 8) / 2
+                            width: 1
+                            height: parent.height - 16
+                            color: "#333333"
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        // Today Card
+                        Item {
+                            width: (parent.width - 1) / 2
                             height: parent.height
-                            radius: 10
-                            color: "#1C1C1E"
-                            border.width: 1.5
-                            border.color: "#00E5FF"
 
                             Column {
                                 anchors.centerIn: parent
@@ -1206,17 +1205,21 @@ Item {
                         }
                     }
 
+                    // Horizontal Divider Line above Expense Difference Analysis
+                    Rectangle {
+                        width: parent.width
+                        height: 1
+                        color: "#333333"
+                    }
+
                     // 2. Hero Diff Analysis Card (지출 분석 블록) - DIRECTLY BELOW
                     Rectangle {
                         width: parent.width
-                        height: Math.max(90, equalBlock1.height - 32 - 32 - 1 - 76 - 30)
+                        height: Math.max(90, equalBlock1.height - 32 - 32 - 1 - 76 - 1 - 30)
                         radius: 12
                         color: root.diffExpenseAmount > 0 ? "#2A1818" : (root.diffExpenseAmount < 0 ? "#14261B" : "#1A1A1A")
-                        border.width: 1.5
-                        border.color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#444444")
 
                         Behavior on color { ColorAnimation { duration: 250 } }
-                        Behavior on border.color { ColorAnimation { duration: 250 } }
 
                         Column {
                             anchors.centerIn: parent
