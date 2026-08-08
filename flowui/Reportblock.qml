@@ -750,9 +750,9 @@ Item {
                                 property bool isFilled: currentMid !== null && currentMid !== undefined
                                 property bool isSelecting: root.activeSelectingSlot === slotIndex
 
-                                color: isFilled ? "#262626" : (isSelecting ? "#252525" : (cardHover.containsMouse ? "#303030" : "#222222"))
+                                color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeDashBg : "#141414"
                                 border.width: 1.5
-                                border.color: isFilled ? "#444444" : (isSelecting ? "#FFFFFF" : (cardHover.containsMouse ? "#888888" : "#383838"))
+                                border.color: isSelecting ? "#FFFFFF" : (cardHover.containsMouse ? "#666666" : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeBorderColor : "#343434"))
 
                                 Behavior on color { ColorAnimation { duration: 150 } }
                                 Behavior on border.color { ColorAnimation { duration: 150 } }
@@ -1063,10 +1063,8 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: "Δ"
-                                    color: "#121212"
-                                    font.pixelSize: 17
-                                    font.bold: true
+                                    text: root.diffExpenseAmount > 0 ? "📈" : (root.diffExpenseAmount < 0 ? "📉" : "📊")
+                                    font.pixelSize: 16
                                 }
 
                                 MouseArea {
