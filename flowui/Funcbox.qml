@@ -583,6 +583,14 @@ Item {
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
 
+                    MouseArea {
+                        anchors.fill: parent
+                        onWheel: (wheel) => {
+                            var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                            refFlickable.contentX = Math.max(0, Math.min(refFlickable.contentWidth - refFlickable.width, refFlickable.contentX - delta))
+                        }
+                    }
+
                     Row {
                         id: refRow
                         spacing: 6
@@ -612,6 +620,10 @@ Item {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: root.insertSymbol(modelData)
+                                    onWheel: (wheel) => {
+                                        var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                        refFlickable.contentX = Math.max(0, Math.min(refFlickable.contentWidth - refFlickable.width, refFlickable.contentX - delta))
+                                    }
                                 }
                             }
                         }
@@ -633,6 +645,14 @@ Item {
                     contentWidth: monthRow.width
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onWheel: (wheel) => {
+                            var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                            monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
+                        }
+                    }
 
                     Row {
                         id: monthRow
@@ -659,6 +679,10 @@ Item {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: root.targetMonth = 0
+                                onWheel: (wheel) => {
+                                    var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                    monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
+                                }
                             }
                         }
 
@@ -685,6 +709,10 @@ Item {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: root.targetMonth = index + 1
+                                    onWheel: (wheel) => {
+                                        var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                        monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
+                                    }
                                 }
                             }
                         }
