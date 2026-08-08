@@ -1204,7 +1204,9 @@ Item {
                         height: Math.max(90, equalBlock1.height - 32 - 32 - 1 - 76 - 1 - 30)
 
                         Row {
-                            anchors.centerIn: parent
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.verticalCenterOffset: -8
                             spacing: 8
 
                             Text {
