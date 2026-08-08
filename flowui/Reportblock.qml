@@ -1198,14 +1198,10 @@ Item {
                         color: "#333333"
                     }
 
-                    // 2. Hero Diff Analysis Card (지출 분석 블록) - DIRECTLY BELOW
-                    Rectangle {
+                    // 2. Hero Diff Analysis (지출 분석) - DIRECTLY BELOW
+                    Item {
                         width: parent.width
                         height: Math.max(90, equalBlock1.height - 32 - 32 - 1 - 76 - 1 - 30)
-                        radius: 12
-                        color: root.diffExpenseAmount > 0 ? "#2A1818" : (root.diffExpenseAmount < 0 ? "#14261B" : "#1A1A1A")
-
-                        Behavior on color { ColorAnimation { duration: 250 } }
 
                         Row {
                             anchors.centerIn: parent
