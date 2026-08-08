@@ -8,28 +8,33 @@ Item {
     property int selectedMonth: 8
     property int selectedDay: 8
 
-    readonly property int activeMonth: (selectedMonth > 0 && selectedMonth <= 12) ? selectedMonth : (new Date().getMonth() + 1)
-    readonly property int activeDay: (selectedDay > 0 && selectedDay <= 31) ? selectedDay : (new Date().getDate())
+    property int todayYear: 2026
+    property int todayMonth: 8
+    property int todayDay: 8
 
-    property var todayDateObj: new Date(selectedYear, activeMonth - 1, activeDay)
-    property var yesterdayDateObj: {
-        var d = new Date(selectedYear, activeMonth - 1, activeDay)
-        d.setDate(d.getDate() - 1)
-        return d
-    }
-
-    readonly property int todayYear: todayDateObj.getFullYear()
-    readonly property int todayMonth: todayDateObj.getMonth() + 1
-    readonly property int todayDay: todayDateObj.getDate()
-
-    readonly property int yesterdayYear: yesterdayDateObj.getFullYear()
-    readonly property int yesterdayMonth: yesterdayDateObj.getMonth() + 1
-    readonly property int yesterdayDay: yesterdayDateObj.getDate()
+    property int yesterdayYear: 2026
+    property int yesterdayMonth: 8
+    property int yesterdayDay: 7
 
     property var todayDailyItems: []
     property var yesterdayDailyItems: []
 
     function refreshDailyComparisonData() {
+        var yr = selectedYear > 0 ? selectedYear : new Date().getFullYear()
+        var m = (selectedMonth > 0 && selectedMonth <= 12) ? selectedMonth : (new Date().getMonth() + 1)
+        var d = (selectedDay > 0 && selectedDay <= 31) ? selectedDay : new Date().getDate()
+
+        var tDate = new Date(yr, m - 1, d)
+        todayYear = tDate.getFullYear()
+        todayMonth = tDate.getMonth() + 1
+        todayDay = tDate.getDate()
+
+        var yDate = new Date(yr, m - 1, d)
+        yDate.setDate(yDate.getDate() - 1)
+        yesterdayYear = yDate.getFullYear()
+        yesterdayMonth = yDate.getMonth() + 1
+        yesterdayDay = yDate.getDate()
+
         if (typeof dbController !== "undefined" && typeof dbController.getDailyItems === "function") {
             var tItems = dbController.getDailyItems(todayYear, todayMonth, todayDay)
             todayDailyItems = tItems ? tItems.slice() : []
@@ -160,6 +165,12 @@ Item {
         if (typeof dbController !== "undefined") {
             dbController.saveGraphSlotMids(selectedYear, newSlotMids)
         }
+    }
+
+    Component.onCompleted: {
+        refreshMIDList()
+        loadSlotMids()
+        refreshDailyComparisonData()
     }
 
     onSelectedYearChanged: {
