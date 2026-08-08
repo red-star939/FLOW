@@ -1063,8 +1063,10 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: root.diffExpenseAmount > 0 ? "📈" : (root.diffExpenseAmount < 0 ? "📉" : "📊")
-                                    font.pixelSize: 16
+                                    text: "Δ"
+                                    color: "#121212"
+                                    font.pixelSize: 17
+                                    font.bold: true
                                 }
 
                                 MouseArea {
