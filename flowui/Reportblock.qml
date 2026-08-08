@@ -1027,7 +1027,7 @@ Item {
                 Column {
                     anchors.fill: parent
                     anchors.margins: 18
-                    spacing: 12
+                    spacing: 16
 
                     // Header Title Section
                     Item {
@@ -1051,7 +1051,7 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: root.diffExpenseAmount > 0 ? "📈" : (root.diffExpenseAmount < 0 ? "📉" : "📊")
+                                    text: "📊"
                                     font.pixelSize: 16
                                 }
 
@@ -1066,13 +1066,16 @@ Item {
                             Column {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: 2
+
                                 Text {
                                     text: "전일 대비 지출 분석"
                                     color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"
                                     font.pixelSize: 17
                                     font.bold: true
+
                                     Behavior on color { ColorAnimation { duration: 250 } }
                                 }
+
                                 Text {
                                     text: "Daily Expense Difference Analysis"
                                     color: "#8E8E93"
@@ -1082,49 +1085,49 @@ Item {
                         }
                     }
 
-                    // Divider
+                    // Divider Line
                     Rectangle {
                         width: parent.width
                         height: 1
                         color: "#333333"
                     }
 
-                    // Main Content Layout Column (Vertical, Borderless)
+                    // Main Content Section (Vertical Stack, Borderless, Side-by-Side Date & Amount)
                     Column {
                         width: parent.width
-                        anchors.top: parent.children[1].bottom
-                        anchors.topMargin: 16
-                        spacing: 22
+                        spacing: 20
 
-                        // 1. 전일 (Yesterday Section)
-                        Column {
+                        // 1. 전일 Row (Label on Left, Amount on Right)
+                        Row {
                             width: parent.width
-                            spacing: 4
+                            spacing: 8
 
-                            Row {
-                                width: parent.width
+                            Column {
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 2
 
                                 Text {
                                     text: "전일 (" + root.yesterdayMonth + "월 " + root.yesterdayDay + "일)"
                                     color: "#8E8E93"
-                                    font.pixelSize: 13
+                                    font.pixelSize: 14
                                     font.bold: true
                                 }
 
-                                Item {
-                                    width: 1
-                                    height: 1
-                                }
-
                                 Text {
-                                    anchors.right: parent.right
                                     text: root.yesterdayDailyItems.length + "개 항목"
                                     color: "#666666"
                                     font.pixelSize: 11
                                 }
                             }
 
+                            Item {
+                                width: 1
+                                height: 1
+                            }
+
                             Text {
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
                                 text: Number(root.yesterdayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
                                 color: "#DDDDDD"
                                 font.pixelSize: 20
@@ -1132,35 +1135,37 @@ Item {
                             }
                         }
 
-                        // 2. 금일 (Today Section)
-                        Column {
+                        // 2. 금일 Row (Label on Left, Amount on Right)
+                        Row {
                             width: parent.width
-                            spacing: 4
+                            spacing: 8
 
-                            Row {
-                                width: parent.width
+                            Column {
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 2
 
                                 Text {
                                     text: "금일 (" + root.todayMonth + "월 " + root.todayDay + "일)"
                                     color: "#00E5FF"
-                                    font.pixelSize: 14
+                                    font.pixelSize: 15
                                     font.bold: true
                                 }
 
-                                Item {
-                                    width: 1
-                                    height: 1
-                                }
-
                                 Text {
-                                    anchors.right: parent.right
                                     text: root.todayDailyItems.length + "개 항목"
                                     color: "#8E8E93"
                                     font.pixelSize: 11
                                 }
                             }
 
+                            Item {
+                                width: 1
+                                height: 1
+                            }
+
                             Text {
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
                                 text: Number(root.todayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
                                 color: "#FFFFFF"
                                 font.pixelSize: 24
@@ -1175,34 +1180,41 @@ Item {
                             color: "#282828"
                         }
 
-                        // 3. 지출 절감 / 지출 증가 / 변동 없음 (Difference Section)
-                        Column {
+                        // 3. 지출 절감 / 지출 증가 Row (Label on Left, Amount & Badge on Right)
+                        Row {
                             width: parent.width
-                            spacing: 6
+                            spacing: 8
 
                             Text {
+                                anchors.verticalCenter: parent.verticalCenter
                                 text: root.diffExpenseAmount > 0 ? "▲ 지출 증가" : (root.diffExpenseAmount < 0 ? "▼ 지출 절감" : "– 변동 없음")
                                 color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#8E8E93")
                                 font.pixelSize: 15
                                 font.bold: true
                             }
 
+                            Item {
+                                width: 1
+                                height: 1
+                            }
+
                             Row {
-                                width: parent.width
-                                spacing: 10
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 8
 
                                 Text {
                                     text: (root.diffExpenseAmount > 0 ? "+" : "") + Number(root.diffExpenseAmount).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
                                     color: "#FFFFFF"
-                                    font.pixelSize: 26
+                                    font.pixelSize: 22
                                     font.bold: true
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
 
                                 Rectangle {
-                                    width: pctText.width + 12
-                                    height: 24
-                                    radius: 12
+                                    width: pctText.width + 10
+                                    height: 22
+                                    radius: 11
                                     color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#555555")
                                     anchors.verticalCenter: parent.verticalCenter
 
@@ -1211,7 +1223,7 @@ Item {
                                         anchors.centerIn: parent
                                         text: (root.diffExpenseAmount > 0 ? "+" : "") + root.diffExpensePercent.toFixed(1) + "%"
                                         color: "#FFFFFF"
-                                        font.pixelSize: 12
+                                        font.pixelSize: 11
                                         font.bold: true
                                     }
                                 }
