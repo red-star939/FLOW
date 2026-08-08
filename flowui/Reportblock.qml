@@ -1030,10 +1030,10 @@ Item {
                     anchors.margins: 16
                     spacing: 10
 
-                    // Header Title Section
+                    // Header Title Section (Matches Block 1 Header Size & Alignments)
                     Item {
                         width: parent.width
-                        height: 32
+                        height: 34
 
                         Row {
                             anchors.left: parent.left
@@ -1041,9 +1041,9 @@ Item {
                             spacing: 10
 
                             Rectangle {
-                                width: 30
-                                height: 30
-                                radius: 15
+                                width: 32
+                                height: 32
+                                radius: 16
                                 color: "#FFFFFF"
                                 anchors.verticalCenter: parent.verticalCenter
                                 scale: b2IconHover.containsMouse ? 1.25 : 1.0
@@ -1053,7 +1053,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     text: root.diffExpenseAmount > 0 ? "📈" : (root.diffExpenseAmount < 0 ? "📉" : "📊")
-                                    font.pixelSize: 15
+                                    font.pixelSize: 16
                                 }
 
                                 MouseArea {
@@ -1070,14 +1070,14 @@ Item {
                                 Text {
                                     text: "전일 대비 지출 분석"
                                     color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"
-                                    font.pixelSize: 16
+                                    font.pixelSize: 17
                                     font.bold: true
                                     Behavior on color { ColorAnimation { duration: 250 } }
                                 }
                                 Text {
                                     text: "Daily Expense Difference Analysis"
                                     color: "#8E8E93"
-                                    font.pixelSize: 11
+                                    font.pixelSize: 12
                                 }
                             }
                         }
@@ -1093,11 +1093,11 @@ Item {
                     // 1. Side-by-Side Dual Sub-Cards (전일 vs 금일 총액) - TOP
                     Row {
                         width: parent.width
-                        height: 76
+                        height: 80
 
                         // Yesterday Card
                         Item {
-                            width: (parent.width - 1) / 2
+                            width: Math.floor((parent.width - 1) / 2)
                             height: parent.height
 
                             Column {
@@ -1141,14 +1141,14 @@ Item {
                         // Vertical Divider between Yesterday & Today
                         Rectangle {
                             width: 1
-                            height: parent.height - 16
+                            height: parent.height - 20
                             color: "#333333"
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
                         // Today Card
                         Item {
-                            width: (parent.width - 1) / 2
+                            width: parent.width - Math.floor((parent.width - 1) / 2) - 1
                             height: parent.height
 
                             Column {
@@ -1201,12 +1201,10 @@ Item {
                     // 2. Hero Diff Analysis (지출 분석) - DIRECTLY BELOW
                     Item {
                         width: parent.width
-                        height: Math.max(90, equalBlock1.height - 32 - 32 - 1 - 76 - 1 - 30)
+                        height: Math.max(80, equalBlock1.height - 188)
 
                         Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.verticalCenterOffset: -8
+                            anchors.centerIn: parent
                             spacing: 8
 
                             Text {
@@ -1214,7 +1212,6 @@ Item {
                                 color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#8E8E93")
                                 font.pixelSize: 14
                                 font.bold: true
-                                anchors.verticalCenter: parent.verticalCenter
                             }
 
                             Text {
@@ -1222,7 +1219,6 @@ Item {
                                 color: "#FFFFFF"
                                 font.pixelSize: 20
                                 font.bold: true
-                                anchors.verticalCenter: parent.verticalCenter
                             }
 
                             Rectangle {
@@ -1230,7 +1226,6 @@ Item {
                                 height: 22
                                 radius: 11
                                 color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#555555")
-                                anchors.verticalCenter: parent.verticalCenter
 
                                 Text {
                                     id: pctText
