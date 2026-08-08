@@ -5,32 +5,111 @@ Item {
     id: root
 
     property int selectedYear: 2026
+    property int selectedMonth: 8
+    property int selectedDay: 8
 
-    property var midList: (typeof dbController !== "undefined" && visible) ? dbController.getMIDItems(selectedYear) : []
-    property string shareMode: (typeof dbController !== "undefined" && typeof dbController.getShareAnalysisMode === "function") ? dbController.getShareAnalysisMode() : "MID"
-    property var subidList: (typeof dbController !== "undefined" && visible && shareMode === "SubID") ? dbController.getSubIDItemsForYear(selectedYear) : []
+    readonly property int activeMonth: (selectedMonth > 0 && selectedMonth <= 12) ? selectedMonth : (new Date().getMonth() + 1)
+    readonly property int activeDay: (selectedDay > 0 && selectedDay <= 31) ? selectedDay : (new Date().getDate())
 
-    function activeShareList() {
-        return shareMode === "SubID" ? subidList : midList;
+    property var todayDateObj: new Date(selectedYear, activeMonth - 1, activeDay)
+    property var yesterdayDateObj: {
+        var d = new Date(selectedYear, activeMonth - 1, activeDay)
+        d.setDate(d.getDate() - 1)
+        return d
     }
 
-    function refreshShareList() {
-        if (typeof dbController !== "undefined") {
-            midList = dbController.getMIDItems(selectedYear)
-            if (typeof dbController.getSubIDItemsForYear === "function") {
-                subidList = dbController.getSubIDItemsForYear(selectedYear)
+    readonly property int todayYear: todayDateObj.getFullYear()
+    readonly property int todayMonth: todayDateObj.getMonth() + 1
+    readonly property int todayDay: todayDateObj.getDate()
+
+    readonly property int yesterdayYear: yesterdayDateObj.getFullYear()
+    readonly property int yesterdayMonth: yesterdayDateObj.getMonth() + 1
+    readonly property int yesterdayDay: yesterdayDateObj.getDate()
+
+    property var todayDailyItems: []
+    property var yesterdayDailyItems: []
+
+    function refreshDailyComparisonData() {
+        if (typeof dbController !== "undefined" && typeof dbController.getDailyItems === "function") {
+            var tItems = dbController.getDailyItems(todayYear, todayMonth, todayDay)
+            todayDailyItems = tItems ? tItems.slice() : []
+
+            var yItems = dbController.getDailyItems(yesterdayYear, yesterdayMonth, yesterdayDay)
+            yesterdayDailyItems = yItems ? yItems.slice() : []
+        }
+    }
+
+    function getItemsTotal(itemsList) {
+        var sum = 0.0
+        if (itemsList && itemsList.length > 0) {
+            for (var i = 0; i < itemsList.length; i++) {
+                var item = itemsList[i]
+                if (item && item.value !== undefined) {
+                    var v = Number(item.value.toString().replace(/[^0-9.-]+/g, ""))
+                    if (!isNaN(v)) sum += v
+                }
             }
         }
+        return sum
     }
 
-    function getShareGrandTotal() {
-        var list = activeShareList();
-        var total = 0;
-        for (var i = 0; i < list.length; i++) {
-            total += getMIDTotal(list[i]);
+    readonly property real todayTotalExpense: getItemsTotal(todayDailyItems)
+    readonly property real yesterdayTotalExpense: getItemsTotal(yesterdayDailyItems)
+    readonly property real diffExpenseAmount: todayTotalExpense - yesterdayTotalExpense
+    readonly property real diffExpensePercent: {
+        if (yesterdayTotalExpense > 0) {
+            return (diffExpenseAmount / yesterdayTotalExpense) * 100.0
+        } else if (todayTotalExpense > 0) {
+            return 100.0
+        } else {
+            return 0.0
         }
-        return total;
     }
+
+    function getDailyComparisonList() {
+        var map = {}
+        var keys = []
+
+        if (yesterdayDailyItems) {
+            for (var i = 0; i < yesterdayDailyItems.length; i++) {
+                var yItem = yesterdayDailyItems[i]
+                var name = (yItem && yItem.name) ? yItem.name : "미지정 항목"
+                var val = Number(yItem && yItem.value !== undefined ? yItem.value.toString().replace(/[^0-9.-]+/g, "") : 0)
+                if (isNaN(val)) val = 0
+
+                if (!map[name]) {
+                    map[name] = { name: name, yesterdayVal: 0, todayVal: 0 }
+                    keys.push(name)
+                }
+                map[name].yesterdayVal += val
+            }
+        }
+
+        if (todayDailyItems) {
+            for (var j = 0; j < todayDailyItems.length; j++) {
+                var tItem = todayDailyItems[j]
+                var tName = (tItem && tItem.name) ? tItem.name : "미지정 항목"
+                var tVal = Number(tItem && tItem.value !== undefined ? tItem.value.toString().replace(/[^0-9.-]+/g, "") : 0)
+                if (isNaN(tVal)) tVal = 0
+
+                if (!map[tName]) {
+                    map[tName] = { name: tName, yesterdayVal: 0, todayVal: 0 }
+                    keys.push(tName)
+                }
+                map[tName].todayVal += tVal
+            }
+        }
+
+        var result = []
+        for (var k = 0; k < keys.length; k++) {
+            var entry = map[keys[k]]
+            entry.diff = entry.todayVal - entry.yesterdayVal
+            result.push(entry)
+        }
+        return result
+    }
+
+    property var midList: (typeof dbController !== "undefined" && visible) ? dbController.getMIDItems(selectedYear) : []
 
     // 3 Fixed MID Setting Slots Array [Slot 1, Slot 2, Slot 3]
     property var slotMids: [null, null, null]
@@ -62,9 +141,6 @@ Item {
     function refreshMIDList() {
         if (typeof dbController !== "undefined") {
             midList = dbController.getMIDItems(selectedYear)
-            if (typeof dbController.getSubIDItemsForYear === "function") {
-                subidList = dbController.getSubIDItemsForYear(selectedYear)
-            }
         }
     }
 
@@ -89,12 +165,22 @@ Item {
     onSelectedYearChanged: {
         refreshMIDList()
         loadSlotMids()
+        refreshDailyComparisonData()
+    }
+
+    onSelectedMonthChanged: {
+        refreshDailyComparisonData()
+    }
+
+    onSelectedDayChanged: {
+        refreshDailyComparisonData()
     }
 
     onVisibleChanged: {
         if (visible) {
             refreshMIDList()
             loadSlotMids()
+            refreshDailyComparisonData()
         }
     }
 
@@ -110,6 +196,9 @@ Item {
             if (yr === root.selectedYear) {
                 root.refreshMIDList()
             }
+        }
+        function onDailyDataChanged(y, m, d) {
+            root.refreshDailyComparisonData()
         }
     }
 
@@ -921,7 +1010,7 @@ Item {
             }
 
             // ─────────────────────────────────────────────────────────────
-            // 2. 동적 크기 블록 (37% Width) - MID 점유율 분석 (도넛 차트 & 세로 구분점)
+            // 2. 동적 크기 블록 (37% Width) - 당일지출 전일 대비 비교 분석
             // ─────────────────────────────────────────────────────────────
             Rectangle {
                 id: equalBlock1
@@ -935,37 +1024,15 @@ Item {
                 Behavior on color { ColorAnimation { duration: 250 } }
                 Behavior on border.color { ColorAnimation { duration: 250 } }
 
-                property var hoveredMidItem: null
-                property real hoveredMidPct: 0.0
-                property real hoverMouseX: 0.0
-                property real hoverMouseY: 0.0
-
-                property var midPaletteColors: ["#00E5FF", "#FFD60A", "#FF453A", "#BF5AF2", "#30D158", "#FF9F0A", "#64D2FF", "#5856D6"]
-
-                function cycleMidPaletteColor(idx) {
-                    var colors = midPaletteColors.slice()
-                    var palette = ["#00E5FF", "#FFD60A", "#FF453A", "#BF5AF2", "#30D158", "#FF9F0A", "#64D2FF", "#FFFFFF"]
-                    var cur = colors[idx % colors.length] ? colors[idx % colors.length] : palette[idx % palette.length]
-                    var pIdx = palette.indexOf(cur)
-                    var nextColor = palette[(pIdx + 1) % palette.length]
-                    colors[idx % colors.length] = nextColor
-                    midPaletteColors = colors
-                    pieCanvas.requestPaint()
-                }
-
                 Column {
                     anchors.fill: parent
                     anchors.margins: 18
                     spacing: 12
 
-                    // Header Title
+                    // Header Title Section
                     Item {
                         width: parent.width
                         height: 34
-
-                        HoverHandler {
-                            id: block2MenuHoverZone
-                        }
 
                         Row {
                             anchors.left: parent.left
@@ -984,10 +1051,8 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: "%"
-                                    color: "#121212"
+                                    text: root.diffExpenseAmount > 0 ? "📈" : (root.diffExpenseAmount < 0 ? "📉" : "📊")
                                     font.pixelSize: 16
-                                    font.bold: true
                                 }
 
                                 MouseArea {
@@ -1002,151 +1067,16 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: 2
                                 Text {
-                                    text: root.shareMode === "SubID" ? "SubID 점유율 분석" : "점유율 분석"
+                                    text: "전일 대비 지출 분석"
                                     color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"
                                     font.pixelSize: 17
                                     font.bold: true
                                     Behavior on color { ColorAnimation { duration: 250 } }
                                 }
                                 Text {
-                                    text: root.shareMode === "SubID" ? "SubID Share Distribution" : "Share Distribution Analysis"
+                                    text: "Daily Expense Difference Analysis"
                                     color: "#8E8E93"
                                     font.pixelSize: 12
-                                }
-                            }
-                        }
-
-                        // Share Analysis Mode Selector Button (≡)
-                        Rectangle {
-                            anchors.right: parent.right
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 28
-                            height: 28
-                            radius: 14
-                            color: shareActionBtnHover.containsMouse ? "#FFFFFF" : "#3A3A3A"
-                            border.width: 1
-                            border.color: shareActionBtnHover.containsMouse ? "#FFFFFF" : "#4A4A4A"
-
-                            opacity: (block2MenuHoverZone.hovered || shareActionBtnHover.containsMouse || sharePopup.opened) ? 1.0 : 0.0
-                            visible: opacity > 0.0
-                            scale: shareActionBtnHover.containsMouse ? 1.08 : 1.0
-
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                            Behavior on border.color { ColorAnimation { duration: 150 } }
-                            Behavior on opacity { NumberAnimation { duration: 150 } }
-                            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: sharePopup.opened ? "×" : "≡"
-                                color: shareActionBtnHover.containsMouse ? "#121212" : "#DDDDDD"
-                                font.pixelSize: sharePopup.opened ? 16 : 14
-                                font.bold: true
-
-                                Behavior on color { ColorAnimation { duration: 150 } }
-                            }
-
-                            MouseArea {
-                                id: shareActionBtnHover
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    if (sharePopup.opened) sharePopup.close()
-                                    else sharePopup.open()
-                                }
-                            }
-
-                            Popup {
-                                id: sharePopup
-                                x: -115
-                                y: 34
-                                width: 145
-                                padding: 6
-                                modal: false
-                                focus: true
-                                closePolicy: Popup.CloseOnPressOutside | Popup.CloseOnEscape
-
-                                background: Rectangle {
-                                    radius: 10
-                                    color: "#1F1F1F"
-                                    border.width: 1
-                                    border.color: "#343434"
-                                }
-
-                                Column {
-                                    width: parent.width
-                                    spacing: 4
-
-                                    Text {
-                                        text: "분석 기준 선택"
-                                        color: "#8E8E93"
-                                        font.pixelSize: 10
-                                        font.bold: true
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                    }
-
-                                    Rectangle {
-                                        width: parent.width
-                                        height: 28
-                                        radius: 6
-                                        color: root.shareMode === "MID" ? "#3A3A3A" : (optMidHover.containsMouse ? "#2A2A2A" : "transparent")
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: "MID 점유율"
-                                            color: root.shareMode === "MID" ? "#00E5FF" : "#FFFFFF"
-                                            font.pixelSize: 11
-                                            font.bold: true
-                                        }
-
-                                        MouseArea {
-                                            id: optMidHover
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                root.shareMode = "MID"
-                                                if (typeof dbController !== "undefined" && typeof dbController.setShareAnalysisMode === "function") {
-                                                    dbController.setShareAnalysisMode("MID")
-                                                }
-                                                root.refreshShareList()
-                                                pieCanvas.requestPaint()
-                                                sharePopup.close()
-                                            }
-                                        }
-                                    }
-
-                                    Rectangle {
-                                        width: parent.width
-                                        height: 28
-                                        radius: 6
-                                        color: root.shareMode === "SubID" ? "#3A3A3A" : (optSubHover.containsMouse ? "#2A2A2A" : "transparent")
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: "SubID 점유율"
-                                            color: root.shareMode === "SubID" ? "#00E5FF" : "#FFFFFF"
-                                            font.pixelSize: 11
-                                            font.bold: true
-                                        }
-
-                                        MouseArea {
-                                            id: optSubHover
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                root.shareMode = "SubID"
-                                                if (typeof dbController !== "undefined" && typeof dbController.setShareAnalysisMode === "function") {
-                                                    dbController.setShareAnalysisMode("SubID")
-                                                }
-                                                root.refreshShareList()
-                                                pieCanvas.requestPaint()
-                                                sharePopup.close()
-                                            }
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -1159,272 +1089,286 @@ Item {
                         color: "#333333"
                     }
 
-                    // ─── Donut Chart & Vertical Legend Container ───
-                    Item {
-                        id: chartContainer
+                    // Main Content Layout Column
+                    Column {
                         width: parent.width
-                        height: parent.height - 70
+                        height: parent.height - 65
+                        spacing: 10
 
-                        // Left/Center Side: Enlarged Donut Chart Area
-                        Item {
-                            id: donutArea
-                            width: Math.min(parent.width - 130, parent.height)
-                            height: width
-                            anchors.left: parent.left
-                            anchors.leftMargin: 22
-                            anchors.verticalCenter: parent.verticalCenter
+                        // 1. Hero Diff Card (전일 대비 변동 금액 및 비율 뱃지)
+                        Rectangle {
+                            width: parent.width
+                            height: 72
+                            radius: 12
+                            color: root.diffExpenseAmount > 0 ? "#2A1818" : (root.diffExpenseAmount < 0 ? "#14261B" : "#1A1A1A")
+                            border.width: 1.5
+                            border.color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#444444")
 
-                            Canvas {
-                                id: pieCanvas
-                                anchors.centerIn: parent
-                                width: parent.width
-                                height: parent.height
-
-                                property var paletteColors: ["#00E5FF", "#FFD60A", "#FF453A", "#BF5AF2", "#30D158", "#FF9F0A", "#64D2FF", "#5856D6"]
-
-                                onPaint: {
-                                    var ctx = getContext("2d");
-                                    ctx.reset();
-                                    var cx = width / 2;
-                                    var cy = height / 2;
-                                    var radius = Math.min(cx, cy) - 2;
-                                    var innerRadius = radius * 0.58;
-
-                                    var activeList = root.activeShareList();
-                                    var grandTot = root.getShareGrandTotal();
-
-                                    if (grandTot <= 0 || activeList.length === 0) {
-                                        ctx.beginPath();
-                                        ctx.arc(cx, cy, radius, 0, 2 * Math.PI, false);
-                                        ctx.fillStyle = "#2C2C2C";
-                                        ctx.fill();
-
-                                        ctx.beginPath();
-                                        ctx.arc(cx, cy, innerRadius, 0, 2 * Math.PI, false);
-                                        ctx.fillStyle = "#1F1F1F";
-                                        ctx.fill();
-                                        return;
-                                    }
-
-                                    var startAngle = -Math.PI / 2;
-
-                                    for (var i = 0; i < activeList.length; i++) {
-                                        var item = activeList[i];
-                                        var val = root.getMIDTotal(item);
-                                        if (val <= 0) continue;
-
-                                        var sliceAngle = (val / grandTot) * (2 * Math.PI);
-                                        var endAngle = startAngle + sliceAngle;
-
-                                        ctx.beginPath();
-                                        ctx.moveTo(cx, cy);
-                                        ctx.arc(cx, cy, radius, startAngle, endAngle, false);
-                                        ctx.closePath();
-                                        ctx.fillStyle = equalBlock1.midPaletteColors[i % equalBlock1.midPaletteColors.length];
-                                        ctx.fill();
-
-                                        startAngle = endAngle;
-                                    }
-
-                                    // Center Hole (Donut style)
-                                    ctx.beginPath();
-                                    ctx.arc(cx, cy, innerRadius, 0, 2 * Math.PI, false);
-                                    ctx.fillStyle = "#1F1F1F";
-                                    ctx.fill();
-                                }
-
-                                Connections {
-                                    target: root
-                                    function onMidListChanged() { pieCanvas.requestPaint() }
-                                    function onSubidListChanged() { pieCanvas.requestPaint() }
-                                    function onShareModeChanged() { pieCanvas.requestPaint() }
-                                    function onSelectedYearChanged() { pieCanvas.requestPaint() }
-                                }
-
-                                Component.onCompleted: requestPaint()
-
-                                // Mouse Area for Slice Hover Detection
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-
-                                    onPositionChanged: (mouse) => {
-                                        var cx = width / 2;
-                                        var cy = height / 2;
-                                        var dx = mouse.x - cx;
-                                        var dy = mouse.y - cy;
-                                        var dist = Math.sqrt(dx * dx + dy * dy);
-                                        var outerRadius = Math.min(cx, cy) - 2;
-                                        var innerRadius = outerRadius * 0.58;
-
-                                        var activeList = root.activeShareList();
-                                        var grandTot = root.getShareGrandTotal();
-
-                                        equalBlock1.hoverMouseX = mouse.x + donutArea.x;
-                                        equalBlock1.hoverMouseY = mouse.y + donutArea.y;
-
-                                        if (dist >= innerRadius && dist <= outerRadius && grandTot > 0) {
-                                            var angle = Math.atan2(dy, dx);
-                                            var normAngle = angle + Math.PI / 2;
-                                            if (normAngle < 0) normAngle += 2 * Math.PI;
-
-                                            var startAngle = 0;
-                                            var foundItem = null;
-                                            var foundPct = 0;
-
-                                            for (var i = 0; i < activeList.length; i++) {
-                                                var item = activeList[i];
-                                                var val = root.getMIDTotal(item);
-                                                if (val <= 0) continue;
-
-                                                var sliceAngle = (val / grandTot) * (2 * Math.PI);
-                                                var endAngle = startAngle + sliceAngle;
-
-                                                if (normAngle >= startAngle && normAngle <= endAngle) {
-                                                    foundItem = item;
-                                                    foundPct = (val / grandTot) * 100;
-                                                    break;
-                                                }
-                                                startAngle = endAngle;
-                                            }
-
-                                            equalBlock1.hoveredMidItem = foundItem;
-                                            equalBlock1.hoveredMidPct = foundPct;
-                                        } else {
-                                            equalBlock1.hoveredMidItem = null;
-                                            equalBlock1.hoveredMidPct = 0;
-                                        }
-                                    }
-
-                                    onExited: {
-                                        equalBlock1.hoveredMidItem = null;
-                                        equalBlock1.hoveredMidPct = 0;
-                                    }
-                                }
-                            }
-
-                            // Center Hole Text (Always displays clean Total MID / SubID)
-                            Column {
-                                anchors.centerIn: parent
-                                spacing: 1
-
-                                Text {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    text: root.shareMode === "SubID" ? "총 SubID" : "총 MID"
-                                    color: "#8E8E93"
-                                    font.pixelSize: 11
-                                }
-
-                                Text {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    text: Number(root.getShareGrandTotal()).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                                    color: "#FFFFFF"
-                                    font.pixelSize: 14
-                                    font.bold: true
-                                }
-                            }
-                        }
-
-                        // Far Right Side: Vertically Aligned Color Dot Legends
-                        Flickable {
-                            id: legendFlickable
-                            anchors.right: parent.right
-                            anchors.rightMargin: 4
-                            width: 120
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            anchors.topMargin: 4
-                            anchors.bottomMargin: 4
-                            contentHeight: legendColumn.height
-                            clip: true
-                            boundsBehavior: Flickable.StopAtBounds
+                            Behavior on color { ColorAnimation { duration: 250 } }
+                            Behavior on border.color { ColorAnimation { duration: 250 } }
 
                             Column {
-                                id: legendColumn
-                                width: parent.width
-                                spacing: 10
+                                anchors.centerIn: parent
+                                spacing: 4
 
-                                Repeater {
-                                    model: root.activeShareList()
+                                Row {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    spacing: 8
 
-                                    delegate: Row {
-                                        spacing: 8
-                                        width: parent.width
-                                        anchors.left: parent.left
-                                        z: legendDotHover.containsMouse ? 20 : 1
+                                    Text {
+                                        text: root.diffExpenseAmount > 0 ? "▲ 지출 증가" : (root.diffExpenseAmount < 0 ? "▼ 지출 절감" : "– 변동 없음")
+                                        color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#8E8E93")
+                                        font.pixelSize: 13
+                                        font.bold: true
+                                    }
 
-                                        Rectangle {
-                                            id: legendDot
-                                            width: 10
-                                            height: 10
-                                            radius: 5
-                                            z: 10
-                                            color: equalBlock1.midPaletteColors[index % equalBlock1.midPaletteColors.length]
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            scale: legendDotHover.containsMouse ? 1.4 : 1.0
+                                    Text {
+                                        text: (root.diffExpenseAmount > 0 ? "+" : "") + Number(root.diffExpenseAmount).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
+                                        color: "#FFFFFF"
+                                        font.pixelSize: 18
+                                        font.bold: true
+                                    }
 
-                                            Behavior on color { ColorAnimation { duration: 180 } }
-                                            Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
-
-                                            MouseArea {
-                                                id: legendDotHover
-                                                anchors.fill: parent
-                                                anchors.margins: -4
-                                                hoverEnabled: true
-                                                cursorShape: Qt.PointingHandCursor
-                                                onClicked: {
-                                                    equalBlock1.cycleMidPaletteColor(index)
-                                                }
-                                            }
-                                        }
+                                    Rectangle {
+                                        width: pctText.width + 10
+                                        height: 20
+                                        radius: 10
+                                        color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#555555")
+                                        anchors.verticalCenter: parent.verticalCenter
 
                                         Text {
-                                            text: root.getMIDName(modelData)
-                                            color: "#DDDDDD"
-                                            font.pixelSize: 12
+                                            id: pctText
+                                            anchors.centerIn: parent
+                                            text: (root.diffExpenseAmount > 0 ? "+" : "") + root.diffExpensePercent.toFixed(1) + "%"
+                                            color: "#FFFFFF"
+                                            font.pixelSize: 11
                                             font.bold: true
-                                            elide: Text.ElideRight
-                                            width: parent.width - 17
-                                            anchors.verticalCenter: parent.verticalCenter
                                         }
+                                    }
+                                }
+
+                                Text {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    text: "전일(" + root.yesterdayMonth + "월 " + root.yesterdayDay + "일) 대비 오늘(" + root.todayMonth + "월 " + root.todayDay + "일)"
+                                    color: "#A0A0A0"
+                                    font.pixelSize: 11
+                                }
+                            }
+                        }
+
+                        // 2. Side-by-Side Dual Sub-Cards (전일 vs 금일 총액)
+                        Row {
+                            width: parent.width
+                            height: 60
+                            spacing: 8
+
+                            // Yesterday Card
+                            Rectangle {
+                                width: (parent.width - 8) / 2
+                                height: parent.height
+                                radius: 10
+                                color: "#1F1F1F"
+                                border.width: 1
+                                border.color: "#333333"
+
+                                Column {
+                                    anchors.centerIn: parent
+                                    spacing: 2
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: "전일 (" + root.yesterdayMonth + "/" + root.yesterdayDay + ")"
+                                        color: "#8E8E93"
+                                        font.pixelSize: 11
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: Number(root.yesterdayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
+                                        color: "#DDDDDD"
+                                        font.pixelSize: 14
+                                        font.bold: true
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: root.yesterdayDailyItems.length + "개 항목"
+                                        color: "#666666"
+                                        font.pixelSize: 10
+                                    }
+                                }
+                            }
+
+                            // Today Card
+                            Rectangle {
+                                width: (parent.width - 8) / 2
+                                height: parent.height
+                                radius: 10
+                                color: "#1F1F1F"
+                                border.width: 1
+                                border.color: "#00E5FF"
+
+                                Column {
+                                    anchors.centerIn: parent
+                                    spacing: 2
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: "금일 (" + root.todayMonth + "/" + root.todayDay + ")"
+                                        color: "#00E5FF"
+                                        font.pixelSize: 11
+                                        font.bold: true
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: Number(root.todayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
+                                        color: "#FFFFFF"
+                                        font.pixelSize: 14
+                                        font.bold: true
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: root.todayDailyItems.length + "개 항목"
+                                        color: "#8E8E93"
+                                        font.pixelSize: 10
                                     }
                                 }
                             }
                         }
 
-                        // Floating Hover Tooltip Message Box over Donut Slices
-                        Rectangle {
-                            id: donutTooltip
-                            visible: equalBlock1.hoveredMidItem !== null
-                            x: Math.min(chartContainer.width - width - 10, Math.max(10, equalBlock1.hoverMouseX + 10))
-                            y: Math.min(chartContainer.height - height - 10, Math.max(10, equalBlock1.hoverMouseY - 35))
-                            width: Math.max(120, tipCol.width + 20)
-                            height: tipCol.height + 12
-                            radius: 6
-                            color: "#2C2C2C"
-                            border.width: 1
-                            border.color: "#555555"
-                            z: 200
+                        // 3. Category / SubID Item-by-Item Comparison List
+                        Item {
+                            width: parent.width
+                            height: parent.height - 150
 
-                            Column {
-                                id: tipCol
-                                anchors.centerIn: parent
-                                spacing: 2
+                            Text {
+                                id: listLabel
+                                anchors.top: parent.top
+                                anchors.left: parent.left
+                                text: "📋 항목별 전일 대비 내역"
+                                color: "#A0A0A0"
+                                font.pixelSize: 12
+                                font.bold: true
+                            }
 
-                                Text {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    text: equalBlock1.hoveredMidItem ? root.getMIDName(equalBlock1.hoveredMidItem) : ""
-                                    color: "#00E5FF"
-                                    font.pixelSize: 11
-                                    font.bold: true
-                                }
+                            Flickable {
+                                anchors.top: listLabel.bottom
+                                anchors.topMargin: 6
+                                anchors.bottom: parent.bottom
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                contentHeight: compCol.height
+                                clip: true
+                                boundsBehavior: Flickable.StopAtBounds
 
-                                Text {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    text: equalBlock1.hoveredMidItem ? (equalBlock1.hoveredMidPct.toFixed(1) + "% (" + Number(root.getMIDTotal(equalBlock1.hoveredMidItem)).toLocaleString(Qt.locale("ko_KR"), "f", 0) + ")") : ""
-                                    color: "#FFFFFF"
-                                    font.pixelSize: 10
-                                    font.bold: true
+                                Column {
+                                    id: compCol
+                                    width: parent.width
+                                    spacing: 6
+
+                                    Repeater {
+                                        model: root.getDailyComparisonList()
+
+                                        delegate: Rectangle {
+                                            width: compCol.width
+                                            height: 38
+                                            radius: 8
+                                            color: itemRowHover.containsMouse ? "#2A2A2A" : "#1A1A1A"
+                                            border.width: 1
+                                            border.color: itemRowHover.containsMouse ? "#444444" : "#282828"
+
+                                            Behavior on color { ColorAnimation { duration: 150 } }
+
+                                            MouseArea {
+                                                id: itemRowHover
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                            }
+
+                                            Row {
+                                                anchors.fill: parent
+                                                anchors.leftMargin: 10
+                                                anchors.rightMargin: 10
+                                                spacing: 8
+
+                                                Rectangle {
+                                                    width: 8
+                                                    height: 8
+                                                    radius: 4
+                                                    color: modelData.diff > 0 ? "#FF453A" : (modelData.diff < 0 ? "#30D158" : "#8E8E93")
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                }
+
+                                                Text {
+                                                    text: modelData.name
+                                                    color: "#FFFFFF"
+                                                    font.pixelSize: 12
+                                                    font.bold: true
+                                                    elide: Text.ElideRight
+                                                    width: Math.max(60, parent.width - 180)
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                }
+
+                                                Item {
+                                                    width: 1
+                                                    height: 1
+                                                }
+
+                                                Column {
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    spacing: 1
+
+                                                    Text {
+                                                        anchors.right: parent.right
+                                                        text: Number(modelData.todayVal).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
+                                                        color: "#FFFFFF"
+                                                        font.pixelSize: 11
+                                                        font.bold: true
+                                                    }
+
+                                                    Text {
+                                                        anchors.right: parent.right
+                                                        text: "전일 " + Number(modelData.yesterdayVal).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
+                                                        color: "#777777"
+                                                        font.pixelSize: 9
+                                                    }
+                                                }
+
+                                                Rectangle {
+                                                    width: 58
+                                                    height: 22
+                                                    radius: 6
+                                                    color: modelData.diff > 0 ? "#3A1A1A" : (modelData.diff < 0 ? "#1A3A22" : "#262626")
+                                                    border.width: 1
+                                                    border.color: modelData.diff > 0 ? "#FF453A" : (modelData.diff < 0 ? "#30D158" : "#444444")
+                                                    anchors.verticalCenter: parent.verticalCenter
+
+                                                    Text {
+                                                        anchors.centerIn: parent
+                                                        text: (modelData.diff > 0 ? "+" : "") + Number(modelData.diff).toLocaleString(Qt.locale("ko_KR"), "f", 0)
+                                                        color: modelData.diff > 0 ? "#FF453A" : (modelData.diff < 0 ? "#30D158" : "#8E8E93")
+                                                        font.pixelSize: 10
+                                                        font.bold: true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Item {
+                                        width: parent.width
+                                        height: 80
+                                        visible: compCol.children.length <= 2
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "전일 및 금일 지출 내역이 없습니다."
+                                            color: "#555555"
+                                            font.pixelSize: 12
+                                        }
+                                    }
                                 }
                             }
                         }

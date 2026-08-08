@@ -589,6 +589,8 @@ Item {
                     anchors.margins: 12
                     visible: monthSelector.selectedMonth === 0
                     selectedYear: yearWheel.selectedYear
+                    selectedMonth: typeof rightDash !== "undefined" ? rightDash.activeMonth : 8
+                    selectedDay: typeof rightDash !== "undefined" ? rightDash.selectedDay : 8
                 }
             }
         }
