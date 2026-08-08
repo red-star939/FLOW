@@ -1089,285 +1089,130 @@ Item {
                         color: "#333333"
                     }
 
-                    // Main Content Layout Column
+                    // Main Content Layout Column (Vertical, Borderless)
                     Column {
                         width: parent.width
-                        height: parent.height - 65
-                        spacing: 10
+                        anchors.top: parent.children[1].bottom
+                        anchors.topMargin: 16
+                        spacing: 22
 
-                        // 1. Hero Diff Card (전일 대비 변동 금액 및 비율 뱃지)
-                        Rectangle {
+                        // 1. 전일 (Yesterday Section)
+                        Column {
                             width: parent.width
-                            height: 72
-                            radius: 12
-                            color: root.diffExpenseAmount > 0 ? "#2A1818" : (root.diffExpenseAmount < 0 ? "#14261B" : "#1A1A1A")
-                            border.width: 1.5
-                            border.color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#444444")
+                            spacing: 4
 
-                            Behavior on color { ColorAnimation { duration: 250 } }
-                            Behavior on border.color { ColorAnimation { duration: 250 } }
+                            Row {
+                                width: parent.width
 
-                            Column {
-                                anchors.centerIn: parent
-                                spacing: 4
+                                Text {
+                                    text: "전일 (" + root.yesterdayMonth + "월 " + root.yesterdayDay + "일)"
+                                    color: "#8E8E93"
+                                    font.pixelSize: 13
+                                    font.bold: true
+                                }
 
-                                Row {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    spacing: 8
-
-                                    Text {
-                                        text: root.diffExpenseAmount > 0 ? "▲ 지출 증가" : (root.diffExpenseAmount < 0 ? "▼ 지출 절감" : "– 변동 없음")
-                                        color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#8E8E93")
-                                        font.pixelSize: 13
-                                        font.bold: true
-                                    }
-
-                                    Text {
-                                        text: (root.diffExpenseAmount > 0 ? "+" : "") + Number(root.diffExpenseAmount).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
-                                        color: "#FFFFFF"
-                                        font.pixelSize: 18
-                                        font.bold: true
-                                    }
-
-                                    Rectangle {
-                                        width: pctText.width + 10
-                                        height: 20
-                                        radius: 10
-                                        color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#555555")
-                                        anchors.verticalCenter: parent.verticalCenter
-
-                                        Text {
-                                            id: pctText
-                                            anchors.centerIn: parent
-                                            text: (root.diffExpenseAmount > 0 ? "+" : "") + root.diffExpensePercent.toFixed(1) + "%"
-                                            color: "#FFFFFF"
-                                            font.pixelSize: 11
-                                            font.bold: true
-                                        }
-                                    }
+                                Item {
+                                    width: 1
+                                    height: 1
                                 }
 
                                 Text {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    text: "전일(" + root.yesterdayMonth + "월 " + root.yesterdayDay + "일) 대비 오늘(" + root.todayMonth + "월 " + root.todayDay + "일)"
-                                    color: "#A0A0A0"
+                                    anchors.right: parent.right
+                                    text: root.yesterdayDailyItems.length + "개 항목"
+                                    color: "#666666"
                                     font.pixelSize: 11
                                 }
                             }
-                        }
-
-                        // 2. Side-by-Side Dual Sub-Cards (전일 vs 금일 총액)
-                        Row {
-                            width: parent.width
-                            height: 60
-                            spacing: 8
-
-                            // Yesterday Card
-                            Rectangle {
-                                width: (parent.width - 8) / 2
-                                height: parent.height
-                                radius: 10
-                                color: "#1F1F1F"
-                                border.width: 1
-                                border.color: "#333333"
-
-                                Column {
-                                    anchors.centerIn: parent
-                                    spacing: 2
-
-                                    Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        text: "전일 (" + root.yesterdayMonth + "/" + root.yesterdayDay + ")"
-                                        color: "#8E8E93"
-                                        font.pixelSize: 11
-                                    }
-
-                                    Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        text: Number(root.yesterdayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
-                                        color: "#DDDDDD"
-                                        font.pixelSize: 14
-                                        font.bold: true
-                                    }
-
-                                    Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        text: root.yesterdayDailyItems.length + "개 항목"
-                                        color: "#666666"
-                                        font.pixelSize: 10
-                                    }
-                                }
-                            }
-
-                            // Today Card
-                            Rectangle {
-                                width: (parent.width - 8) / 2
-                                height: parent.height
-                                radius: 10
-                                color: "#1F1F1F"
-                                border.width: 1
-                                border.color: "#00E5FF"
-
-                                Column {
-                                    anchors.centerIn: parent
-                                    spacing: 2
-
-                                    Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        text: "금일 (" + root.todayMonth + "/" + root.todayDay + ")"
-                                        color: "#00E5FF"
-                                        font.pixelSize: 11
-                                        font.bold: true
-                                    }
-
-                                    Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        text: Number(root.todayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
-                                        color: "#FFFFFF"
-                                        font.pixelSize: 14
-                                        font.bold: true
-                                    }
-
-                                    Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        text: root.todayDailyItems.length + "개 항목"
-                                        color: "#8E8E93"
-                                        font.pixelSize: 10
-                                    }
-                                }
-                            }
-                        }
-
-                        // 3. Category / SubID Item-by-Item Comparison List
-                        Item {
-                            width: parent.width
-                            height: parent.height - 150
 
                             Text {
-                                id: listLabel
-                                anchors.top: parent.top
-                                anchors.left: parent.left
-                                text: "📋 항목별 전일 대비 내역"
-                                color: "#A0A0A0"
-                                font.pixelSize: 12
+                                text: Number(root.yesterdayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
+                                color: "#DDDDDD"
+                                font.pixelSize: 20
+                                font.bold: true
+                            }
+                        }
+
+                        // 2. 금일 (Today Section)
+                        Column {
+                            width: parent.width
+                            spacing: 4
+
+                            Row {
+                                width: parent.width
+
+                                Text {
+                                    text: "금일 (" + root.todayMonth + "월 " + root.todayDay + "일)"
+                                    color: "#00E5FF"
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                }
+
+                                Item {
+                                    width: 1
+                                    height: 1
+                                }
+
+                                Text {
+                                    anchors.right: parent.right
+                                    text: root.todayDailyItems.length + "개 항목"
+                                    color: "#8E8E93"
+                                    font.pixelSize: 11
+                                }
+                            }
+
+                            Text {
+                                text: Number(root.todayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
+                                color: "#FFFFFF"
+                                font.pixelSize: 24
+                                font.bold: true
+                            }
+                        }
+
+                        // Accent Line Divider
+                        Rectangle {
+                            width: parent.width
+                            height: 1
+                            color: "#282828"
+                        }
+
+                        // 3. 지출 절감 / 지출 증가 / 변동 없음 (Difference Section)
+                        Column {
+                            width: parent.width
+                            spacing: 6
+
+                            Text {
+                                text: root.diffExpenseAmount > 0 ? "▲ 지출 증가" : (root.diffExpenseAmount < 0 ? "▼ 지출 절감" : "– 변동 없음")
+                                color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#8E8E93")
+                                font.pixelSize: 15
                                 font.bold: true
                             }
 
-                            Flickable {
-                                anchors.top: listLabel.bottom
-                                anchors.topMargin: 6
-                                anchors.bottom: parent.bottom
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                contentHeight: compCol.height
-                                clip: true
-                                boundsBehavior: Flickable.StopAtBounds
+                            Row {
+                                width: parent.width
+                                spacing: 10
 
-                                Column {
-                                    id: compCol
-                                    width: parent.width
-                                    spacing: 6
+                                Text {
+                                    text: (root.diffExpenseAmount > 0 ? "+" : "") + Number(root.diffExpenseAmount).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
+                                    color: "#FFFFFF"
+                                    font.pixelSize: 26
+                                    font.bold: true
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
 
-                                    Repeater {
-                                        model: root.getDailyComparisonList()
+                                Rectangle {
+                                    width: pctText.width + 12
+                                    height: 24
+                                    radius: 12
+                                    color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#555555")
+                                    anchors.verticalCenter: parent.verticalCenter
 
-                                        delegate: Rectangle {
-                                            width: compCol.width
-                                            height: 38
-                                            radius: 8
-                                            color: itemRowHover.containsMouse ? "#2A2A2A" : "#1A1A1A"
-                                            border.width: 1
-                                            border.color: itemRowHover.containsMouse ? "#444444" : "#282828"
-
-                                            Behavior on color { ColorAnimation { duration: 150 } }
-
-                                            MouseArea {
-                                                id: itemRowHover
-                                                anchors.fill: parent
-                                                hoverEnabled: true
-                                            }
-
-                                            Row {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: 10
-                                                anchors.rightMargin: 10
-                                                spacing: 8
-
-                                                Rectangle {
-                                                    width: 8
-                                                    height: 8
-                                                    radius: 4
-                                                    color: modelData.diff > 0 ? "#FF453A" : (modelData.diff < 0 ? "#30D158" : "#8E8E93")
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                }
-
-                                                Text {
-                                                    text: modelData.name
-                                                    color: "#FFFFFF"
-                                                    font.pixelSize: 12
-                                                    font.bold: true
-                                                    elide: Text.ElideRight
-                                                    width: Math.max(60, parent.width - 180)
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                }
-
-                                                Item {
-                                                    width: 1
-                                                    height: 1
-                                                }
-
-                                                Column {
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    spacing: 1
-
-                                                    Text {
-                                                        anchors.right: parent.right
-                                                        text: Number(modelData.todayVal).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
-                                                        color: "#FFFFFF"
-                                                        font.pixelSize: 11
-                                                        font.bold: true
-                                                    }
-
-                                                    Text {
-                                                        anchors.right: parent.right
-                                                        text: "전일 " + Number(modelData.yesterdayVal).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
-                                                        color: "#777777"
-                                                        font.pixelSize: 9
-                                                    }
-                                                }
-
-                                                Rectangle {
-                                                    width: 58
-                                                    height: 22
-                                                    radius: 6
-                                                    color: modelData.diff > 0 ? "#3A1A1A" : (modelData.diff < 0 ? "#1A3A22" : "#262626")
-                                                    border.width: 1
-                                                    border.color: modelData.diff > 0 ? "#FF453A" : (modelData.diff < 0 ? "#30D158" : "#444444")
-                                                    anchors.verticalCenter: parent.verticalCenter
-
-                                                    Text {
-                                                        anchors.centerIn: parent
-                                                        text: (modelData.diff > 0 ? "+" : "") + Number(modelData.diff).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                                                        color: modelData.diff > 0 ? "#FF453A" : (modelData.diff < 0 ? "#30D158" : "#8E8E93")
-                                                        font.pixelSize: 10
-                                                        font.bold: true
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    Item {
-                                        width: parent.width
-                                        height: 80
-                                        visible: compCol.children.length <= 2
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: "전일 및 금일 지출 내역이 없습니다."
-                                            color: "#555555"
-                                            font.pixelSize: 12
-                                        }
+                                    Text {
+                                        id: pctText
+                                        anchors.centerIn: parent
+                                        text: (root.diffExpenseAmount > 0 ? "+" : "") + root.diffExpensePercent.toFixed(1) + "%"
+                                        color: "#FFFFFF"
+                                        font.pixelSize: 12
+                                        font.bold: true
                                     }
                                 }
                             }
