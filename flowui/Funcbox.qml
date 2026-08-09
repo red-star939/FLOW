@@ -1309,7 +1309,94 @@ Item {
                     anchors.fill: parent
                     spacing: 10
 
-                    // 1. 수식 구문 입력 (TOP)
+                    // 1. 수식 적용 대상 월 (TOP)
+                    Text {
+                        text: "수식 적용 대상 월"
+                        color: "#CCCCCC"
+                        font.pixelSize: 12
+                        font.bold: true
+                    }
+
+                    Flickable {
+                        id: monthFlickable
+                        width: parent.width
+                        height: 32
+                        contentWidth: monthRow.width
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onWheel: (wheel) => {
+                                var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
+                            }
+                        }
+
+                        Row {
+                            id: monthRow
+                            spacing: 5
+
+                            Rectangle {
+                                width: 52
+                                height: 28
+                                radius: 14
+                                color: root.targetMonth === 0 ? "#FFFFFF" : "#2C2C2C"
+                                border.width: 1
+                                border.color: root.targetMonth === 0 ? "#FFFFFF" : "#3D3D3D"
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "전체 월"
+                                    color: root.targetMonth === 0 ? "#121212" : "#AAAAAA"
+                                    font.pixelSize: 11
+                                    font.bold: root.targetMonth === 0
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.targetMonth = 0
+                                    onWheel: (wheel) => {
+                                        var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                        monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
+                                    }
+                                }
+                            }
+
+                            Repeater {
+                                model: 12
+                                delegate: Rectangle {
+                                    width: 28
+                                    height: 28
+                                    radius: 14
+                                    color: root.targetMonth === index + 1 ? "#FFFFFF" : "#2C2C2C"
+                                    border.width: 1
+                                    border.color: root.targetMonth === index + 1 ? "#FFFFFF" : "#3D3D3D"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: (index + 1).toString()
+                                        color: root.targetMonth === index + 1 ? "#121212" : "#AAAAAA"
+                                        font.pixelSize: 12
+                                        font.bold: root.targetMonth === index + 1
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.targetMonth = index + 1
+                                        onWheel: (wheel) => {
+                                            var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                            monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 2. 수식 구문 입력
                     Text {
                         text: "수식 구문 입력"
                         color: "#CCCCCC"
@@ -1363,7 +1450,7 @@ Item {
                         }
                     }
 
-                    // 2. 사용 가능한 기호 & 연산자 (White Active Theme)
+                    // 3. 사용 가능한 기호 & 연산자 (White Active Theme)
                     Rectangle {
                         width: parent.width
                         height: 124
@@ -1502,7 +1589,7 @@ Item {
                         }
                     }
 
-                    // 3. 선택된 기호 설명 및 사용법 예시 카드
+                    // 4. 선택된 기호 설명 및 사용법 예시 카드
                     Rectangle {
                         id: explanationCard
                         width: parent.width
@@ -1575,157 +1662,7 @@ Item {
                         }
                     }
 
-                    // 4. 사용 가능한 참조 항목 (ID / MID / 당일지출)
-                    Text {
-                        text: "사용 가능한 참조 항목 (클릭 시 수식에 자동 삽입)"
-                        color: "#CCCCCC"
-                        font.pixelSize: 12
-                        font.bold: true
-                    }
-
-                    Flickable {
-                        id: refFlickable
-                        width: parent.width
-                        height: 32
-                        contentWidth: refRow.width
-                        clip: true
-                        boundsBehavior: Flickable.StopAtBounds
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onWheel: (wheel) => {
-                                var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                refFlickable.contentX = Math.max(0, Math.min(refFlickable.contentWidth - refFlickable.width, refFlickable.contentX - delta))
-                            }
-                        }
-
-                        Row {
-                            id: refRow
-                            spacing: 6
-
-                            Repeater {
-                                model: root.referenceBlocks
-                                delegate: Rectangle {
-                                    height: 28
-                                    width: refText.implicitWidth + 18
-                                    radius: 14
-                                    color: refHover.containsMouse ? "#FFFFFF" : "#282828"
-                                    border.width: 1
-                                    border.color: refHover.containsMouse ? "#FFFFFF" : "#404040"
-
-                                    Text {
-                                        id: refText
-                                        anchors.centerIn: parent
-                                        text: modelData === "당일지출" ? "💳 " + modelData : "🏷️ " + modelData
-                                        color: refHover.containsMouse ? "#121212" : "#CCCCCC"
-                                        font.pixelSize: 11
-                                        font.bold: true
-                                    }
-
-                                    MouseArea {
-                                        id: refHover
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.insertSymbol(modelData)
-                                        onWheel: (wheel) => {
-                                            var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                            refFlickable.contentX = Math.max(0, Math.min(refFlickable.contentWidth - refFlickable.width, refFlickable.contentX - delta))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // 5. 대상 월 선택 (White Theme Circular Buttons)
-                    Text {
-                        text: "대상 월 선택"
-                        color: "#CCCCCC"
-                        font.pixelSize: 12
-                        font.bold: true
-                    }
-
-                    Flickable {
-                        id: monthFlickable
-                        width: parent.width
-                        height: 32
-                        contentWidth: monthRow.width
-                        clip: true
-                        boundsBehavior: Flickable.StopAtBounds
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onWheel: (wheel) => {
-                                var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
-                            }
-                        }
-
-                        Row {
-                            id: monthRow
-                            spacing: 5
-
-                            Rectangle {
-                                width: 50
-                                height: 28
-                                radius: 14
-                                color: root.targetMonth === 0 ? "#FFFFFF" : "#2C2C2C"
-                                border.width: 1
-                                border.color: root.targetMonth === 0 ? "#FFFFFF" : "#3D3D3D"
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "전체"
-                                    color: root.targetMonth === 0 ? "#121212" : "#AAAAAA"
-                                    font.pixelSize: 11
-                                    font.bold: root.targetMonth === 0
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.targetMonth = 0
-                                    onWheel: (wheel) => {
-                                        var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                        monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
-                                    }
-                                }
-                            }
-
-                            Repeater {
-                                model: 12
-                                delegate: Rectangle {
-                                    width: 28
-                                    height: 28
-                                    radius: 14
-                                    color: root.targetMonth === index + 1 ? "#FFFFFF" : "#2C2C2C"
-                                    border.width: 1
-                                    border.color: root.targetMonth === index + 1 ? "#FFFFFF" : "#3D3D3D"
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: (index + 1).toString()
-                                        color: root.targetMonth === index + 1 ? "#121212" : "#AAAAAA"
-                                        font.pixelSize: 12
-                                        font.bold: root.targetMonth === index + 1
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.targetMonth = index + 1
-                                        onWheel: (wheel) => {
-                                            var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                            monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // 6. Action Buttons (Clear, Apply)
+                    // 5. Action Buttons (Clear, Apply)
                     Row {
                         anchors.right: parent.right
                         spacing: 8
