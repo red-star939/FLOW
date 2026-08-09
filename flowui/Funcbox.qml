@@ -755,6 +755,8 @@ Item {
                                                 Repeater {
                                                     model: root.referenceBlocks
                                                     delegate: Column {
+                                                        id: secCol1
+                                                        property var secData1: modelData
                                                         width: parent.width
                                                         spacing: 3
 
@@ -769,7 +771,7 @@ Item {
                                                                 anchors.left: parent.left
                                                                 anchors.leftMargin: 6
                                                                 anchors.verticalCenter: parent.verticalCenter
-                                                                text: modelData.category
+                                                                text: secData1.category
                                                                 color: "#00E5FF"
                                                                 font.pixelSize: 10
                                                                 font.bold: true
@@ -778,8 +780,10 @@ Item {
 
                                                         // Section Items
                                                         Repeater {
-                                                            model: modelData.items
+                                                            model: secData1.items
                                                             delegate: Rectangle {
+                                                                id: itemRect1
+                                                                property string itemVal1: modelData
                                                                 width: parent.width
                                                                 height: 26
                                                                 radius: 6
@@ -787,7 +791,7 @@ Item {
 
                                                                 Text {
                                                                     anchors.centerIn: parent
-                                                                    text: modelData
+                                                                    text: itemVal1
                                                                     color: b1OptHover.containsMouse ? "#121212" : "#DDDDDD"
                                                                     font.pixelSize: 11
                                                                     font.bold: true
@@ -802,7 +806,7 @@ Item {
                                                                     hoverEnabled: true
                                                                     cursorShape: Qt.PointingHandCursor
                                                                     onClicked: {
-                                                                        root.simpleBlock1Item = modelData
+                                                                        root.simpleBlock1Item = itemVal1
                                                                         root.isSelectingBlock1 = false
                                                                         root.updateSimpleFormulaText()
                                                                     }
@@ -1087,6 +1091,8 @@ Item {
                                                 Repeater {
                                                     model: root.referenceBlocks
                                                     delegate: Column {
+                                                        id: secCol2
+                                                        property var secData2: modelData
                                                         width: parent.width
                                                         spacing: 3
 
@@ -1101,7 +1107,7 @@ Item {
                                                                 anchors.left: parent.left
                                                                 anchors.leftMargin: 6
                                                                 anchors.verticalCenter: parent.verticalCenter
-                                                                text: modelData.category
+                                                                text: secData2.category
                                                                 color: "#00E5FF"
                                                                 font.pixelSize: 10
                                                                 font.bold: true
@@ -1110,8 +1116,10 @@ Item {
 
                                                         // Section Items
                                                         Repeater {
-                                                            model: modelData.items
+                                                            model: secData2.items
                                                             delegate: Rectangle {
+                                                                id: itemRect2
+                                                                property string itemVal2: modelData
                                                                 width: parent.width
                                                                 height: 26
                                                                 radius: 6
@@ -1119,7 +1127,7 @@ Item {
 
                                                                 Text {
                                                                     anchors.centerIn: parent
-                                                                    text: modelData
+                                                                    text: itemVal2
                                                                     color: b2OptHover.containsMouse ? "#121212" : "#DDDDDD"
                                                                     font.pixelSize: 11
                                                                     font.bold: true
@@ -1134,7 +1142,7 @@ Item {
                                                                     hoverEnabled: true
                                                                     cursorShape: Qt.PointingHandCursor
                                                                     onClicked: {
-                                                                        root.simpleBlock2Item = modelData
+                                                                        root.simpleBlock2Item = itemVal2
                                                                         root.isSelectingBlock2 = false
                                                                         root.updateSimpleFormulaText()
                                                                     }
