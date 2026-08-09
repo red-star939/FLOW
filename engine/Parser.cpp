@@ -75,7 +75,7 @@ std::unique_ptr<ASTNode> Parser::parse_additive() {
 std::unique_ptr<ASTNode> Parser::parse_multiplicative() {
     auto left = parse_power();
 
-    while (current_tok_.is(TokenType::Asterisk) || current_tok_.is(TokenType::Slash)) {
+    while (current_tok_.is(TokenType::Asterisk) || current_tok_.is(TokenType::Slash) || current_tok_.is(TokenType::Percent)) {
         TokenType op = advance().type;
         auto right = parse_power();
         left = std::make_unique<BinaryOpNode>(op, std::move(left), std::move(right));
@@ -103,7 +103,18 @@ std::unique_ptr<ASTNode> Parser::parse_unary() {
         return std::make_unique<UnaryOpNode>(op, std::move(operand));
     }
 
-    return parse_primary();
+    return parse_postfix();
+}
+
+std::unique_ptr<ASTNode> Parser::parse_postfix() {
+    auto expr = parse_primary();
+
+    while (current_tok_.is(TokenType::Percent)) {
+        TokenType op = advance().type;
+        expr = std::make_unique<UnaryOpNode>(op, std::move(expr));
+    }
+
+    return expr;
 }
 
 std::unique_ptr<ASTNode> Parser::parse_primary() {

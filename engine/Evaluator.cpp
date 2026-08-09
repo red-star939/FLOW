@@ -60,6 +60,7 @@ Value Evaluator::visit_unary(const UnaryOpNode* node) {
     if (auto pVal = std::get_if<double>(&val)) {
         if (node->op == TokenType::Minus) return -(*pVal);
         if (node->op == TokenType::Plus) return *pVal;
+        if (node->op == TokenType::Percent) return *pVal / 100.0;
     }
     return ErrorType::ValueError;
 }
@@ -83,6 +84,7 @@ Value Evaluator::visit_binary(const BinaryOpNode* node) {
                 case TokenType::Slash:
                     if (*pR == 0.0) return ErrorType::DivisionByZero;
                     return *pL / *pR;
+                case TokenType::Percent:      return *pL * (*pR / 100.0);
                 case TokenType::Caret:        return std::pow(*pL, *pR);
                 // 비교 연산자 기능 비활성화
                 /*

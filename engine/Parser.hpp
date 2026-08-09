@@ -21,6 +21,7 @@ private:
     std::unique_ptr<ASTNode> parse_multiplicative();
     std::unique_ptr<ASTNode> parse_power();
     std::unique_ptr<ASTNode> parse_unary();
+    std::unique_ptr<ASTNode> parse_postfix();
     std::unique_ptr<ASTNode> parse_primary();
 
     // 토큰 매칭 및 커서 제어 헬퍼
