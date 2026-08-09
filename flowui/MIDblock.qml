@@ -503,11 +503,13 @@ Item {
 
             model: (root.monthsData && root.monthsData.length === 12) ? root.monthsData : 12
             currentIndex: Math.max(0, Math.min(11, root.activeMonth - 1))
+            offset: typeof monthSelector !== "undefined" ? monthSelector.wheelOffset : (root.activeMonth - 1)
             highlightMoveDuration: 0
             pathItemCount: 3
             preferredHighlightBegin: 0.5
             preferredHighlightEnd: 0.5
             highlightRangeMode: PathView.StrictlyEnforceRange
+            interactive: false
             dragMargin: width / 3
 
             path: Path {

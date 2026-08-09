@@ -9,6 +9,9 @@ Item {
     property int lastValidMonth: (selectedMonth > 0 && selectedMonth <= 12) ? selectedMonth : 1
     readonly property int activeMonth: selectedMonth > 0 ? selectedMonth : (lastValidMonth > 0 ? lastValidMonth : 1)
 
+    readonly property real wheelOffset: pathView.offset
+    readonly property int pathIndex: pathView.currentIndex
+
     signal monthChanged(int month)
 
     height: 60
@@ -45,6 +48,13 @@ Item {
         preferredHighlightEnd: 0.5
         highlightRangeMode: PathView.StrictlyEnforceRange
         dragMargin: width / 3
+
+        onMovementStarted: {
+            if (root.selectedMonth === 0) {
+                root.selectedMonth = root.activeMonth
+                root.monthChanged(root.activeMonth)
+            }
+        }
 
         onCurrentIndexChanged: {
             if (root.selectedMonth > 0) {
