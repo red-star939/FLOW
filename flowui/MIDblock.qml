@@ -470,22 +470,45 @@ Item {
                         }
                     }
                 }
-    function calculateAnnualSum() {
-        var sum = 0.0
-        if (monthsData && monthsData.length > 0) {
-            for (var i = 0; i < monthsData.length; i++) {
-                var mObj = monthsData[i]
-                if (mObj) {
-                    var val = mObj.value !== undefined ? Number(mObj.value) : (mObj.formula_result !== undefined ? Number(mObj.formula_result) : 0.0)
-                    if (!isNaN(val)) sum += val
-                }
+    function calculateTotalValue() {
+        if (!monthsData || monthsData.length === 0) {
+            root.totalValue = 0
+            return
+        }
+
+        var getMonthVal = function(m) {
+            if (m < 1 || m > monthsData.length) return 0.0
+            var mObj = monthsData[m - 1]
+            if (!mObj) return 0.0
+            var v = mObj.value !== undefined ? Number(mObj.value) : (mObj.formula_result !== undefined ? Number(mObj.formula_result) : 0.0)
+            return isNaN(v) ? 0.0 : v
+        }
+
+        if (root.selectedMonth > 0) {
+            var currVal = getMonthVal(root.selectedMonth)
+            var prevVal = (root.selectedMonth > 1) ? getMonthVal(root.selectedMonth - 1) : 0.0
+            root.totalValue = currVal - prevVal
+        } else {
+            var sum = 0.0
+            for (var i = 1; i <= 12; i++) {
+                sum += getMonthVal(i)
+            }
+            root.totalValue = sum
+        }
+    }
+
+    onSelectedMonthChanged: {
+        calculateTotalValue()
+        if (root.selectedMonth > 0 && typeof monthCellsWheel !== "undefined") {
+            var targetIdx = root.selectedMonth - 1
+            if (monthCellsWheel.currentIndex !== targetIdx) {
+                monthCellsWheel.currentIndex = targetIdx
             }
         }
-        root.totalValue = sum
     }
 
     onMonthsDataChanged: {
-        calculateAnnualSum()
+        calculateTotalValue()
         if (root.selectedMonth > 0 && typeof monthCellsWheel !== "undefined") {
             var targetIdx = root.selectedMonth - 1
             if (monthCellsWheel.currentIndex !== targetIdx) {
@@ -578,7 +601,7 @@ Item {
             }
         }
 
-        // ─── 13th Sum Cell (기존 디자인 유지: 우측 고정) ───
+        // ─── 13th Sum Cell (선택 월과 이전 월과의 차이 계산 표시) ───
         Item {
             id: sumCell
             anchors.right: parent.right
@@ -600,9 +623,9 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: Number(root.totalValue).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                    color: root.selectedMonth === 0
-                           ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
+                    text: (root.selectedMonth > 0 && root.totalValue > 0 ? "+" : "") + Number(root.totalValue).toLocaleString(Qt.locale("ko_KR"), "f", 0)
+                    color: root.selectedMonth > 0
+                           ? (root.totalValue > 0 ? "#4CD964" : (root.totalValue < 0 ? "#FF3B30" : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")))
                            : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
                     font.pixelSize: (root.selectedMonth === 0) ? 18 : 16
                     font.bold: true
