@@ -38,9 +38,10 @@ std::unique_ptr<ASTNode> Parser::parse() {
 }
 
 std::unique_ptr<ASTNode> Parser::parse_expression() {
-    return parse_comparison();
+    return parse_additive(); // 비교 연산자 기능 비활성화로 바로 산술 연산 파싱
 }
 
+/* 비교 연산 파싱 비활성화
 std::unique_ptr<ASTNode> Parser::parse_comparison() {
     auto left = parse_additive();
 
@@ -57,6 +58,7 @@ std::unique_ptr<ASTNode> Parser::parse_comparison() {
 
     return left;
 }
+*/
 
 std::unique_ptr<ASTNode> Parser::parse_additive() {
     auto left = parse_multiplicative();

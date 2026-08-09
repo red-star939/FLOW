@@ -149,6 +149,8 @@ Token Lexer::next_token() {
         case ')': advance(); return make_token(TokenType::RParen, start_pos);
         case ',': advance(); return make_token(TokenType::Comma, start_pos);
         case ':': advance(); return make_token(TokenType::Colon, start_pos);
+        // 비교 연산자 및 $ 연산자 비활성화
+        /*
         case '=': advance(); return make_token(TokenType::Equal, start_pos);
         case '<':
             advance();
@@ -163,6 +165,7 @@ Token Lexer::next_token() {
             advance();
             if (match('=')) return make_token(TokenType::NotEqual, start_pos);
             return make_error_token(start_pos);
+        */
     }
 
     advance(); // 식별 불가능한 문자의 경우 1글자 소비 후 Invalid 처리

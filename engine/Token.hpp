@@ -18,13 +18,15 @@ enum class TokenType {
 	Percent,		// %
     Caret,          // ^
 
-    // 비교 연산자
+    // 비교 연산자 (비활성화)
+    /*
     Equal,          // =
     NotEqual,       // <> 또는 !=
     LessThan,       // <
     LessEqual,      // <=
     GreaterThan,    // >
     GreaterEqual,   // >=
+    */
 
     // 구분자 및 특수 기호
     LParen,         // (

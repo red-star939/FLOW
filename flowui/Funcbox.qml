@@ -40,16 +40,8 @@ Item {
         "-": { name: "- (빼기)", category: "산술 연산자", desc: "왼쪽 값에서 오른쪽 값을 땁니다.", example: "예시: 매출 - 원가  🡲  1,000 - 300 = 700" },
         "*": { name: "* (곱하기)", category: "산술 연산자", desc: "두 값을 곱합니다.", example: "예시: 수량 * 단가  🡲  10 * 50 = 500" },
         "/": { name: "/ (나누기)", category: "산술 연산자", desc: "왼쪽 값을 오른쪽 값으로 나눕니다.", example: "예시: 총액 / 인원수  🡲  1,000 / 4 = 250" },
-        "$": { name: "$ (고정/참조)", category: "산술 연산자", desc: "셀 또는 기준값을 고정 참조합니다.", example: "예시: $기본급 + 수당  🡲  $5,000 + 200 = 5,200" },
         "%": { name: "% (백분율)", category: "산술 연산자", desc: "백분율(비율)을 계산합니다.", example: "예시: 매출 * 10%  🡲  1,000 * 0.1 = 100" },
         "^": { name: "^ (거듭제곱)", category: "산술 연산자", desc: "왼쪽 값의 승수를 계산합니다.", example: "예시: 1.05 ^ 2  🡲  1.05의 2승 = 1.1025" },
-
-        "=": { name: "= (같음)", category: "비교 연산자", desc: "두 값이 같은지 비교합니다 (참: 1, 거짓: 0).", example: "예시: 목표 = 달성액  🡲  1,000 = 1,000 (참: 1)" },
-        "!=": { name: "!= (같지 않음)", category: "비교 연산자", desc: "두 값이 다른지 비교합니다.", example: "예시: 재고 != 0  🡲  5 != 0 (참: 1)" },
-        "<": { name: "< (작음)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 작은지 비교합니다.", example: "예시: 지출 < 예산  🡲  800 < 1,000 (참: 1)" },
-        "<=": { name: "<= (작거나 같음)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 작거나 같은지 비교합니다.", example: "예시: 연체일 <= 30  🡲  15 <= 30 (참: 1)" },
-        ">": { name: "> (큼)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 큰지 비교합니다.", example: "예시: 매출 > 목표  🡲  1,200 > 1,000 (참: 1)" },
-        ">=": { name: ">= (크거나 같음)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 크거나 같은지 비교합니다.", example: "예시: 점수 >= 80  🡲  85 >= 80 (참: 1)" },
 
         "(": { name: "( (여는 괄호)", category: "구분자 및 특수 기호", desc: "우선순위 연산을 위한 괄호를 시작합니다.", example: "예시: (매출 - 원가) * 0.1  🡲  (1,000 - 400) * 0.1 = 60" },
         ")": { name: ") (닫는 괄호)", category: "구분자 및 특수 기호", desc: "우선순위 연산 괄호를 닫습니다.", example: "예시: (A + B) / C" },
@@ -1453,7 +1445,7 @@ Item {
                     // 3. 사용 가능한 기호 & 연산자 (White Active Theme)
                     Rectangle {
                         width: parent.width
-                        height: 124
+                        height: 68
                         radius: 10
                         color: "#1F1F1F"
                         border.width: 1.5
@@ -1476,7 +1468,7 @@ Item {
                                     width: 72
                                 }
                                 Repeater {
-                                    model: ["+", "-", "*", "/", "$", "%", "^"]
+                                    model: ["+", "-", "*", "/", "%", "^"]
                                     delegate: Rectangle {
                                         width: 26
                                         height: 24
@@ -1495,47 +1487,6 @@ Item {
 
                                         MouseArea {
                                             id: opHover
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: root.selectedOp = modelData
-                                            onDoubleClicked: root.insertSymbol(modelData)
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Row 2: 비교 연산자
-                            Row {
-                                spacing: 6
-                                Text {
-                                    text: "비교 연산자:"
-                                    color: "#CCCCCC"
-                                    font.pixelSize: 11
-                                    font.bold: true
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    width: 72
-                                }
-                                Repeater {
-                                    model: ["=", "!=", "<", "<=", ">", ">="]
-                                    delegate: Rectangle {
-                                        width: modelData.length > 1 ? 32 : 26
-                                        height: 24
-                                        radius: 6
-                                        color: root.selectedOp === modelData ? "#FFFFFF" : (opHover2.containsMouse ? "#3A3A3A" : "#282828")
-                                        border.width: 1
-                                        border.color: root.selectedOp === modelData ? "#FFFFFF" : "#404040"
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: modelData
-                                            color: root.selectedOp === modelData ? "#121212" : "#CCCCCC"
-                                            font.pixelSize: 12
-                                            font.bold: true
-                                        }
-
-                                        MouseArea {
-                                            id: opHover2
                                             anchors.fill: parent
                                             hoverEnabled: true
                                             cursorShape: Qt.PointingHandCursor
