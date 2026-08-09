@@ -1314,7 +1314,86 @@ Item {
                     anchors.fill: parent
                     spacing: 10
 
-                    // 1. 수식 구문 입력 (TOP)
+                    // 1. 수식 적용 대상 월 (TOP - 간편 모드와 동일한 위치 및 디자인)
+                    Text {
+                        text: "수식 적용 대상 월"
+                        color: "#CCCCCC"
+                        font.pixelSize: 12
+                        font.bold: true
+                    }
+
+                    Flickable {
+                        id: monthFlickableAdv
+                        width: parent.width
+                        height: 32
+                        contentWidth: sMonthRowAdv.width
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onWheel: (wheel) => {
+                                var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                monthFlickableAdv.contentX = Math.max(0, Math.min(monthFlickableAdv.contentWidth - monthFlickableAdv.width, monthFlickableAdv.contentX - delta))
+                            }
+                        }
+
+                        Row {
+                            id: sMonthRowAdv
+                            spacing: 6
+
+                            Rectangle {
+                                width: 52
+                                height: 28
+                                radius: 14
+                                color: root.targetMonth === 0 ? "#FFFFFF" : "#2C2C2C"
+                                border.width: 1
+                                border.color: root.targetMonth === 0 ? "#FFFFFF" : "#3D3D3D"
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "전체 월"
+                                    color: root.targetMonth === 0 ? "#121212" : "#AAAAAA"
+                                    font.pixelSize: 11
+                                    font.bold: root.targetMonth === 0
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.targetMonth = 0
+                                }
+                            }
+
+                            Repeater {
+                                model: 12
+                                delegate: Rectangle {
+                                    width: 28
+                                    height: 28
+                                    radius: 14
+                                    color: root.targetMonth === index + 1 ? "#FFFFFF" : "#2C2C2C"
+                                    border.width: 1
+                                    border.color: root.targetMonth === index + 1 ? "#FFFFFF" : "#3D3D3D"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: (index + 1).toString()
+                                        color: root.targetMonth === index + 1 ? "#121212" : "#AAAAAA"
+                                        font.pixelSize: 12
+                                        font.bold: root.targetMonth === index + 1
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.targetMonth = index + 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 2. 수식 구문 입력
                     Text {
                         text: "수식 구문 입력"
                         color: "#CCCCCC"
@@ -1368,7 +1447,7 @@ Item {
                         }
                     }
 
-                    // 2. 사용 가능한 기호 & 연산자 (White Active Theme)
+                    // 3. 사용 가능한 기호 & 연산자 (White Active Theme)
                     Rectangle {
                         width: parent.width
                         height: 90
@@ -1464,7 +1543,7 @@ Item {
                                 }
                             }
 
-                            // Row 3: 수식 함수 (INTUP, INTDOWN)
+                            // Row 3: 수식 함수 (INTUP, INTDOWN, LEFTOVER)
                             Row {
                                 spacing: 6
                                 Text {
@@ -1507,89 +1586,75 @@ Item {
                         }
                     }
 
-                    // 5. 대상 월 선택 (White Theme Circular Buttons)
-                    Text {
-                        text: "대상 월 선택"
-                        color: "#CCCCCC"
-                        font.pixelSize: 12
-                        font.bold: true
-                    }
-
-                    Flickable {
-                        id: monthFlickable
+                    // 4. 선택된 기호 및 수식 함수 설명 카드 (연산자 사용법 설명)
+                    Rectangle {
+                        id: explanationCard
                         width: parent.width
-                        height: 32
-                        contentWidth: monthRow.width
-                        clip: true
-                        boundsBehavior: Flickable.StopAtBounds
+                        height: 84
+                        radius: 10
+                        color: "#1F1F1F"
+                        border.width: 1.5
+                        border.color: "#343434"
 
-                        MouseArea {
+                        property var currentDoc: root.operatorDocs[root.selectedOp] ? root.operatorDocs[root.selectedOp] : root.operatorDocs["+"]
+
+                        Column {
                             anchors.fill: parent
-                            onWheel: (wheel) => {
-                                var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
-                            }
-                        }
+                            anchors.margins: 8
+                            spacing: 4
 
-                        Row {
-                            id: monthRow
-                            spacing: 5
-
-                            Rectangle {
-                                width: 50
-                                height: 28
-                                radius: 14
-                                color: root.targetMonth === 0 ? "#FFFFFF" : "#2C2C2C"
-                                border.width: 1
-                                border.color: root.targetMonth === 0 ? "#FFFFFF" : "#3D3D3D"
+                            Item {
+                                width: parent.width
+                                height: 20
 
                                 Text {
-                                    anchors.centerIn: parent
-                                    text: "전체"
-                                    color: root.targetMonth === 0 ? "#121212" : "#AAAAAA"
-                                    font.pixelSize: 11
-                                    font.bold: root.targetMonth === 0
+                                    anchors.left: parent.left
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: explanationCard.currentDoc.name
+                                    color: "#FFFFFF"
+                                    font.pixelSize: 12
+                                    font.bold: true
                                 }
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.targetMonth = 0
-                                    onWheel: (wheel) => {
-                                        var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                        monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
-                                    }
-                                }
-                            }
-
-                            Repeater {
-                                model: 12
-                                delegate: Rectangle {
-                                    width: 28
-                                    height: 28
-                                    radius: 14
-                                    color: root.targetMonth === index + 1 ? "#FFFFFF" : "#2C2C2C"
+                                Rectangle {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 76
+                                    height: 20
+                                    radius: 10
+                                    color: addSymHover.containsMouse ? "#FFFFFF" : "#3A3A3A"
                                     border.width: 1
-                                    border.color: root.targetMonth === index + 1 ? "#FFFFFF" : "#3D3D3D"
+                                    border.color: addSymHover.containsMouse ? "#FFFFFF" : "#666666"
 
                                     Text {
                                         anchors.centerIn: parent
-                                        text: (index + 1).toString()
-                                        color: root.targetMonth === index + 1 ? "#121212" : "#AAAAAA"
-                                        font.pixelSize: 12
-                                        font.bold: root.targetMonth === index + 1
+                                        text: "+ 수식에 추가"
+                                        color: addSymHover.containsMouse ? "#121212" : "#FFFFFF"
+                                        font.pixelSize: 10
+                                        font.bold: true
                                     }
 
                                     MouseArea {
+                                        id: addSymHover
                                         anchors.fill: parent
+                                        hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.targetMonth = index + 1
-                                        onWheel: (wheel) => {
-                                            var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                            monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
-                                        }
+                                        onClicked: root.insertSymbol(root.selectedOp === "INTUP" || root.selectedOp === "INTDOWN" || root.selectedOp === "LEFTOVER" ? root.selectedOp + "(" : root.selectedOp)
                                     }
                                 }
+                            }
+
+                            Text {
+                                text: explanationCard.currentDoc.desc
+                                color: "#DDDDDD"
+                                font.pixelSize: 11
+                            }
+
+                            Text {
+                                text: explanationCard.currentDoc.example
+                                color: "#FFD54F"
+                                font.pixelSize: 11
+                                font.bold: true
                             }
                         }
                     }
