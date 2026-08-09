@@ -183,31 +183,19 @@ Item {
                 categorized.push({ category: "🏷️ MID 블록", items: midItems })
             }
 
-            // 2. ID 블록 & SubID 세부항목
+            // 2. ID 블록 (SubID 세부항목 제외)
             var m = targetMonth === 0 ? 1 : targetMonth
             var ids = dbController.getIDItems(selectedYear, m)
             var idItems = []
-            var subIdItems = []
             if (ids) {
                 for (var j = 0; j < ids.length; j++) {
                     if (ids[j].id) {
                         idItems.push(ids[j].id)
-                        if (ids[j].subItems && ids[j].subItems.length > 0) {
-                            for (var k = 0; k < ids[j].subItems.length; k++) {
-                                var sName = ids[j].subItems[k].title ? ids[j].subItems[k].title : ids[j].subItems[k].subId
-                                if (sName && subIdItems.indexOf(sName) === -1) {
-                                    subIdItems.push(sName)
-                                }
-                            }
-                        }
                     }
                 }
             }
             if (idItems.length > 0) {
                 categorized.push({ category: "📌 ID 블록", items: idItems })
-            }
-            if (subIdItems.length > 0) {
-                categorized.push({ category: "🔹 SubID 세부항목", items: subIdItems })
             }
         }
         categorized.push({ category: "💳 기타 항목", items: ["당일지출"] })
@@ -533,9 +521,79 @@ Item {
 
                 Column {
                     anchors.fill: parent
-                    spacing: 14
+                    spacing: 12
 
-                    // 1. Center Row containing Block 1, Circle, Block 2
+                    // 1. Target Month Selector Row (Top)
+                    Text {
+                        text: "수식 적용 대상 월"
+                        color: "#CCCCCC"
+                        font.pixelSize: 12
+                        font.bold: true
+                    }
+
+                    Flickable {
+                        width: parent.width
+                        height: 32
+                        contentWidth: sMonthRow.width
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        Row {
+                            id: sMonthRow
+                            spacing: 6
+
+                            Rectangle {
+                                width: 52
+                                height: 28
+                                radius: 14
+                                color: root.targetMonth === 0 ? "#FFFFFF" : "#2C2C2C"
+                                border.width: 1
+                                border.color: root.targetMonth === 0 ? "#FFFFFF" : "#3D3D3D"
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "전체 월"
+                                    color: root.targetMonth === 0 ? "#121212" : "#AAAAAA"
+                                    font.pixelSize: 11
+                                    font.bold: root.targetMonth === 0
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.targetMonth = 0
+                                }
+                            }
+
+                            Repeater {
+                                model: 12
+                                delegate: Rectangle {
+                                    width: 28
+                                    height: 28
+                                    radius: 14
+                                    color: root.targetMonth === index + 1 ? "#FFFFFF" : "#2C2C2C"
+                                    border.width: 1
+                                    border.color: root.targetMonth === index + 1 ? "#FFFFFF" : "#3D3D3D"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: (index + 1).toString()
+                                        color: root.targetMonth === index + 1 ? "#121212" : "#AAAAAA"
+                                        font.pixelSize: 12
+                                        font.bold: root.targetMonth === index + 1
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.targetMonth = index + 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 2. Center Row containing Block 1, Circle, Block 2
                     Item {
                         width: parent.width
                         height: 250
@@ -1145,76 +1203,6 @@ Item {
                                     onClicked: {
                                         root.isSelectingBlock2 = true
                                         root.isSelectingBlock1 = false
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // 2. Target Month Selector Row
-                    Text {
-                        text: "수식 적용 대상 월"
-                        color: "#CCCCCC"
-                        font.pixelSize: 12
-                        font.bold: true
-                    }
-
-                    Flickable {
-                        width: parent.width
-                        height: 32
-                        contentWidth: sMonthRow.width
-                        clip: true
-                        boundsBehavior: Flickable.StopAtBounds
-
-                        Row {
-                            id: sMonthRow
-                            spacing: 6
-
-                            Rectangle {
-                                width: 52
-                                height: 28
-                                radius: 14
-                                color: root.targetMonth === 0 ? "#FFFFFF" : "#2C2C2C"
-                                border.width: 1
-                                border.color: root.targetMonth === 0 ? "#FFFFFF" : "#3D3D3D"
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "전체 월"
-                                    color: root.targetMonth === 0 ? "#121212" : "#AAAAAA"
-                                    font.pixelSize: 11
-                                    font.bold: root.targetMonth === 0
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.targetMonth = 0
-                                }
-                            }
-
-                            Repeater {
-                                model: 12
-                                delegate: Rectangle {
-                                    width: 28
-                                    height: 28
-                                    radius: 14
-                                    color: root.targetMonth === index + 1 ? "#FFFFFF" : "#2C2C2C"
-                                    border.width: 1
-                                    border.color: root.targetMonth === index + 1 ? "#FFFFFF" : "#3D3D3D"
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: (index + 1).toString()
-                                        color: root.targetMonth === index + 1 ? "#121212" : "#AAAAAA"
-                                        font.pixelSize: 12
-                                        font.bold: root.targetMonth === index + 1
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.targetMonth = index + 1
                                     }
                                 }
                             }
