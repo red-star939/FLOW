@@ -73,7 +73,13 @@ target_link_libraries(appflowui
     PRIVATE Qt6::Quick
 )
 
-install(TARGETS appflowui
+add_executable(launcher launcher.cpp)
+set_target_properties(launcher PROPERTIES WIN32_EXECUTABLE TRUE)
+
+add_executable(updater updater.cpp)
+target_link_libraries(updater PRIVATE wininet)
+
+install(TARGETS appflowui launcher updater
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
