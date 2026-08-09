@@ -429,359 +429,155 @@ Item {
                 id: simpleModeContainer
                 anchors {
                     top: headerDivider.bottom
-                    topMargin: 14
+                    topMargin: 20
                     left: parent.left
-                    leftMargin: 18
+                    leftMargin: 20
                     right: parent.right
-                    rightMargin: 18
+                    rightMargin: 20
                     bottom: parent.bottom
-                    bottomMargin: 16
+                    bottomMargin: 20
                 }
                 visible: !root.isAdvancedMode
 
-                Column {
-                    anchors.fill: parent
-                    spacing: 12
+                // Center Row containing Block 1, Circle, Block 2 (MID setting block style from Graph Analytics)
+                Row {
+                    anchors.centerIn: parent
+                    spacing: 20
 
-                    // 1. Visual Formula Builder Canvas (Interactive Chips)
-                    Row {
-                        width: parent.width
-                        height: 22
-                        Text {
-                            text: "조합된 수식 블록"
-                            color: "#CCCCCC"
-                            font.pixelSize: 12
-                            font.bold: true
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                        Text {
-                            anchors.right: parent.right
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: "전체 삭제"
-                            color: "#FF5F57"
-                            font.pixelSize: 11
-                            font.bold: true
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    formulaInput.text = ""
-                                    root.updateTokensFromText()
-                                }
-                            }
-                        }
-                    }
-
+                    // Block 1 (MID 설정 블록 1 스타일)
                     Rectangle {
-                        width: parent.width
-                        height: 96
-                        radius: 12
+                        id: simpleBlock1
+                        width: 200
+                        height: 240
+                        radius: 16
                         color: "#181818"
                         border.width: 1.5
                         border.color: "#343434"
-                        clip: true
 
-                        Flickable {
-                            anchors.fill: parent
-                            anchors.margins: 8
-                            contentWidth: simpleFlow.width
-                            contentHeight: simpleFlow.height
-                            clip: true
-
-                            Flow {
-                                id: simpleFlow
-                                width: parent.width - 16
-                                spacing: 8
-
-                                Text {
-                                    visible: root.formulaTokens.length === 0
-                                    text: "아래 참조 항목과 연산자 버튼을 터치하여 수식을 완성하세요."
-                                    color: "#555555"
-                                    font.pixelSize: 13
-                                }
-
-                                Repeater {
-                                    model: root.formulaTokens
-                                    delegate: Rectangle {
-                                        height: 28
-                                        width: chipRow.implicitWidth + 16
-                                        radius: 14
-                                        color: (modelData === "+" || modelData === "-" || modelData === "*" || modelData === "/" || modelData === "(" || modelData === ")")
-                                               ? "#2C3E50"
-                                               : "#2C2C2E"
-                                        border.width: 1
-                                        border.color: (modelData === "+" || modelData === "-" || modelData === "*" || modelData === "/" || modelData === "(" || modelData === ")")
-                                                      ? "#3498DB"
-                                                      : "#4A4A4C"
-
-                                        Row {
-                                            id: chipRow
-                                            anchors.centerIn: parent
-                                            spacing: 6
-
-                                            Text {
-                                                text: (modelData === "+" || modelData === "-" || modelData === "*" || modelData === "/" || modelData === "(" || modelData === ")")
-                                                      ? modelData
-                                                      : (modelData === "당일지출" ? "💳 " + modelData : "🏷️ " + modelData)
-                                                color: (modelData === "+" || modelData === "-" || modelData === "*" || modelData === "/" || modelData === "(" || modelData === ")")
-                                                       ? "#5DADE2"
-                                                       : "#FFFFFF"
-                                                font.pixelSize: 12
-                                                font.bold: true
-                                                anchors.verticalCenter: parent.verticalCenter
-                                            }
-
-                                            Text {
-                                                text: "×"
-                                                color: chipDelHover.containsMouse ? "#FF5F57" : "#888888"
-                                                font.pixelSize: 13
-                                                font.bold: true
-                                                anchors.verticalCenter: parent.verticalCenter
-
-                                                MouseArea {
-                                                    id: chipDelHover
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: root.removeTokenAt(index)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // 2. Quick Operators Row (+ - * / ( ))
-                    Text {
-                        text: "기본 연산자 선택"
-                        color: "#CCCCCC"
-                        font.pixelSize: 12
-                        font.bold: true
-                    }
-
-                    Row {
-                        spacing: 8
-                        width: parent.width
-
-                        Repeater {
-                            model: ["+", "-", "*", "/", "(", ")"]
-                            delegate: Rectangle {
-                                width: (parent.width - 40) / 6
-                                height: 36
-                                radius: 10
-                                color: opBtnHover.containsMouse ? "#3A3A3C" : "#2A2A2D"
-                                border.width: 1
-                                border.color: opBtnHover.containsMouse ? "#FFFFFF" : "#4A4A4C"
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: modelData
-                                    color: "#FFFFFF"
-                                    font.pixelSize: 16
-                                    font.bold: true
-                                }
-
-                                MouseArea {
-                                    id: opBtnHover
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.insertSymbol(modelData)
-                                }
-                            }
-                        }
-                    }
-
-                    // 3. Categorized Reference Items (참조 항목 리스트)
-                    Text {
-                        text: "참조할 카테고리 항목 선택 (터치 시 수식에 추가)"
-                        color: "#CCCCCC"
-                        font.pixelSize: 12
-                        font.bold: true
-                    }
-
-                    Rectangle {
-                        width: parent.width
-                        height: 120
-                        radius: 12
-                        color: "#181818"
-                        border.width: 1
-                        border.color: "#343434"
-                        clip: true
-
-                        Flickable {
-                            anchors.fill: parent
-                            anchors.margins: 10
-                            contentWidth: refFlow.width
-                            contentHeight: refFlow.height
-                            clip: true
-
-                            Flow {
-                                id: refFlow
-                                width: parent.width - 20
-                                spacing: 8
-
-                                Repeater {
-                                    model: root.referenceBlocks
-                                    delegate: Rectangle {
-                                        height: 30
-                                        width: refChipText.implicitWidth + 20
-                                        radius: 15
-                                        color: sRefHover.containsMouse ? "#FFFFFF" : "#262628"
-                                        border.width: 1
-                                        border.color: sRefHover.containsMouse ? "#FFFFFF" : "#3E3E42"
-
-                                        Text {
-                                            id: refChipText
-                                            anchors.centerIn: parent
-                                            text: modelData === "당일지출" ? "💳 " + modelData : "🏷️ " + modelData
-                                            color: sRefHover.containsMouse ? "#121212" : "#DDDDDD"
-                                            font.pixelSize: 12
-                                            font.bold: true
-                                        }
-
-                                        MouseArea {
-                                            id: sRefHover
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: root.insertSymbol(modelData)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // 4. Target Month Selector Row
-                    Text {
-                        text: "수식 적용 대상 월"
-                        color: "#CCCCCC"
-                        font.pixelSize: 12
-                        font.bold: true
-                    }
-
-                    Flickable {
-                        width: parent.width
-                        height: 32
-                        contentWidth: sMonthRow.width
-                        clip: true
-                        boundsBehavior: Flickable.StopAtBounds
-
-                        Row {
-                            id: sMonthRow
-                            spacing: 6
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 12
 
                             Rectangle {
-                                width: 52
-                                height: 28
-                                radius: 14
-                                color: root.targetMonth === 0 ? "#FFFFFF" : "#2C2C2C"
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                width: 44
+                                height: 44
+                                radius: 22
+                                color: block1Hover.containsMouse ? "#FFFFFF" : "#2A2A2A"
                                 border.width: 1
-                                border.color: root.targetMonth === 0 ? "#FFFFFF" : "#3D3D3D"
+                                border.color: block1Hover.containsMouse ? "#FFFFFF" : "#404040"
+
+                                Behavior on color { ColorAnimation { duration: 150 } }
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: "전체 월"
-                                    color: root.targetMonth === 0 ? "#121212" : "#AAAAAA"
-                                    font.pixelSize: 11
-                                    font.bold: root.targetMonth === 0
-                                }
+                                    text: "+"
+                                    color: block1Hover.containsMouse ? "#121212" : "#CCCCCC"
+                                    font.pixelSize: 22
+                                    font.bold: true
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.targetMonth = 0
+                                    Behavior on color { ColorAnimation { duration: 150 } }
                                 }
                             }
-
-                            Repeater {
-                                model: 12
-                                delegate: Rectangle {
-                                    width: 28
-                                    height: 28
-                                    radius: 14
-                                    color: root.targetMonth === index + 1 ? "#FFFFFF" : "#2C2C2C"
-                                    border.width: 1
-                                    border.color: root.targetMonth === index + 1 ? "#FFFFFF" : "#3D3D3D"
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: (index + 1).toString()
-                                        color: root.targetMonth === index + 1 ? "#121212" : "#AAAAAA"
-                                        font.pixelSize: 12
-                                        font.bold: root.targetMonth === index + 1
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.targetMonth = index + 1
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Item { width: 1; height: 6 }
-
-                    // 5. Action Buttons (Clear, Apply)
-                    Row {
-                        anchors.right: parent.right
-                        spacing: 10
-
-                        Rectangle {
-                            width: 90
-                            height: 36
-                            radius: 10
-                            color: sClearHover.containsMouse ? "#3A2A2A" : "#2A1A1A"
-                            border.width: 1
-                            border.color: "#FF5F57"
 
                             Text {
-                                anchors.centerIn: parent
-                                text: "수식 삭제"
-                                color: "#FF5F57"
-                                font.pixelSize: 12
-                                font.bold: true
-                            }
-
-                            MouseArea {
-                                id: sClearHover
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    formulaInput.text = ""
-                                    root.updateTokensFromText()
-                                    root.applyFormula()
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            width: 110
-                            height: 36
-                            radius: 10
-                            color: sApplyHover.containsMouse ? "#E0E0E0" : "#FFFFFF"
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "수식 적용"
-                                color: "#121212"
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "MID 설정 1"
+                                color: block1Hover.containsMouse ? "#FFFFFF" : "#888888"
                                 font.pixelSize: 13
                                 font.bold: true
                             }
+                        }
 
-                            MouseArea {
-                                id: sApplyHover
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.applyFormula()
+                        MouseArea {
+                            id: block1Hover
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                        }
+                    }
+
+                    // Circle between Block 1 and Block 2
+                    Rectangle {
+                        id: centerCircle
+                        width: 44
+                        height: 44
+                        radius: 22
+                        color: circleHover.containsMouse ? "#FFFFFF" : "#222222"
+                        border.width: 1.5
+                        border.color: circleHover.containsMouse ? "#FFFFFF" : "#3A3A3A"
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        Behavior on color { ColorAnimation { duration: 150 } }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "+"
+                            color: circleHover.containsMouse ? "#121212" : "#FFFFFF"
+                            font.pixelSize: 18
+                            font.bold: true
+
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                        }
+
+                        MouseArea {
+                            id: circleHover
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                        }
+                    }
+
+                    // Block 2 (MID 설정 블록 2 스타일)
+                    Rectangle {
+                        id: simpleBlock2
+                        width: 200
+                        height: 240
+                        radius: 16
+                        color: "#181818"
+                        border.width: 1.5
+                        border.color: "#343434"
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 12
+
+                            Rectangle {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                width: 44
+                                height: 44
+                                radius: 22
+                                color: block2Hover.containsMouse ? "#FFFFFF" : "#2A2A2A"
+                                border.width: 1
+                                border.color: block2Hover.containsMouse ? "#FFFFFF" : "#404040"
+
+                                Behavior on color { ColorAnimation { duration: 150 } }
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "+"
+                                    color: block2Hover.containsMouse ? "#121212" : "#CCCCCC"
+                                    font.pixelSize: 22
+                                    font.bold: true
+
+                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                }
                             }
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "MID 설정 2"
+                                color: block2Hover.containsMouse ? "#FFFFFF" : "#888888"
+                                font.pixelSize: 13
+                                font.bold: true
+                            }
+                        }
+
+                        MouseArea {
+                            id: block2Hover
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
                         }
                     }
                 }
