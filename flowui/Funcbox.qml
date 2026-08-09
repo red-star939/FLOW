@@ -40,8 +40,16 @@ Item {
         "-": { name: "- (빼기)", category: "산술 연산자", desc: "왼쪽 값에서 오른쪽 값을 땁니다.", example: "예시: 매출 - 원가  🡲  1,000 - 300 = 700" },
         "*": { name: "* (곱하기)", category: "산술 연산자", desc: "두 값을 곱합니다.", example: "예시: 수량 * 단가  🡲  10 * 50 = 500" },
         "/": { name: "/ (나누기)", category: "산술 연산자", desc: "왼쪽 값을 오른쪽 값으로 나눕니다.", example: "예시: 총액 / 인원수  🡲  1,000 / 4 = 250" },
+        "$": { name: "$ (고정/참조)", category: "산술 연산자", desc: "셀 또는 기준값을 고정 참조합니다.", example: "예시: $기본급 + 수당  🡲  $5,000 + 200 = 5,200" },
         "%": { name: "% (백분율)", category: "산술 연산자", desc: "백분율(비율)을 계산합니다.", example: "예시: 매출 * 10%  🡲  1,000 * 0.1 = 100" },
         "^": { name: "^ (거듭제곱)", category: "산술 연산자", desc: "왼쪽 값의 승수를 계산합니다.", example: "예시: 1.05 ^ 2  🡲  1.05의 2승 = 1.1025" },
+
+        "=": { name: "= (같음)", category: "비교 연산자", desc: "두 값이 같은지 비교합니다 (참: 1, 거짓: 0).", example: "예시: 목표 = 달성액  🡲  1,000 = 1,000 (참: 1)" },
+        "!=": { name: "!= (같지 않음)", category: "비교 연산자", desc: "두 값이 다른지 비교합니다.", example: "예시: 재고 != 0  🡲  5 != 0 (참: 1)" },
+        "<": { name: "< (작음)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 작은지 비교합니다.", example: "예시: 지출 < 예산  🡲  800 < 1,000 (참: 1)" },
+        "<=": { name: "<= (작거나 같음)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 작거나 같은지 비교합니다.", example: "예시: 연체일 <= 30  🡲  15 <= 30 (참: 1)" },
+        ">": { name: "> (큼)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 큰지 비교합니다.", example: "예시: 매출 > 목표  🡲  1,200 > 1,000 (참: 1)" },
+        ">=": { name: ">= (크거나 같음)", category: "비교 연산자", desc: "왼쪽이 오른쪽보다 크거나 같은지 비교합니다.", example: "예시: 점수 >= 80  🡲  85 >= 80 (참: 1)" },
 
         "(": { name: "( (여는 괄호)", category: "구분자 및 특수 기호", desc: "우선순위 연산을 위한 괄호를 시작합니다.", example: "예시: (매출 - 원가) * 0.1  🡲  (1,000 - 400) * 0.1 = 60" },
         ")": { name: ") (닫는 괄호)", category: "구분자 및 특수 기호", desc: "우선순위 연산 괄호를 닫습니다.", example: "예시: (A + B) / C" },
@@ -514,11 +522,11 @@ Item {
                 }
                 visible: !root.isAdvancedMode
 
-                // Background click interceptor to cancel block selection mode when clicking outside
+                // Background click interceptor to cancel block selection mode when clicking outside blocks
                 MouseArea {
                     anchors.fill: parent
                     visible: root.isSelectingBlock1 || root.isSelectingBlock2
-                    z: 5
+                    z: 0
                     onClicked: {
                         root.isSelectingBlock1 = false
                         root.isSelectingBlock2 = false
@@ -528,6 +536,7 @@ Item {
                 Column {
                     anchors.fill: parent
                     spacing: 12
+                    z: 10
 
                     // 1. Target Month Selector Row (Top)
                     Text {
@@ -755,8 +764,6 @@ Item {
                                                 Repeater {
                                                     model: root.referenceBlocks
                                                     delegate: Column {
-                                                        id: secCol1
-                                                        property var secData1: modelData
                                                         width: parent.width
                                                         spacing: 3
 
@@ -771,7 +778,7 @@ Item {
                                                                 anchors.left: parent.left
                                                                 anchors.leftMargin: 6
                                                                 anchors.verticalCenter: parent.verticalCenter
-                                                                text: secData1.category
+                                                                text: modelData.category
                                                                 color: "#00E5FF"
                                                                 font.pixelSize: 10
                                                                 font.bold: true
@@ -780,10 +787,8 @@ Item {
 
                                                         // Section Items
                                                         Repeater {
-                                                            model: secData1.items
+                                                            model: modelData.items
                                                             delegate: Rectangle {
-                                                                id: itemRect1
-                                                                property string itemVal1: modelData
                                                                 width: parent.width
                                                                 height: 26
                                                                 radius: 6
@@ -791,7 +796,7 @@ Item {
 
                                                                 Text {
                                                                     anchors.centerIn: parent
-                                                                    text: itemVal1
+                                                                    text: modelData
                                                                     color: b1OptHover.containsMouse ? "#121212" : "#DDDDDD"
                                                                     font.pixelSize: 11
                                                                     font.bold: true
@@ -806,7 +811,7 @@ Item {
                                                                     hoverEnabled: true
                                                                     cursorShape: Qt.PointingHandCursor
                                                                     onClicked: {
-                                                                        root.simpleBlock1Item = itemVal1
+                                                                        root.simpleBlock1Item = modelData
                                                                         root.isSelectingBlock1 = false
                                                                         root.updateSimpleFormulaText()
                                                                     }
@@ -1091,8 +1096,6 @@ Item {
                                                 Repeater {
                                                     model: root.referenceBlocks
                                                     delegate: Column {
-                                                        id: secCol2
-                                                        property var secData2: modelData
                                                         width: parent.width
                                                         spacing: 3
 
@@ -1107,7 +1110,7 @@ Item {
                                                                 anchors.left: parent.left
                                                                 anchors.leftMargin: 6
                                                                 anchors.verticalCenter: parent.verticalCenter
-                                                                text: secData2.category
+                                                                text: modelData.category
                                                                 color: "#00E5FF"
                                                                 font.pixelSize: 10
                                                                 font.bold: true
@@ -1116,10 +1119,8 @@ Item {
 
                                                         // Section Items
                                                         Repeater {
-                                                            model: secData2.items
+                                                            model: modelData.items
                                                             delegate: Rectangle {
-                                                                id: itemRect2
-                                                                property string itemVal2: modelData
                                                                 width: parent.width
                                                                 height: 26
                                                                 radius: 6
@@ -1127,7 +1128,7 @@ Item {
 
                                                                 Text {
                                                                     anchors.centerIn: parent
-                                                                    text: itemVal2
+                                                                    text: modelData
                                                                     color: b2OptHover.containsMouse ? "#121212" : "#DDDDDD"
                                                                     font.pixelSize: 11
                                                                     font.bold: true
@@ -1142,7 +1143,7 @@ Item {
                                                                     hoverEnabled: true
                                                                     cursorShape: Qt.PointingHandCursor
                                                                     onClicked: {
-                                                                        root.simpleBlock2Item = itemVal2
+                                                                        root.simpleBlock2Item = modelData
                                                                         root.isSelectingBlock2 = false
                                                                         root.updateSimpleFormulaText()
                                                                     }
@@ -1309,94 +1310,7 @@ Item {
                     anchors.fill: parent
                     spacing: 10
 
-                    // 1. 수식 적용 대상 월 (TOP)
-                    Text {
-                        text: "수식 적용 대상 월"
-                        color: "#CCCCCC"
-                        font.pixelSize: 12
-                        font.bold: true
-                    }
-
-                    Flickable {
-                        id: monthFlickable
-                        width: parent.width
-                        height: 32
-                        contentWidth: monthRow.width
-                        clip: true
-                        boundsBehavior: Flickable.StopAtBounds
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onWheel: (wheel) => {
-                                var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
-                            }
-                        }
-
-                        Row {
-                            id: monthRow
-                            spacing: 5
-
-                            Rectangle {
-                                width: 52
-                                height: 28
-                                radius: 14
-                                color: root.targetMonth === 0 ? "#FFFFFF" : "#2C2C2C"
-                                border.width: 1
-                                border.color: root.targetMonth === 0 ? "#FFFFFF" : "#3D3D3D"
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "전체 월"
-                                    color: root.targetMonth === 0 ? "#121212" : "#AAAAAA"
-                                    font.pixelSize: 11
-                                    font.bold: root.targetMonth === 0
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.targetMonth = 0
-                                    onWheel: (wheel) => {
-                                        var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                        monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
-                                    }
-                                }
-                            }
-
-                            Repeater {
-                                model: 12
-                                delegate: Rectangle {
-                                    width: 28
-                                    height: 28
-                                    radius: 14
-                                    color: root.targetMonth === index + 1 ? "#FFFFFF" : "#2C2C2C"
-                                    border.width: 1
-                                    border.color: root.targetMonth === index + 1 ? "#FFFFFF" : "#3D3D3D"
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: (index + 1).toString()
-                                        color: root.targetMonth === index + 1 ? "#121212" : "#AAAAAA"
-                                        font.pixelSize: 12
-                                        font.bold: root.targetMonth === index + 1
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.targetMonth = index + 1
-                                        onWheel: (wheel) => {
-                                            var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                            monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // 2. 수식 구문 입력
+                    // 1. 수식 구문 입력 (TOP)
                     Text {
                         text: "수식 구문 입력"
                         color: "#CCCCCC"
@@ -1450,10 +1364,10 @@ Item {
                         }
                     }
 
-                    // 3. 사용 가능한 기호 & 연산자 (White Active Theme)
+                    // 2. 사용 가능한 기호 & 연산자 (White Active Theme)
                     Rectangle {
                         width: parent.width
-                        height: 68
+                        height: 124
                         radius: 10
                         color: "#1F1F1F"
                         border.width: 1.5
@@ -1476,7 +1390,7 @@ Item {
                                     width: 72
                                 }
                                 Repeater {
-                                    model: ["+", "-", "*", "/", "%", "^"]
+                                    model: ["+", "-", "*", "/", "$", "%", "^"]
                                     delegate: Rectangle {
                                         width: 26
                                         height: 24
@@ -1495,6 +1409,47 @@ Item {
 
                                         MouseArea {
                                             id: opHover
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: root.selectedOp = modelData
+                                            onDoubleClicked: root.insertSymbol(modelData)
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Row 2: 비교 연산자
+                            Row {
+                                spacing: 6
+                                Text {
+                                    text: "비교 연산자:"
+                                    color: "#CCCCCC"
+                                    font.pixelSize: 11
+                                    font.bold: true
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 72
+                                }
+                                Repeater {
+                                    model: ["=", "!=", "<", "<=", ">", ">="]
+                                    delegate: Rectangle {
+                                        width: modelData.length > 1 ? 32 : 26
+                                        height: 24
+                                        radius: 6
+                                        color: root.selectedOp === modelData ? "#FFFFFF" : (opHover2.containsMouse ? "#3A3A3A" : "#282828")
+                                        border.width: 1
+                                        border.color: root.selectedOp === modelData ? "#FFFFFF" : "#404040"
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: modelData
+                                            color: root.selectedOp === modelData ? "#121212" : "#CCCCCC"
+                                            font.pixelSize: 12
+                                            font.bold: true
+                                        }
+
+                                        MouseArea {
+                                            id: opHover2
                                             anchors.fill: parent
                                             hoverEnabled: true
                                             cursorShape: Qt.PointingHandCursor
@@ -1548,7 +1503,7 @@ Item {
                         }
                     }
 
-                    // 4. 선택된 기호 설명 및 사용법 예시 카드
+                    // 3. 선택된 기호 설명 및 사용법 예시 카드
                     Rectangle {
                         id: explanationCard
                         width: parent.width
@@ -1621,7 +1576,157 @@ Item {
                         }
                     }
 
-                    // 5. Action Buttons (Clear, Apply)
+                    // 4. 사용 가능한 참조 항목 (ID / MID / 당일지출)
+                    Text {
+                        text: "사용 가능한 참조 항목 (클릭 시 수식에 자동 삽입)"
+                        color: "#CCCCCC"
+                        font.pixelSize: 12
+                        font.bold: true
+                    }
+
+                    Flickable {
+                        id: refFlickable
+                        width: parent.width
+                        height: 32
+                        contentWidth: refRow.width
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onWheel: (wheel) => {
+                                var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                refFlickable.contentX = Math.max(0, Math.min(refFlickable.contentWidth - refFlickable.width, refFlickable.contentX - delta))
+                            }
+                        }
+
+                        Row {
+                            id: refRow
+                            spacing: 6
+
+                            Repeater {
+                                model: root.referenceBlocks
+                                delegate: Rectangle {
+                                    height: 28
+                                    width: refText.implicitWidth + 18
+                                    radius: 14
+                                    color: refHover.containsMouse ? "#FFFFFF" : "#282828"
+                                    border.width: 1
+                                    border.color: refHover.containsMouse ? "#FFFFFF" : "#404040"
+
+                                    Text {
+                                        id: refText
+                                        anchors.centerIn: parent
+                                        text: modelData === "당일지출" ? "💳 " + modelData : "🏷️ " + modelData
+                                        color: refHover.containsMouse ? "#121212" : "#CCCCCC"
+                                        font.pixelSize: 11
+                                        font.bold: true
+                                    }
+
+                                    MouseArea {
+                                        id: refHover
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.insertSymbol(modelData)
+                                        onWheel: (wheel) => {
+                                            var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                            refFlickable.contentX = Math.max(0, Math.min(refFlickable.contentWidth - refFlickable.width, refFlickable.contentX - delta))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 5. 대상 월 선택 (White Theme Circular Buttons)
+                    Text {
+                        text: "대상 월 선택"
+                        color: "#CCCCCC"
+                        font.pixelSize: 12
+                        font.bold: true
+                    }
+
+                    Flickable {
+                        id: monthFlickable
+                        width: parent.width
+                        height: 32
+                        contentWidth: monthRow.width
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onWheel: (wheel) => {
+                                var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
+                            }
+                        }
+
+                        Row {
+                            id: monthRow
+                            spacing: 5
+
+                            Rectangle {
+                                width: 50
+                                height: 28
+                                radius: 14
+                                color: root.targetMonth === 0 ? "#FFFFFF" : "#2C2C2C"
+                                border.width: 1
+                                border.color: root.targetMonth === 0 ? "#FFFFFF" : "#3D3D3D"
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "전체"
+                                    color: root.targetMonth === 0 ? "#121212" : "#AAAAAA"
+                                    font.pixelSize: 11
+                                    font.bold: root.targetMonth === 0
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.targetMonth = 0
+                                    onWheel: (wheel) => {
+                                        var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                        monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
+                                    }
+                                }
+                            }
+
+                            Repeater {
+                                model: 12
+                                delegate: Rectangle {
+                                    width: 28
+                                    height: 28
+                                    radius: 14
+                                    color: root.targetMonth === index + 1 ? "#FFFFFF" : "#2C2C2C"
+                                    border.width: 1
+                                    border.color: root.targetMonth === index + 1 ? "#FFFFFF" : "#3D3D3D"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: (index + 1).toString()
+                                        color: root.targetMonth === index + 1 ? "#121212" : "#AAAAAA"
+                                        font.pixelSize: 12
+                                        font.bold: root.targetMonth === index + 1
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.targetMonth = index + 1
+                                        onWheel: (wheel) => {
+                                            var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                            monthFlickable.contentX = Math.max(0, Math.min(monthFlickable.contentWidth - monthFlickable.width, monthFlickable.contentX - delta))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 6. Action Buttons (Clear, Apply)
                     Row {
                         anchors.right: parent.right
                         spacing: 8
