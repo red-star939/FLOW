@@ -59,17 +59,10 @@ Item {
             return isNaN(v) ? 0.0 : v
         }
 
-        if (root.selectedMonth > 0) {
-            var currVal = getMonthVal(root.selectedMonth)
-            var prevVal = (root.selectedMonth > 1) ? getMonthVal(root.selectedMonth - 1) : 0.0
-            root.totalValue = currVal - prevVal
-        } else {
-            var sum = 0.0
-            for (var i = 1; i <= 12; i++) {
-                sum += getMonthVal(i)
-            }
-            root.totalValue = sum
-        }
+        var targetM = root.activeMonth
+        var currVal = getMonthVal(targetM)
+        var prevVal = (targetM > 1) ? getMonthVal(targetM - 1) : 0.0
+        root.totalValue = currVal - prevVal
     }
 
     Component.onCompleted: {
@@ -622,10 +615,10 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: (root.selectedMonth > 0 && root.totalValue > 0 ? "+" : "") + Number(root.totalValue).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                    color: root.selectedMonth > 0
-                           ? (root.totalValue > 0 ? "#4CD964" : (root.totalValue < 0 ? "#FF3B30" : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")))
-                           : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
+                    text: (root.totalValue > 0 ? "+" : "") + Number(root.totalValue).toLocaleString(Qt.locale("ko_KR"), "f", 0)
+                    color: root.totalValue > 0
+                           ? "#4CD964"
+                           : (root.totalValue < 0 ? "#FF3B30" : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"))
                     font.pixelSize: (root.selectedMonth === 0) ? 18 : 16
                     font.bold: true
                     scale: sumHoverHandler.hovered ? 1.18 : 1.0
