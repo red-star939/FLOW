@@ -265,11 +265,6 @@ Item {
 
     function applyFormula() {
         if (!root.isOpen) return
-        if (root.isAdvancedMode) {
-            root.simpleBlock1Item = ""
-            root.simpleBlock2Item = ""
-            root.simpleOp = ""
-        }
         var expr = formulaInput.text.trim()
         if (typeof dbController !== "undefined" && root.targetMidUuid !== "") {
             if (root.targetMonth === 0) {
@@ -291,6 +286,9 @@ Item {
         }
         formulaInput.text = current + sym + " "
         updateTokensFromText()
+        if (root.isAdvancedMode) {
+            syncSimpleModeFromText()
+        }
     }
 
     // Backdrop overlay (transparent, click outside to apply & close)
@@ -445,12 +443,7 @@ Item {
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    root.isAdvancedMode = true
-                                    root.simpleBlock1Item = ""
-                                    root.simpleBlock2Item = ""
-                                    root.simpleOp = ""
-                                }
+                                onClicked: root.isAdvancedMode = true
                             }
                         }
                     }
@@ -1341,6 +1334,9 @@ Item {
                             onTextChanged: {
                                 if (formulaInput.text !== text) {
                                     formulaInput.text = text
+                                    if (root.isAdvancedMode) {
+                                        root.syncSimpleModeFromText()
+                                    }
                                 }
                             }
 
