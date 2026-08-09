@@ -1,11 +1,19 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Shapes
 
 Item {
     id: root
 
     property bool isOpen: false
     property bool isAdvancedMode: false // false = 간편 모드, true = 고급 모드
+
+    // Simple Mode State
+    property string simpleBlock1Item: ""
+    property string simpleBlock2Item: ""
+    property string simpleOp: "+"
+    property bool isSelectingBlock1: false
+    property bool isSelectingBlock2: false
 
     // ESC Key Shortcut to Close Formula Modal
     Shortcut {
@@ -83,6 +91,38 @@ Item {
         return tokens
     }
 
+    function syncSimpleModeFromText() {
+        var tokens = getFormulaTokens()
+        if (tokens.length >= 3) {
+            simpleBlock1Item = tokens[0]
+            simpleOp = tokens[1]
+            simpleBlock2Item = tokens[2]
+        } else if (tokens.length === 1) {
+            simpleBlock1Item = tokens[0]
+            simpleOp = "+"
+            simpleBlock2Item = ""
+        } else {
+            simpleBlock1Item = ""
+            simpleOp = "+"
+            simpleBlock2Item = ""
+        }
+        isSelectingBlock1 = false
+        isSelectingBlock2 = false
+    }
+
+    function updateSimpleFormulaText() {
+        if (simpleBlock1Item !== "" && simpleBlock2Item !== "") {
+            formulaInput.text = simpleBlock1Item + " " + simpleOp + " " + simpleBlock2Item
+        } else if (simpleBlock1Item !== "") {
+            formulaInput.text = simpleBlock1Item
+        } else if (simpleBlock2Item !== "") {
+            formulaInput.text = simpleBlock2Item
+        } else {
+            formulaInput.text = ""
+        }
+        updateTokensFromText()
+    }
+
     function updateTokensFromText() {
         formulaTokens = getFormulaTokens()
     }
@@ -130,6 +170,7 @@ Item {
             var existing = dbController.getMIDMonthFormula(root.selectedYear, root.targetMidUuid, m)
             formulaInput.text = existing ? existing : ""
             updateTokensFromText()
+            syncSimpleModeFromText()
         }
         refreshReferenceBlocks()
     }
@@ -429,155 +470,628 @@ Item {
                 id: simpleModeContainer
                 anchors {
                     top: headerDivider.bottom
-                    topMargin: 20
+                    topMargin: 16
                     left: parent.left
-                    leftMargin: 20
+                    leftMargin: 18
                     right: parent.right
-                    rightMargin: 20
+                    rightMargin: 18
                     bottom: parent.bottom
-                    bottomMargin: 20
+                    bottomMargin: 16
                 }
                 visible: !root.isAdvancedMode
 
-                // Center Row containing Block 1, Circle, Block 2 (MID setting block style from Graph Analytics)
-                Row {
-                    anchors.centerIn: parent
-                    spacing: 20
+                Column {
+                    anchors.fill: parent
+                    spacing: 14
 
-                    // Block 1 (MID 설정 블록 1 스타일)
-                    Rectangle {
-                        id: simpleBlock1
-                        width: 200
-                        height: 240
-                        radius: 16
-                        color: "#181818"
-                        border.width: 1.5
-                        border.color: "#343434"
+                    // 1. Center Row containing Block 1, Circle, Block 2
+                    Item {
+                        width: parent.width
+                        height: 250
 
-                        Column {
+                        Row {
                             anchors.centerIn: parent
-                            spacing: 12
+                            spacing: 16
 
+                            // Block 1 (Left Block with Dashed Border)
                             Rectangle {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                width: 44
-                                height: 44
-                                radius: 22
-                                color: block1Hover.containsMouse ? "#FFFFFF" : "#2A2A2A"
-                                border.width: 1
-                                border.color: block1Hover.containsMouse ? "#FFFFFF" : "#404040"
+                                id: simpleBlock1
+                                width: 210
+                                height: 250
+                                radius: 16
+                                color: block1Hover.containsMouse ? "#222224" : "#18181A"
 
-                                Behavior on color { ColorAnimation { duration: 150 } }
+                                Behavior on color { ColorAnimation { duration: 180 } }
 
-                                Text {
+                                // Dashed Border Shape (Dashed Line when unselected)
+                                Shape {
+                                    id: block1DashedShape
+                                    anchors.fill: parent
+                                    visible: root.simpleBlock1Item === "" && !root.isSelectingBlock1
+                                    ShapePath {
+                                        strokeColor: block1Hover.containsMouse ? "#FFFFFF" : "#555558"
+                                        strokeWidth: 1.5
+                                        fillColor: "transparent"
+                                        strokeStyle: ShapePath.DashLine
+                                        dashPattern: [5, 4]
+                                        PathRectangle {
+                                            x: 1
+                                            y: 1
+                                            width: simpleBlock1.width - 2
+                                            height: simpleBlock1.height - 2
+                                            radius: 16
+                                        }
+                                    }
+                                }
+
+                                // Solid Border when selected or selecting
+                                Rectangle {
+                                    anchors.fill: parent
+                                    radius: 16
+                                    color: "transparent"
+                                    border.width: 1.5
+                                    border.color: root.isSelectingBlock1 ? "#00E5FF" : (root.simpleBlock1Item !== "" ? "#FFFFFF" : "#343434")
+                                    visible: root.simpleBlock1Item !== "" || root.isSelectingBlock1
+                                }
+
+                                // State A: Unselected empty state
+                                Column {
                                     anchors.centerIn: parent
-                                    text: "+"
-                                    color: block1Hover.containsMouse ? "#121212" : "#CCCCCC"
-                                    font.pixelSize: 22
-                                    font.bold: true
+                                    spacing: 12
+                                    visible: root.simpleBlock1Item === "" && !root.isSelectingBlock1
 
-                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                    Rectangle {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        width: 44
+                                        height: 44
+                                        radius: 22
+                                        color: block1Hover.containsMouse ? "#FFFFFF" : "#2A2A2D"
+
+                                        Behavior on color { ColorAnimation { duration: 150 } }
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "+"
+                                            color: block1Hover.containsMouse ? "#121212" : "#CCCCCC"
+                                            font.pixelSize: 22
+                                            font.bold: true
+
+                                            Behavior on color { ColorAnimation { duration: 150 } }
+                                        }
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: block1Hover.containsMouse ? "블록 설정하기" : "MID / ID 블록 설정 1"
+                                        color: block1Hover.containsMouse ? "#FFFFFF" : "#888888"
+                                        font.pixelSize: 13
+                                        font.bold: true
+                                    }
+                                }
+
+                                // State B: Selection Menu Mode
+                                Item {
+                                    anchors.fill: parent
+                                    anchors.margins: 10
+                                    visible: root.isSelectingBlock1
+
+                                    Column {
+                                        anchors.fill: parent
+                                        spacing: 6
+
+                                        Text {
+                                            text: "블록 1 선택"
+                                            color: "#8E8E93"
+                                            font.pixelSize: 11
+                                            font.bold: true
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                        }
+
+                                        Flickable {
+                                            width: parent.width
+                                            height: parent.height - 24
+                                            contentHeight: b1SelCol.height
+                                            clip: true
+
+                                            Column {
+                                                id: b1SelCol
+                                                width: parent.width
+                                                spacing: 4
+
+                                                Repeater {
+                                                    model: root.referenceBlocks
+                                                    delegate: Rectangle {
+                                                        width: parent.width
+                                                        height: 28
+                                                        radius: 6
+                                                        color: b1OptHover.containsMouse ? "#FFFFFF" : "#252528"
+
+                                                        Text {
+                                                            anchors.centerIn: parent
+                                                            text: modelData === "당일지출" ? "💳 " + modelData : "🏷️ " + modelData
+                                                            color: b1OptHover.containsMouse ? "#121212" : "#DDDDDD"
+                                                            font.pixelSize: 11
+                                                            font.bold: true
+                                                            elide: Text.ElideRight
+                                                            width: parent.width - 8
+                                                            horizontalAlignment: Text.AlignHCenter
+                                                        }
+
+                                                        MouseArea {
+                                                            id: b1OptHover
+                                                            anchors.fill: parent
+                                                            hoverEnabled: true
+                                                            cursorShape: Qt.PointingHandCursor
+                                                            onClicked: {
+                                                                root.simpleBlock1Item = modelData
+                                                                root.isSelectingBlock1 = false
+                                                                root.updateSimpleFormulaText()
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // State C: Selected item state
+                                Column {
+                                    anchors.centerIn: parent
+                                    spacing: 10
+                                    visible: root.simpleBlock1Item !== "" && !root.isSelectingBlock1
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: "설정된 블록 1"
+                                        color: "#8E8E93"
+                                        font.pixelSize: 11
+                                        font.bold: true
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: root.simpleBlock1Item === "당일지출" ? "💳 " + root.simpleBlock1Item : "🏷️ " + root.simpleBlock1Item
+                                        color: "#FFFFFF"
+                                        font.pixelSize: 16
+                                        font.bold: true
+                                        elide: Text.ElideRight
+                                        width: simpleBlock1.width - 24
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    Rectangle {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        width: 60
+                                        height: 22
+                                        radius: 11
+                                        color: b1ChgHover.containsMouse ? "#FF5F57" : "#2C2C2E"
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "변경 / 삭제"
+                                            color: b1ChgHover.containsMouse ? "#FFFFFF" : "#AAAAAA"
+                                            font.pixelSize: 10
+                                            font.bold: true
+                                        }
+
+                                        MouseArea {
+                                            id: b1ChgHover
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                root.isSelectingBlock1 = true
+                                            }
+                                        }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: block1Hover
+                                    anchors.fill: parent
+                                    enabled: !root.isSelectingBlock1
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        root.isSelectingBlock1 = true
+                                        root.isSelectingBlock2 = false
+                                    }
                                 }
                             }
 
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: "MID 설정 1"
-                                color: block1Hover.containsMouse ? "#FFFFFF" : "#888888"
-                                font.pixelSize: 13
-                                font.bold: true
-                            }
-                        }
-
-                        MouseArea {
-                            id: block1Hover
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                        }
-                    }
-
-                    // Circle between Block 1 and Block 2
-                    Rectangle {
-                        id: centerCircle
-                        width: 44
-                        height: 44
-                        radius: 22
-                        color: circleHover.containsMouse ? "#FFFFFF" : "#222222"
-                        border.width: 1.5
-                        border.color: circleHover.containsMouse ? "#FFFFFF" : "#3A3A3A"
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        Behavior on color { ColorAnimation { duration: 150 } }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "+"
-                            color: circleHover.containsMouse ? "#121212" : "#FFFFFF"
-                            font.pixelSize: 18
-                            font.bold: true
-
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                        }
-
-                        MouseArea {
-                            id: circleHover
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                        }
-                    }
-
-                    // Block 2 (MID 설정 블록 2 스타일)
-                    Rectangle {
-                        id: simpleBlock2
-                        width: 200
-                        height: 240
-                        radius: 16
-                        color: "#181818"
-                        border.width: 1.5
-                        border.color: "#343434"
-
-                        Column {
-                            anchors.centerIn: parent
-                            spacing: 12
-
+                            // Circle between Block 1 and Block 2 (Dashed Border Circle)
                             Rectangle {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                width: 44
-                                height: 44
-                                radius: 22
-                                color: block2Hover.containsMouse ? "#FFFFFF" : "#2A2A2A"
-                                border.width: 1
-                                border.color: block2Hover.containsMouse ? "#FFFFFF" : "#404040"
+                                id: centerCircle
+                                width: 46
+                                height: 46
+                                radius: 23
+                                color: circleHover.containsMouse ? "#3A3A3D" : "#222225"
+                                anchors.verticalCenter: parent.verticalCenter
 
                                 Behavior on color { ColorAnimation { duration: 150 } }
 
+                                Shape {
+                                    anchors.fill: parent
+                                    ShapePath {
+                                        strokeColor: circleHover.containsMouse ? "#FFFFFF" : "#66666B"
+                                        strokeWidth: 1.5
+                                        fillColor: "transparent"
+                                        strokeStyle: ShapePath.DashLine
+                                        dashPattern: [4, 4]
+                                        PathAngleArc {
+                                            centerX: 23
+                                            centerY: 23
+                                            radiusX: 21
+                                            radiusY: 21
+                                            startAngle: 0
+                                            sweepAngle: 360
+                                        }
+                                    }
+                                }
+
                                 Text {
                                     anchors.centerIn: parent
-                                    text: "+"
-                                    color: block2Hover.containsMouse ? "#121212" : "#CCCCCC"
-                                    font.pixelSize: 22
+                                    text: root.simpleOp
+                                    color: "#FFFFFF"
+                                    font.pixelSize: 20
                                     font.bold: true
+                                }
 
-                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                MouseArea {
+                                    id: circleHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        if (root.simpleOp === "+") root.simpleOp = "-"
+                                        else if (root.simpleOp === "-") root.simpleOp = "*"
+                                        else if (root.simpleOp === "*") root.simpleOp = "/"
+                                        else root.simpleOp = "+"
+                                        root.updateSimpleFormulaText()
+                                    }
                                 }
                             }
 
+                            // Block 2 (Right Block with Dashed Border)
+                            Rectangle {
+                                id: simpleBlock2
+                                width: 210
+                                height: 250
+                                radius: 16
+                                color: block2Hover.containsMouse ? "#222224" : "#18181A"
+
+                                Behavior on color { ColorAnimation { duration: 180 } }
+
+                                // Dashed Border Shape (Dashed Line when unselected)
+                                Shape {
+                                    id: block2DashedShape
+                                    anchors.fill: parent
+                                    visible: root.simpleBlock2Item === "" && !root.isSelectingBlock2
+                                    ShapePath {
+                                        strokeColor: block2Hover.containsMouse ? "#FFFFFF" : "#555558"
+                                        strokeWidth: 1.5
+                                        fillColor: "transparent"
+                                        strokeStyle: ShapePath.DashLine
+                                        dashPattern: [5, 4]
+                                        PathRectangle {
+                                            x: 1
+                                            y: 1
+                                            width: simpleBlock2.width - 2
+                                            height: simpleBlock2.height - 2
+                                            radius: 16
+                                        }
+                                    }
+                                }
+
+                                // Solid Border when selected or selecting
+                                Rectangle {
+                                    anchors.fill: parent
+                                    radius: 16
+                                    color: "transparent"
+                                    border.width: 1.5
+                                    border.color: root.isSelectingBlock2 ? "#00E5FF" : (root.simpleBlock2Item !== "" ? "#FFFFFF" : "#343434")
+                                    visible: root.simpleBlock2Item !== "" || root.isSelectingBlock2
+                                }
+
+                                // State A: Unselected empty state
+                                Column {
+                                    anchors.centerIn: parent
+                                    spacing: 12
+                                    visible: root.simpleBlock2Item === "" && !root.isSelectingBlock2
+
+                                    Rectangle {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        width: 44
+                                        height: 44
+                                        radius: 22
+                                        color: block2Hover.containsMouse ? "#FFFFFF" : "#2A2A2D"
+
+                                        Behavior on color { ColorAnimation { duration: 150 } }
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "+"
+                                            color: block2Hover.containsMouse ? "#121212" : "#CCCCCC"
+                                            font.pixelSize: 22
+                                            font.bold: true
+
+                                            Behavior on color { ColorAnimation { duration: 150 } }
+                                        }
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: block2Hover.containsMouse ? "블록 설정하기" : "MID / ID 블록 설정 2"
+                                        color: block2Hover.containsMouse ? "#FFFFFF" : "#888888"
+                                        font.pixelSize: 13
+                                        font.bold: true
+                                    }
+                                }
+
+                                // State B: Selection Menu Mode
+                                Item {
+                                    anchors.fill: parent
+                                    anchors.margins: 10
+                                    visible: root.isSelectingBlock2
+
+                                    Column {
+                                        anchors.fill: parent
+                                        spacing: 6
+
+                                        Text {
+                                            text: "블록 2 선택"
+                                            color: "#8E8E93"
+                                            font.pixelSize: 11
+                                            font.bold: true
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                        }
+
+                                        Flickable {
+                                            width: parent.width
+                                            height: parent.height - 24
+                                            contentHeight: b2SelCol.height
+                                            clip: true
+
+                                            Column {
+                                                id: b2SelCol
+                                                width: parent.width
+                                                spacing: 4
+
+                                                Repeater {
+                                                    model: root.referenceBlocks
+                                                    delegate: Rectangle {
+                                                        width: parent.width
+                                                        height: 28
+                                                        radius: 6
+                                                        color: b2OptHover.containsMouse ? "#FFFFFF" : "#252528"
+
+                                                        Text {
+                                                            anchors.centerIn: parent
+                                                            text: modelData === "당일지출" ? "💳 " + modelData : "🏷️ " + modelData
+                                                            color: b2OptHover.containsMouse ? "#121212" : "#DDDDDD"
+                                                            font.pixelSize: 11
+                                                            font.bold: true
+                                                            elide: Text.ElideRight
+                                                            width: parent.width - 8
+                                                            horizontalAlignment: Text.AlignHCenter
+                                                        }
+
+                                                        MouseArea {
+                                                            id: b2OptHover
+                                                            anchors.fill: parent
+                                                            hoverEnabled: true
+                                                            cursorShape: Qt.PointingHandCursor
+                                                            onClicked: {
+                                                                root.simpleBlock2Item = modelData
+                                                                root.isSelectingBlock2 = false
+                                                                root.updateSimpleFormulaText()
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // State C: Selected item state
+                                Column {
+                                    anchors.centerIn: parent
+                                    spacing: 10
+                                    visible: root.simpleBlock2Item !== "" && !root.isSelectingBlock2
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: "설정된 블록 2"
+                                        color: "#8E8E93"
+                                        font.pixelSize: 11
+                                        font.bold: true
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: root.simpleBlock2Item === "당일지출" ? "💳 " + root.simpleBlock2Item : "🏷️ " + root.simpleBlock2Item
+                                        color: "#FFFFFF"
+                                        font.pixelSize: 16
+                                        font.bold: true
+                                        elide: Text.ElideRight
+                                        width: simpleBlock2.width - 24
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    Rectangle {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        width: 60
+                                        height: 22
+                                        radius: 11
+                                        color: b2ChgHover.containsMouse ? "#FF5F57" : "#2C2C2E"
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "변경 / 삭제"
+                                            color: b2ChgHover.containsMouse ? "#FFFFFF" : "#AAAAAA"
+                                            font.pixelSize: 10
+                                            font.bold: true
+                                        }
+
+                                        MouseArea {
+                                            id: b2ChgHover
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                root.isSelectingBlock2 = true
+                                            }
+                                        }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: block2Hover
+                                    anchors.fill: parent
+                                    enabled: !root.isSelectingBlock2
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        root.isSelectingBlock2 = true
+                                        root.isSelectingBlock1 = false
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 2. Target Month Selector Row
+                    Text {
+                        text: "수식 적용 대상 월"
+                        color: "#CCCCCC"
+                        font.pixelSize: 12
+                        font.bold: true
+                    }
+
+                    Flickable {
+                        width: parent.width
+                        height: 32
+                        contentWidth: sMonthRow.width
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+
+                        Row {
+                            id: sMonthRow
+                            spacing: 6
+
+                            Rectangle {
+                                width: 52
+                                height: 28
+                                radius: 14
+                                color: root.targetMonth === 0 ? "#FFFFFF" : "#2C2C2C"
+                                border.width: 1
+                                border.color: root.targetMonth === 0 ? "#FFFFFF" : "#3D3D3D"
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "전체 월"
+                                    color: root.targetMonth === 0 ? "#121212" : "#AAAAAA"
+                                    font.pixelSize: 11
+                                    font.bold: root.targetMonth === 0
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.targetMonth = 0
+                                }
+                            }
+
+                            Repeater {
+                                model: 12
+                                delegate: Rectangle {
+                                    width: 28
+                                    height: 28
+                                    radius: 14
+                                    color: root.targetMonth === index + 1 ? "#FFFFFF" : "#2C2C2C"
+                                    border.width: 1
+                                    border.color: root.targetMonth === index + 1 ? "#FFFFFF" : "#3D3D3D"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: (index + 1).toString()
+                                        color: root.targetMonth === index + 1 ? "#121212" : "#AAAAAA"
+                                        font.pixelSize: 12
+                                        font.bold: root.targetMonth === index + 1
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: root.targetMonth = index + 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Item { width: 1; height: 6 }
+
+                    // 3. Action Buttons (Clear, Apply)
+                    Row {
+                        anchors.right: parent.right
+                        spacing: 10
+
+                        Rectangle {
+                            width: 90
+                            height: 36
+                            radius: 10
+                            color: sClearHover.containsMouse ? "#3A2A2A" : "#2A1A1A"
+                            border.width: 1
+                            border.color: "#FF5F57"
+
                             Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: "MID 설정 2"
-                                color: block2Hover.containsMouse ? "#FFFFFF" : "#888888"
-                                font.pixelSize: 13
+                                anchors.centerIn: parent
+                                text: "수식 삭제"
+                                color: "#FF5F57"
+                                font.pixelSize: 12
                                 font.bold: true
+                            }
+
+                            MouseArea {
+                                id: sClearHover
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    formulaInput.text = ""
+                                    root.simpleBlock1Item = ""
+                                    root.simpleBlock2Item = ""
+                                    root.simpleOp = "+"
+                                    root.updateTokensFromText()
+                                    root.applyFormula()
+                                }
                             }
                         }
 
-                        MouseArea {
-                            id: block2Hover
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
+                        Rectangle {
+                            width: 110
+                            height: 36
+                            radius: 10
+                            color: sApplyHover.containsMouse ? "#E0E0E0" : "#FFFFFF"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "수식 적용"
+                                color: "#121212"
+                                font.pixelSize: 13
+                                font.bold: true
+                            }
+
+                            MouseArea {
+                                id: sApplyHover
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.applyFormula()
+                            }
                         }
                     }
                 }
