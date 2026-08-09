@@ -21,6 +21,13 @@ Item {
 
     property int lastValidMonth: (selectedMonth > 0 && selectedMonth <= 12) ? selectedMonth : 8
     readonly property int activeMonth: selectedMonth > 0 ? selectedMonth : (lastValidMonth > 0 ? lastValidMonth : 8)
+    readonly property int currentDisplayMonth: (typeof monthCellsWheel !== "undefined")
+                                               ? Math.max(1, Math.min(12, Math.round(monthCellsWheel.offset) + 1))
+                                               : root.activeMonth
+
+    onCurrentDisplayMonthChanged: {
+        calculateTotalValue()
+    }
 
     onSelectedMonthChanged: {
         if (selectedMonth > 0) {
@@ -59,7 +66,7 @@ Item {
             return isNaN(v) ? 0.0 : v
         }
 
-        var targetM = root.activeMonth
+        var targetM = root.currentDisplayMonth
         var currVal = getMonthVal(targetM)
         var prevVal = (targetM > 1) ? getMonthVal(targetM - 1) : 0.0
         root.totalValue = currVal - prevVal
@@ -625,7 +632,6 @@ Item {
                     font.bold: true
                     scale: sumHoverHandler.hovered ? 1.18 : 1.0
                     Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
-                    Behavior on color { ColorAnimation { duration: 250 } }
                     Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
                 }
             }
