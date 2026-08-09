@@ -57,7 +57,8 @@ Item {
         ":": { name: ": (콜론)", category: "구분자 및 특수 기호", desc: "범위를 지정하는 구분자입니다.", example: "예시: SUM(블록1 : 블록5)" },
 
         "INTUP": { name: "INTUP(블록, 자릿수)", category: "수식 함수", desc: "지정한 자릿수 위치에서 반올림하여 계산합니다.", example: "예시: INTUP(순수금액, 2)  🡲  5,874  🡲  5,900" },
-        "INTDOWN": { name: "INTDOWN(블록, 자릿수)", category: "수식 함수", desc: "지정한 자릿수 위치에서 내림하여 계산합니다.", example: "예시: INTDOWN(순수금액, 3)  🡲  5,874  🡲  5,800" }
+        "INTDOWN": { name: "INTDOWN(블록, 자릿수)", category: "수식 함수", desc: "지정한 자릿수 위치에서 내림하여 계산합니다.", example: "예시: INTDOWN(순수금액, 3)  🡲  5,874  🡲  5,800" },
+        "LEFTOVER": { name: "LEFTOVER(블록, 자릿수)", category: "수식 함수", desc: "지정한 자릿수 이하의 값만 남기고 상위 자릿수는 버립니다.", example: "예시: LEFTOVER(순수금액, 2)  🡲  5,874  🡲  74" }
     })
 
     signal formulaApplied()
@@ -1475,7 +1476,7 @@ Item {
                                     width: 72
                                 }
                                 Repeater {
-                                    model: ["INTUP", "INTDOWN"]
+                                    model: ["INTUP", "INTDOWN", "LEFTOVER"]
                                     delegate: Rectangle {
                                         width: 62
                                         height: 20

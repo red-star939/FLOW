@@ -287,6 +287,23 @@ Value Evaluator::visit_function(const FunctionCallNode* node) {
         return std::floor(*pNum / factor) * factor;
     }
 
+    if (func_name == "LEFTOVER") {
+        if (node->arguments.size() != 2) return ErrorType::ValueError;
+        Value val = visit(node->arguments[0].get());
+        if (std::holds_alternative<ErrorType>(val)) return val;
+        auto pNum = std::get_if<double>(&val);
+        if (!pNum) return ErrorType::ValueError;
+
+        Value nVal = visit(node->arguments[1].get());
+        if (std::holds_alternative<ErrorType>(nVal)) return nVal;
+        auto pN = std::get_if<double>(&nVal);
+        if (!pN) return ErrorType::ValueError;
+
+        int n = static_cast<int>(*pN);
+        double factor = std::pow(10.0, n);
+        return std::fmod(*pNum, factor);
+    }
+
     return ErrorType::InvalidName;
 }
 

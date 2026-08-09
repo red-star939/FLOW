@@ -605,7 +605,7 @@ Item {
         }
 
         // Normalize function names to uppercase
-        expr = expr.replace(/\b(sum|average|min|max|count|if|round|abs|intup|intdown)\b/gi, function(m) {
+        expr = expr.replace(/\b(sum|average|min|max|count|if|round|abs|intup|intdown|leftover)\b/gi, function(m) {
             return m.toUpperCase();
         });
 
@@ -710,11 +710,17 @@ Item {
                 var f = Math.pow(10, Math.max(0, n - 1));
                 return Math.floor(v / f) * f;
             }
+            function LEFTOVER(v, n) {
+                v = parseFloat(v) || 0;
+                n = parseInt(n) || 0;
+                var f = Math.pow(10, n);
+                return v % f;
+            }
         `;
 
         expr = expr.replace(/(^|[^A-Za-z0-9_가-힣])([A-Za-z_가-힣][A-Za-z0-9_가-힣]*)(?!\s*\()/gi, function(m, p1, p2) {
             var u = p2.toUpperCase();
-            if (u === "SUM" || u === "AVERAGE" || u === "MIN" || u === "MAX" || u === "COUNT" || u === "IF" || u === "ROUND" || u === "ABS" || u === "INTUP" || u === "INTDOWN" || u === "TRUE" || u === "FALSE") return m;
+            if (u === "SUM" || u === "AVERAGE" || u === "MIN" || u === "MAX" || u === "COUNT" || u === "IF" || u === "ROUND" || u === "ABS" || u === "INTUP" || u === "INTDOWN" || u === "LEFTOVER" || u === "TRUE" || u === "FALSE") return m;
             return p1 + "0";
         });
 
