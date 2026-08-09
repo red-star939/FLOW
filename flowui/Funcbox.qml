@@ -141,32 +141,78 @@ Item {
         }
     }
 
-    function refreshReferenceBlocks() {
-        var list = ["당일지출"]
+    function getBlockPrefix(name) {
+        if (!name) return ""
+        if (name === "당일지출") return "💳 "
         if (typeof dbController !== "undefined") {
             var mids = dbController.getMIDItems(selectedYear)
             if (mids) {
                 for (var i = 0; i < mids.length; i++) {
-                    if (mids[i].name) list.push(mids[i].name)
+                    if (mids[i].name === name) return "🏷️ "
                 }
             }
             var m = targetMonth === 0 ? 1 : targetMonth
             var ids = dbController.getIDItems(selectedYear, m)
             if (ids) {
                 for (var j = 0; j < ids.length; j++) {
-                    if (ids[j].id) {
-                        list.push(ids[j].id)
-                        if (ids[j].subItems && ids[j].subItems.length > 0) {
-                            for (var k = 0; k < ids[j].subItems.length; k++) {
-                                var sName = ids[j].subItems[k].title ? ids[j].subItems[k].title : ids[j].subItems[k].subId
-                                if (sName) list.push(sName)
-                            }
+                    if (ids[j].id === name) return "📌 "
+                    if (ids[j].subItems) {
+                        for (var k = 0; k < ids[j].subItems.length; k++) {
+                            var sName = ids[j].subItems[k].title ? ids[j].subItems[k].title : ids[j].subItems[k].subId
+                            if (sName === name) return "🔹 "
                         }
                     }
                 }
             }
         }
-        referenceBlocks = list
+        return "🏷️ "
+    }
+
+    function refreshReferenceBlocks() {
+        var categorized = []
+        if (typeof dbController !== "undefined") {
+            // 1. MID 블록
+            var mids = dbController.getMIDItems(selectedYear)
+            var midItems = []
+            if (mids) {
+                for (var i = 0; i < mids.length; i++) {
+                    if (mids[i].name) midItems.push(mids[i].name)
+                }
+            }
+            if (midItems.length > 0) {
+                categorized.push({ category: "🏷️ MID 블록", items: midItems })
+            }
+
+            // 2. ID 블록 & SubID 세부항목
+            var m = targetMonth === 0 ? 1 : targetMonth
+            var ids = dbController.getIDItems(selectedYear, m)
+            var idItems = []
+            var subIdItems = []
+            if (ids) {
+                for (var j = 0; j < ids.length; j++) {
+                    if (ids[j].id) {
+                        idItems.push(ids[j].id)
+                        if (ids[j].subItems && ids[j].subItems.length > 0) {
+                            for (var k = 0; k < ids[j].subItems.length; k++) {
+                                var sName = ids[j].subItems[k].title ? ids[j].subItems[k].title : ids[j].subItems[k].subId
+                                if (sName && subIdItems.indexOf(sName) === -1) {
+                                    subIdItems.push(sName)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (idItems.length > 0) {
+                categorized.push({ category: "📌 ID 블록", items: idItems })
+            }
+            if (subIdItems.length > 0) {
+                categorized.push({ category: "🔹 SubID 세부항목", items: subIdItems })
+            }
+        }
+        categorized.push({ category: "💳 기타 항목", items: ["당일지출"] })
+
+        referenceBlocks = categorized
     }
 
     function updateFormulaInputText() {
@@ -643,34 +689,63 @@ Item {
 
                                                 Repeater {
                                                     model: root.referenceBlocks
-                                                    delegate: Rectangle {
+                                                    delegate: Column {
                                                         width: parent.width
-                                                        height: 28
-                                                        radius: 6
-                                                        color: b1OptHover.containsMouse ? "#FFFFFF" : "#252528"
+                                                        spacing: 3
 
-                                                        Text {
-                                                            anchors.centerIn: parent
-                                                            text: modelData === "당일지출" ? "💳 " + modelData : "🏷️ " + modelData
-                                                            color: b1OptHover.containsMouse ? "#121212" : "#DDDDDD"
-                                                            font.pixelSize: 11
-                                                            font.bold: true
-                                                            elide: Text.ElideRight
-                                                            width: parent.width - 8
-                                                            horizontalAlignment: Text.AlignHCenter
-                                                        }
+                                                        // Section Header
+                                                        Rectangle {
+                                                            width: parent.width
+                                                            height: 20
+                                                            color: "#1E1E22"
+                                                            radius: 4
 
-                                                        MouseArea {
-                                                            id: b1OptHover
-                                                            anchors.fill: parent
-                                                            hoverEnabled: true
-                                                            cursorShape: Qt.PointingHandCursor
-                                                            onClicked: {
-                                                                root.simpleBlock1Item = modelData
-                                                                root.isSelectingBlock1 = false
-                                                                root.updateSimpleFormulaText()
+                                                            Text {
+                                                                anchors.left: parent.left
+                                                                anchors.leftMargin: 6
+                                                                anchors.verticalCenter: parent.verticalCenter
+                                                                text: modelData.category
+                                                                color: "#00E5FF"
+                                                                font.pixelSize: 10
+                                                                font.bold: true
                                                             }
                                                         }
+
+                                                        // Section Items
+                                                        Repeater {
+                                                            model: modelData.items
+                                                            delegate: Rectangle {
+                                                                width: parent.width
+                                                                height: 26
+                                                                radius: 6
+                                                                color: b1OptHover.containsMouse ? "#FFFFFF" : "#252528"
+
+                                                                Text {
+                                                                    anchors.centerIn: parent
+                                                                    text: modelData
+                                                                    color: b1OptHover.containsMouse ? "#121212" : "#DDDDDD"
+                                                                    font.pixelSize: 11
+                                                                    font.bold: true
+                                                                    elide: Text.ElideRight
+                                                                    width: parent.width - 12
+                                                                    horizontalAlignment: Text.AlignHCenter
+                                                                }
+
+                                                                MouseArea {
+                                                                    id: b1OptHover
+                                                                    anchors.fill: parent
+                                                                    hoverEnabled: true
+                                                                    cursorShape: Qt.PointingHandCursor
+                                                                    onClicked: {
+                                                                        root.simpleBlock1Item = modelData
+                                                                        root.isSelectingBlock1 = false
+                                                                        root.updateSimpleFormulaText()
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+
+                                                        Item { width: 1; height: 4 }
                                                     }
                                                 }
                                             }
@@ -694,7 +769,7 @@ Item {
 
                                     Text {
                                         anchors.horizontalCenter: parent.horizontalCenter
-                                        text: root.simpleBlock1Item === "당일지출" ? "💳 " + root.simpleBlock1Item : "🏷️ " + root.simpleBlock1Item
+                                        text: root.getBlockPrefix(root.simpleBlock1Item) + root.simpleBlock1Item
                                         color: "#FFFFFF"
                                         font.pixelSize: 16
                                         font.bold: true
@@ -945,34 +1020,63 @@ Item {
 
                                                 Repeater {
                                                     model: root.referenceBlocks
-                                                    delegate: Rectangle {
+                                                    delegate: Column {
                                                         width: parent.width
-                                                        height: 28
-                                                        radius: 6
-                                                        color: b2OptHover.containsMouse ? "#FFFFFF" : "#252528"
+                                                        spacing: 3
 
-                                                        Text {
-                                                            anchors.centerIn: parent
-                                                            text: modelData === "당일지출" ? "💳 " + modelData : "🏷️ " + modelData
-                                                            color: b2OptHover.containsMouse ? "#121212" : "#DDDDDD"
-                                                            font.pixelSize: 11
-                                                            font.bold: true
-                                                            elide: Text.ElideRight
-                                                            width: parent.width - 8
-                                                            horizontalAlignment: Text.AlignHCenter
-                                                        }
+                                                        // Section Header
+                                                        Rectangle {
+                                                            width: parent.width
+                                                            height: 20
+                                                            color: "#1E1E22"
+                                                            radius: 4
 
-                                                        MouseArea {
-                                                            id: b2OptHover
-                                                            anchors.fill: parent
-                                                            hoverEnabled: true
-                                                            cursorShape: Qt.PointingHandCursor
-                                                            onClicked: {
-                                                                root.simpleBlock2Item = modelData
-                                                                root.isSelectingBlock2 = false
-                                                                root.updateSimpleFormulaText()
+                                                            Text {
+                                                                anchors.left: parent.left
+                                                                anchors.leftMargin: 6
+                                                                anchors.verticalCenter: parent.verticalCenter
+                                                                text: modelData.category
+                                                                color: "#00E5FF"
+                                                                font.pixelSize: 10
+                                                                font.bold: true
                                                             }
                                                         }
+
+                                                        // Section Items
+                                                        Repeater {
+                                                            model: modelData.items
+                                                            delegate: Rectangle {
+                                                                width: parent.width
+                                                                height: 26
+                                                                radius: 6
+                                                                color: b2OptHover.containsMouse ? "#FFFFFF" : "#252528"
+
+                                                                Text {
+                                                                    anchors.centerIn: parent
+                                                                    text: modelData
+                                                                    color: b2OptHover.containsMouse ? "#121212" : "#DDDDDD"
+                                                                    font.pixelSize: 11
+                                                                    font.bold: true
+                                                                    elide: Text.ElideRight
+                                                                    width: parent.width - 12
+                                                                    horizontalAlignment: Text.AlignHCenter
+                                                                }
+
+                                                                MouseArea {
+                                                                    id: b2OptHover
+                                                                    anchors.fill: parent
+                                                                    hoverEnabled: true
+                                                                    cursorShape: Qt.PointingHandCursor
+                                                                    onClicked: {
+                                                                        root.simpleBlock2Item = modelData
+                                                                        root.isSelectingBlock2 = false
+                                                                        root.updateSimpleFormulaText()
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+
+                                                        Item { width: 1; height: 4 }
                                                     }
                                                 }
                                             }
@@ -996,7 +1100,7 @@ Item {
 
                                     Text {
                                         anchors.horizontalCenter: parent.horizontalCenter
-                                        text: root.simpleBlock2Item === "당일지출" ? "💳 " + root.simpleBlock2Item : "🏷️ " + root.simpleBlock2Item
+                                        text: root.getBlockPrefix(root.simpleBlock2Item) + root.simpleBlock2Item
                                         color: "#FFFFFF"
                                         font.pixelSize: 16
                                         font.bold: true
