@@ -743,19 +743,24 @@ Item {
                                 }
                             }
 
-                            // Circle between Block 1 and Block 2 (Dashed Border Circle)
+                            // Circle between Block 1 and Block 2 (Dashed when empty, Solid when set)
                             Rectangle {
                                 id: centerCircle
                                 width: 46
                                 height: 46
                                 radius: 23
                                 color: circleHover.containsMouse ? "#3A3A3D" : "#222225"
+                                border.width: root.simpleOp !== "" ? 1.5 : 0
+                                border.color: circleHover.containsMouse ? "#FFFFFF" : "#AAAAAA"
                                 anchors.verticalCenter: parent.verticalCenter
 
                                 Behavior on color { ColorAnimation { duration: 150 } }
+                                Behavior on border.color { ColorAnimation { duration: 150 } }
 
+                                // Dashed Border Shape (visible when simpleOp is empty)
                                 Shape {
                                     anchors.fill: parent
+                                    visible: root.simpleOp === ""
                                     ShapePath {
                                         strokeColor: circleHover.containsMouse ? "#FFFFFF" : "#66666B"
                                         strokeWidth: 1.5
@@ -775,9 +780,9 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: root.simpleOp !== "" ? root.simpleOp : "–"
-                                    color: root.simpleOp !== "" ? "#FFFFFF" : "#66666B"
-                                    font.pixelSize: root.simpleOp !== "" ? 20 : 14
+                                    text: root.simpleOp
+                                    color: "#FFFFFF"
+                                    font.pixelSize: 20
                                     font.bold: true
                                 }
 
