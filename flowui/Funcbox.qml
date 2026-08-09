@@ -11,7 +11,7 @@ Item {
     // Simple Mode State
     property string simpleBlock1Item: ""
     property string simpleBlock2Item: ""
-    property string simpleOp: "+"
+    property string simpleOp: ""
     property bool isSelectingBlock1: false
     property bool isSelectingBlock2: false
 
@@ -103,11 +103,11 @@ Item {
             simpleBlock2Item = tokens[tokens.length - 1]
         } else if (tokens.length === 1) {
             simpleBlock1Item = tokens[0]
-            simpleOp = "+"
+            simpleOp = ""
             simpleBlock2Item = ""
         } else {
             simpleBlock1Item = ""
-            simpleOp = "+"
+            simpleOp = ""
             simpleBlock2Item = ""
         }
         isSelectingBlock1 = false
@@ -1149,7 +1149,7 @@ Item {
                                     formulaInput.text = ""
                                     root.simpleBlock1Item = ""
                                     root.simpleBlock2Item = ""
-                                    root.simpleOp = "+"
+                                    root.simpleOp = ""
                                     root.updateTokensFromText()
                                     root.applyFormula()
                                 }
