@@ -4,8 +4,8 @@ import QtQuick.Controls
 Item {
     id: root
 
-    property int startYear: (typeof dbController !== "undefined" && dbController.startYear > 0) ? dbController.startYear : 2020
-    property int endYear: (typeof dbController !== "undefined" && dbController.endYear > 0) ? dbController.endYear : 2030
+    property int startYear: (typeof dbController !== "undefined" && dbController.startYear >= 0) ? dbController.startYear : 2020
+    property int endYear: (typeof dbController !== "undefined" && dbController.endYear >= 0) ? dbController.endYear : 2030
     property int selectedYear: 2026
 
     signal yearChanged(int year)
@@ -14,7 +14,7 @@ Item {
     height: 70
 
     function syncYearRange() {
-        if (typeof dbController !== "undefined" && dbController.startYear > 0 && dbController.endYear > 0) {
+        if (typeof dbController !== "undefined" && dbController.startYear >= 0 && dbController.endYear >= 0) {
             root.startYear = dbController.startYear
             root.endYear = dbController.endYear
         }
@@ -40,7 +40,7 @@ Item {
     Connections {
         target: typeof dbController !== "undefined" ? dbController : null
         function onYearRangeChanged(sYear, eYear) {
-            if (sYear > 0 && eYear > 0) {
+            if (sYear >= 0 && eYear >= 0) {
                 root.startYear = sYear
                 root.endYear = eYear
                 root.syncYearRange()

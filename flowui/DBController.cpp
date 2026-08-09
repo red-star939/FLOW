@@ -66,7 +66,7 @@ bool DBController::loadDatabase() {
 
 QVariantList DBController::getMIDItems(int year) {
     QVariantList list;
-    if (year <= 0) return list;
+    if (year < 0) return list;
 
     bool isNewYear = (m_dbManager.get_year(year) == nullptr);
     DB::YearData* ydata = m_dbManager.get_year(year);
@@ -125,7 +125,7 @@ QVariantList DBController::getMIDItems(int year) {
 }
 
 bool DBController::addMIDBlock(int year, const QString& midName) {
-    if (year <= 0) return false;
+    if (year < 0) return false;
     QString finalName = midName.trimmed();
     if (finalName.isEmpty()) {
         QVariantList currentMids = getMIDItems(year);
@@ -141,7 +141,7 @@ bool DBController::addMIDBlock(int year, const QString& midName) {
 }
 
 bool DBController::removeMIDBlock(int year, const QString& uuidOrMid) {
-    if (year <= 0 || uuidOrMid.isEmpty()) return false;
+    if (year < 0 || uuidOrMid.isEmpty()) return false;
     bool ok = m_dbManager.remove_mid(year, uuidOrMid.toStdString());
     if (ok) {
         m_dbManager.save_to_file("db/database.json");
@@ -151,7 +151,7 @@ bool DBController::removeMIDBlock(int year, const QString& uuidOrMid) {
 }
 
 bool DBController::updateMIDBlockTitle(int year, const QString& uuidOrMid, const QString& newTitle) {
-    if (year <= 0 || uuidOrMid.isEmpty() || newTitle.isEmpty()) return false;
+    if (year < 0 || uuidOrMid.isEmpty() || newTitle.isEmpty()) return false;
     bool ok = m_dbManager.update_mid_title(year, uuidOrMid.toStdString(), newTitle.toStdString());
     if (ok) {
         m_dbManager.save_to_file("db/database.json");
@@ -161,7 +161,7 @@ bool DBController::updateMIDBlockTitle(int year, const QString& uuidOrMid, const
 }
 
 bool DBController::moveMIDBlock(int year, int fromIndex, int toIndex) {
-    if (year <= 0) return false;
+    if (year < 0) return false;
     bool ok = m_dbManager.move_mid(year, fromIndex, toIndex);
     if (ok) {
         m_dbManager.save_to_file("db/database.json");
@@ -171,7 +171,7 @@ bool DBController::moveMIDBlock(int year, int fromIndex, int toIndex) {
 }
 
 bool DBController::setMIDMonthFormula(int year, const QString& midUuidOrName, int month, const QString& formula) {
-    if (year <= 0 || midUuidOrName.isEmpty()) return false;
+    if (year < 0 || midUuidOrName.isEmpty()) return false;
     bool ok = m_dbManager.set_formula(year, midUuidOrName.toStdString(), month, formula.toStdString());
     if (ok) {
         m_dbManager.save_to_file("db/database.json");
@@ -181,7 +181,7 @@ bool DBController::setMIDMonthFormula(int year, const QString& midUuidOrName, in
 }
 
 QString DBController::getMIDMonthFormula(int year, const QString& midUuidOrName, int month) {
-    if (year <= 0 || midUuidOrName.isEmpty()) return "";
+    if (year < 0 || midUuidOrName.isEmpty()) return "";
     int targetMonth = (month == 0) ? 1 : month;
 
     DB::YearData* ydata = m_dbManager.get_year(year);
@@ -215,7 +215,7 @@ bool DBController::saveThemeIndex(int themeIndex) {
 
 QVariantList DBController::getIDItems(int year, int month) {
     QVariantList list;
-    if (year <= 0) return list;
+    if (year < 0) return list;
 
     DB::YearData* ydata = m_dbManager.get_year(year);
     if (!ydata) {

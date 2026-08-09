@@ -17,9 +17,14 @@ Item {
         }
     }
 
-    property int tempStartYear: (typeof dbController !== "undefined" && dbController.startYear > 0) ? dbController.startYear : 2020
-    property int tempEndYear: (typeof dbController !== "undefined" && dbController.endYear > 0) ? dbController.endYear : 2030
-    readonly property bool isValidRange: tempStartYear <= tempEndYear
+    property int tempStartYear: (typeof dbController !== "undefined" && dbController.startYear >= 0) ? dbController.startYear : 2020
+    property int tempEndYear: (typeof dbController !== "undefined" && dbController.endYear >= 0) ? dbController.endYear : 2030
+
+    readonly property bool isStartValid: tempStartYear >= 0
+    readonly property bool isEndValid: tempEndYear >= tempStartYear
+    readonly property int yearSpan: (tempEndYear - tempStartYear + 1)
+    readonly property bool isSpanValid: yearSpan > 0 && yearSpan <= 100
+    readonly property bool isValidRange: isStartValid && isEndValid && isSpanValid
 
     onVisibleChanged: {
         if (visible) {
@@ -34,8 +39,8 @@ Item {
 
     function syncFromBackend() {
         if (typeof dbController !== "undefined") {
-            if (dbController.startYear > 0) tempStartYear = dbController.startYear
-            if (dbController.endYear > 0) tempEndYear = dbController.endYear
+            if (dbController.startYear >= 0) tempStartYear = dbController.startYear
+            if (dbController.endYear >= 0) tempEndYear = dbController.endYear
         }
     }
 
@@ -114,7 +119,7 @@ Item {
             }
 
             Text {
-                text: "Specify the starting and ending year range for database operations."
+                text: "Specify the starting and ending year range (0 to infinity, max 100 years span)."
                 color: "#888888"
                 font.pixelSize: 13
                 wrapMode: Text.WordWrap
@@ -170,7 +175,7 @@ Item {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        if (tempStartYear > 1900) tempStartYear--
+                                        if (tempStartYear > 0) tempStartYear--
                                     }
                                 }
                             }
@@ -187,10 +192,10 @@ Item {
                                 font.pixelSize: 18
                                 font.bold: true
                                 selectByMouse: true
-                                validator: IntValidator { bottom: 1900; top: 2999 }
+                                validator: IntValidator { bottom: 0; top: 999999 }
                                 onEditingFinished: {
                                     var val = parseInt(text)
-                                    if (!isNaN(val) && val >= 1900 && val <= 2999) {
+                                    if (!isNaN(val) && val >= 0) {
                                         tempStartYear = val
                                     } else {
                                         text = tempStartYear.toString()
@@ -217,7 +222,7 @@ Item {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        if (tempStartYear < 2999) tempStartYear++
+                                        tempStartYear++
                                     }
                                 }
                             }
@@ -269,7 +274,7 @@ Item {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        if (tempEndYear > 1900) tempEndYear--
+                                        if (tempEndYear > 0) tempEndYear--
                                     }
                                 }
                             }
@@ -286,10 +291,10 @@ Item {
                                 font.pixelSize: 18
                                 font.bold: true
                                 selectByMouse: true
-                                validator: IntValidator { bottom: 1900; top: 2999 }
+                                validator: IntValidator { bottom: 0; top: 999999 }
                                 onEditingFinished: {
                                     var val = parseInt(text)
-                                    if (!isNaN(val) && val >= 1900 && val <= 2999) {
+                                    if (!isNaN(val) && val >= 0) {
                                         tempEndYear = val
                                     } else {
                                         text = tempEndYear.toString()
@@ -316,7 +321,7 @@ Item {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        if (tempEndYear < 2999) tempEndYear++
+                                        tempEndYear++
                                     }
                                 }
                             }
@@ -336,9 +341,13 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: yearsetRoot.isValidRange
-                          ? "Configured Span: " + (tempEndYear - tempStartYear + 1) + " Years (" + tempStartYear + " ~ " + tempEndYear + ")"
-                          : "Invalid: Start Year must be less than or equal to End Year"
+                    text: tempStartYear < 0
+                          ? "오류: 시작 연도는 0년 이상이어야 합니다"
+                          : (tempStartYear > tempEndYear
+                             ? "오류: 시작 연도는 끝 연도보다 작거나 같아야 합니다"
+                             : (yearsetRoot.yearSpan > 100
+                                ? "오류: 연도 범위는 최대 100년까지만 설정 가능합니다 (현재 " + yearsetRoot.yearSpan + "년)"
+                                : "설정 범위: " + yearsetRoot.yearSpan + "년 (" + tempStartYear + "년 ~ " + tempEndYear + "년)"))
                     color: yearsetRoot.isValidRange ? "#88E088" : "#E08888"
                     font.pixelSize: 12
                     font.bold: true
