@@ -8,22 +8,68 @@ Item {
     property string uuid: ""
     property string midName: "MID 블록"
     property var monthsData: []
-    property real totalValue: 0
-    property int selectedYear: 2026
-    property int selectedMonth: 1
-    property Flickable parentFlickable: null
+    property int lastValidMonth: (selectedMonth > 0 && selectedMonth <= 12) ? selectedMonth : 8
+    readonly property int activeMonth: selectedMonth > 0 ? selectedMonth : (lastValidMonth > 0 ? lastValidMonth : 8)
 
-    signal removeRequested(int index)
-    signal moveRequested(int fromIndex, int toIndex)
-    signal titleEdited(string newTitle)
-    signal editingFinished()
-    signal formulaRequested(string midUuid, string midName, Item buttonItem)
+    onSelectedMonthChanged: {
+        if (selectedMonth > 0) {
+            lastValidMonth = selectedMonth
+        }
+        calculateTotalValue()
+        if (typeof monthCellsWheel !== "undefined") {
+            var targetIdx = activeMonth - 1
+            if (monthCellsWheel.currentIndex !== targetIdx) {
+                monthCellsWheel.currentIndex = targetIdx
+            }
+        }
+    }
+
+    onMonthsDataChanged: {
+        calculateTotalValue()
+        if (typeof monthCellsWheel !== "undefined") {
+            var targetIdx = activeMonth - 1
+            if (monthCellsWheel.currentIndex !== targetIdx) {
+                monthCellsWheel.currentIndex = targetIdx
+            }
+        }
+    }
+
+    function calculateTotalValue() {
+        if (!monthsData || monthsData.length === 0) {
+            root.totalValue = 0
+            return
+        }
+
+        var getMonthVal = function(m) {
+            if (m < 1 || m > monthsData.length) return 0.0
+            var mObj = monthsData[m - 1]
+            if (!mObj) return 0.0
+            var v = mObj.value !== undefined ? Number(mObj.value) : (mObj.formula_result !== undefined ? Number(mObj.formula_result) : 0.0)
+            return isNaN(v) ? 0.0 : v
+        }
+
+        if (root.selectedMonth > 0) {
+            var currVal = getMonthVal(root.selectedMonth)
+            var prevVal = (root.selectedMonth > 1) ? getMonthVal(root.selectedMonth - 1) : 0.0
+            root.totalValue = currVal - prevVal
+        } else {
+            var sum = 0.0
+            for (var i = 1; i <= 12; i++) {
+                sum += getMonthVal(i)
+            }
+            root.totalValue = sum
+        }
+    }
 
     Component.onCompleted: {
         if (root.midName === "" || root.midName === "새 MID" || root.midName.indexOf("MID ") === 0) {
             titleInput.forceActiveFocus()
             titleInput.selectAll()
         }
+        if (root.selectedMonth > 0) {
+            root.lastValidMonth = root.selectedMonth
+        }
+        root.calculateTotalValue()
     }
 
     // Make width responsive to parent, fallback to 1200
@@ -452,71 +498,13 @@ Item {
             width: Math.min(800, parent.width - 120)
 
             model: (root.monthsData && root.monthsData.length === 12) ? root.monthsData : 12
-            currentIndex: Math.max(0, Math.min(11, root.selectedMonth - 1))
+            currentIndex: Math.max(0, Math.min(11, root.activeMonth - 1))
             highlightMoveDuration: 0
             pathItemCount: 3
             preferredHighlightBegin: 0.5
             preferredHighlightEnd: 0.5
             highlightRangeMode: PathView.StrictlyEnforceRange
             dragMargin: width / 3
-
-            Connections {
-                target: root
-                function onSelectedMonthChanged() {
-                    if (root.selectedMonth > 0) {
-                        var targetIdx = root.selectedMonth - 1
-                        if (monthCellsWheel.currentIndex !== targetIdx) {
-                            monthCellsWheel.currentIndex = targetIdx
-                        }
-                    }
-                }
-    function calculateTotalValue() {
-        if (!monthsData || monthsData.length === 0) {
-            root.totalValue = 0
-            return
-        }
-
-        var getMonthVal = function(m) {
-            if (m < 1 || m > monthsData.length) return 0.0
-            var mObj = monthsData[m - 1]
-            if (!mObj) return 0.0
-            var v = mObj.value !== undefined ? Number(mObj.value) : (mObj.formula_result !== undefined ? Number(mObj.formula_result) : 0.0)
-            return isNaN(v) ? 0.0 : v
-        }
-
-        if (root.selectedMonth > 0) {
-            var currVal = getMonthVal(root.selectedMonth)
-            var prevVal = (root.selectedMonth > 1) ? getMonthVal(root.selectedMonth - 1) : 0.0
-            root.totalValue = currVal - prevVal
-        } else {
-            var sum = 0.0
-            for (var i = 1; i <= 12; i++) {
-                sum += getMonthVal(i)
-            }
-            root.totalValue = sum
-        }
-    }
-
-    onSelectedMonthChanged: {
-        calculateTotalValue()
-        if (root.selectedMonth > 0 && typeof monthCellsWheel !== "undefined") {
-            var targetIdx = root.selectedMonth - 1
-            if (monthCellsWheel.currentIndex !== targetIdx) {
-                monthCellsWheel.currentIndex = targetIdx
-            }
-        }
-    }
-
-    onMonthsDataChanged: {
-        calculateTotalValue()
-        if (root.selectedMonth > 0 && typeof monthCellsWheel !== "undefined") {
-            var targetIdx = root.selectedMonth - 1
-            if (monthCellsWheel.currentIndex !== targetIdx) {
-                monthCellsWheel.currentIndex = targetIdx
-            }
-        }
-    }
-            }
 
             path: Path {
                 startX: 80
@@ -574,7 +562,7 @@ Item {
                     text: parent.val !== 0
                           ? Number(parent.val).toLocaleString(Qt.locale("ko_KR"), "f", 0)
                           : "-"
-                    font.pixelSize: (index === (root.selectedMonth - 1)) ? 18 : 14
+                    font.pixelSize: (index === (root.activeMonth - 1)) ? 18 : 14
                     font.bold: true
                     color: parent.val !== 0 ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#666666"
 
