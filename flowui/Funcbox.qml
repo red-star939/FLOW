@@ -95,8 +95,12 @@ Item {
         var tokens = getFormulaTokens()
         if (tokens.length >= 3) {
             simpleBlock1Item = tokens[0]
-            simpleOp = tokens[1]
-            simpleBlock2Item = tokens[2]
+            if (tokens[1] === "+" || tokens[1] === "-") {
+                simpleOp = tokens[1]
+            } else {
+                simpleOp = ""
+            }
+            simpleBlock2Item = tokens[tokens.length - 1]
         } else if (tokens.length === 1) {
             simpleBlock1Item = tokens[0]
             simpleOp = "+"
@@ -111,8 +115,9 @@ Item {
     }
 
     function updateSimpleFormulaText() {
+        var opStr = simpleOp !== "" ? (" " + simpleOp + " ") : " "
         if (simpleBlock1Item !== "" && simpleBlock2Item !== "") {
-            formulaInput.text = simpleBlock1Item + " " + simpleOp + " " + simpleBlock2Item
+            formulaInput.text = simpleBlock1Item + opStr + simpleBlock2Item
         } else if (simpleBlock1Item !== "") {
             formulaInput.text = simpleBlock1Item
         } else if (simpleBlock2Item !== "") {
@@ -503,6 +508,44 @@ Item {
 
                                 Behavior on color { ColorAnimation { duration: 180 } }
 
+                                // Top-Right Clear Button (×)
+                                Rectangle {
+                                    width: 22
+                                    height: 22
+                                    radius: 11
+                                    color: b1ClearHover.containsMouse ? "#FF5F57" : "#333336"
+                                    visible: root.simpleBlock1Item !== "" || root.isSelectingBlock1
+                                    z: 20
+                                    anchors {
+                                        top: parent.top
+                                        topMargin: 8
+                                        right: parent.right
+                                        rightMargin: 8
+                                    }
+
+                                    Behavior on color { ColorAnimation { duration: 150 } }
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "×"
+                                        color: b1ClearHover.containsMouse ? "#FFFFFF" : "#AAAAAA"
+                                        font.pixelSize: 13
+                                        font.bold: true
+                                    }
+
+                                    MouseArea {
+                                        id: b1ClearHover
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            root.simpleBlock1Item = ""
+                                            root.isSelectingBlock1 = false
+                                            root.updateSimpleFormulaText()
+                                        }
+                                    }
+                                }
+
                                 // Dashed Border Shape (Dashed Line when unselected)
                                 Shape {
                                     id: block1DashedShape
@@ -665,12 +708,12 @@ Item {
                                         width: 60
                                         height: 22
                                         radius: 11
-                                        color: b1ChgHover.containsMouse ? "#FF5F57" : "#2C2C2E"
+                                        color: b1ChgHover.containsMouse ? "#FFFFFF" : "#2C2C2E"
 
                                         Text {
                                             anchors.centerIn: parent
-                                            text: "변경 / 삭제"
-                                            color: b1ChgHover.containsMouse ? "#FFFFFF" : "#AAAAAA"
+                                            text: "변경"
+                                            color: b1ChgHover.containsMouse ? "#121212" : "#AAAAAA"
                                             font.pixelSize: 10
                                             font.bold: true
                                         }
@@ -732,9 +775,9 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: root.simpleOp
-                                    color: "#FFFFFF"
-                                    font.pixelSize: 20
+                                    text: root.simpleOp !== "" ? root.simpleOp : "–"
+                                    color: root.simpleOp !== "" ? "#FFFFFF" : "#66666B"
+                                    font.pixelSize: root.simpleOp !== "" ? 20 : 14
                                     font.bold: true
                                 }
 
@@ -745,8 +788,7 @@ Item {
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
                                         if (root.simpleOp === "+") root.simpleOp = "-"
-                                        else if (root.simpleOp === "-") root.simpleOp = "*"
-                                        else if (root.simpleOp === "*") root.simpleOp = "/"
+                                        else if (root.simpleOp === "-") root.simpleOp = ""
                                         else root.simpleOp = "+"
                                         root.updateSimpleFormulaText()
                                     }
@@ -762,6 +804,44 @@ Item {
                                 color: block2Hover.containsMouse ? "#222224" : "#18181A"
 
                                 Behavior on color { ColorAnimation { duration: 180 } }
+
+                                // Top-Right Clear Button (×)
+                                Rectangle {
+                                    width: 22
+                                    height: 22
+                                    radius: 11
+                                    color: b2ClearHover.containsMouse ? "#FF5F57" : "#333336"
+                                    visible: root.simpleBlock2Item !== "" || root.isSelectingBlock2
+                                    z: 20
+                                    anchors {
+                                        top: parent.top
+                                        topMargin: 8
+                                        right: parent.right
+                                        rightMargin: 8
+                                    }
+
+                                    Behavior on color { ColorAnimation { duration: 150 } }
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "×"
+                                        color: b2ClearHover.containsMouse ? "#FFFFFF" : "#AAAAAA"
+                                        font.pixelSize: 13
+                                        font.bold: true
+                                    }
+
+                                    MouseArea {
+                                        id: b2ClearHover
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            root.simpleBlock2Item = ""
+                                            root.isSelectingBlock2 = false
+                                            root.updateSimpleFormulaText()
+                                        }
+                                    }
+                                }
 
                                 // Dashed Border Shape (Dashed Line when unselected)
                                 Shape {
@@ -925,12 +1005,12 @@ Item {
                                         width: 60
                                         height: 22
                                         radius: 11
-                                        color: b2ChgHover.containsMouse ? "#FF5F57" : "#2C2C2E"
+                                        color: b2ChgHover.containsMouse ? "#FFFFFF" : "#2C2C2E"
 
                                         Text {
                                             anchors.centerIn: parent
-                                            text: "변경 / 삭제"
-                                            color: b2ChgHover.containsMouse ? "#FFFFFF" : "#AAAAAA"
+                                            text: "변경"
+                                            color: b2ChgHover.containsMouse ? "#121212" : "#AAAAAA"
                                             font.pixelSize: 10
                                             font.bold: true
                                         }
