@@ -93,14 +93,14 @@ Item {
 
     function syncSimpleModeFromText() {
         var tokens = getFormulaTokens()
-        if (tokens.length >= 3) {
+        if (tokens.length === 3 && (tokens[1] === "+" || tokens[1] === "-")) {
             simpleBlock1Item = tokens[0]
-            if (tokens[1] === "+" || tokens[1] === "-") {
-                simpleOp = tokens[1]
-            } else {
-                simpleOp = ""
-            }
-            simpleBlock2Item = tokens[tokens.length - 1]
+            simpleOp = tokens[1]
+            simpleBlock2Item = tokens[2]
+        } else if (tokens.length === 2) {
+            simpleBlock1Item = tokens[0]
+            simpleOp = ""
+            simpleBlock2Item = tokens[1]
         } else if (tokens.length === 1) {
             simpleBlock1Item = tokens[0]
             simpleOp = ""
@@ -265,6 +265,11 @@ Item {
 
     function applyFormula() {
         if (!root.isOpen) return
+        if (root.isAdvancedMode) {
+            root.simpleBlock1Item = ""
+            root.simpleBlock2Item = ""
+            root.simpleOp = ""
+        }
         var expr = formulaInput.text.trim()
         if (typeof dbController !== "undefined" && root.targetMidUuid !== "") {
             if (root.targetMonth === 0) {
@@ -440,7 +445,12 @@ Item {
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: root.isAdvancedMode = true
+                                onClicked: {
+                                    root.isAdvancedMode = true
+                                    root.simpleBlock1Item = ""
+                                    root.simpleBlock2Item = ""
+                                    root.simpleOp = ""
+                                }
                             }
                         }
                     }
@@ -518,6 +528,17 @@ Item {
                     bottomMargin: 16
                 }
                 visible: !root.isAdvancedMode
+
+                // Background click interceptor to cancel block selection mode when clicking outside
+                MouseArea {
+                    anchors.fill: parent
+                    visible: root.isSelectingBlock1 || root.isSelectingBlock2
+                    z: 5
+                    onClicked: {
+                        root.isSelectingBlock1 = false
+                        root.isSelectingBlock2 = false
+                    }
+                }
 
                 Column {
                     anchors.fill: parent
@@ -609,6 +630,7 @@ Item {
                                 height: 250
                                 radius: 16
                                 color: block1Hover.containsMouse ? "#222224" : "#18181A"
+                                z: 10
 
                                 Behavior on color { ColorAnimation { duration: 180 } }
 
@@ -940,6 +962,7 @@ Item {
                                 height: 250
                                 radius: 16
                                 color: block2Hover.containsMouse ? "#222224" : "#18181A"
+                                z: 10
 
                                 Behavior on color { ColorAnimation { duration: 180 } }
 
