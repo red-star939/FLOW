@@ -454,7 +454,6 @@ Item {
                             font.bold: true
                             anchors.verticalCenter: parent.verticalCenter
                         }
-                        Item { width: 1; height: 1; Layout.fillWidth: true }
                         Text {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
@@ -726,7 +725,7 @@ Item {
                         }
                     }
 
-                    Item { width: 1; height: 1; Layout.fillHeight: true }
+                    Item { width: 1; height: 6 }
 
                     // 5. Action Buttons (Clear, Apply)
                     Row {
