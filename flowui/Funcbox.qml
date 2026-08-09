@@ -53,8 +53,11 @@ Item {
 
         "(": { name: "( (여는 괄호)", category: "구분자 및 특수 기호", desc: "우선순위 연산을 위한 괄호를 시작합니다.", example: "예시: (매출 - 원가) * 0.1  🡲  (1,000 - 400) * 0.1 = 60" },
         ")": { name: ") (닫는 괄호)", category: "구분자 및 특수 기호", desc: "우선순위 연산 괄호를 닫습니다.", example: "예시: (A + B) / C" },
-        ",": { name: ", (쉼표)", category: "구분자 및 특수 기호", desc: "함수의 인자를 구분합니다.", example: "예시: SUM(A, B, C)" },
-        ":": { name: ": (콜론)", category: "구분자 및 특수 기호", desc: "범위를 지정하는 구분자입니다.", example: "예시: SUM(블록1 : 블록5)" }
+        ",": { name: ", (쉼표)", category: "구분자 및 특수 기호", desc: "함수의 인자를 구분합니다.", example: "예시: INTUP(순수금액, 2)" },
+        ":": { name: ": (콜론)", category: "구분자 및 특수 기호", desc: "범위를 지정하는 구분자입니다.", example: "예시: SUM(블록1 : 블록5)" },
+
+        "INTUP": { name: "INTUP(블록, 자릿수)", category: "수식 함수", desc: "지정한 자릿수 위치에서 반올림하여 계산합니다.", example: "예시: INTUP(순수금액, 2)  🡲  5,874  🡲  5,900" },
+        "INTDOWN": { name: "INTDOWN(블록, 자릿수)", category: "수식 함수", desc: "지정한 자릿수 위치에서 내림하여 계산합니다.", example: "예시: INTDOWN(순수금액, 3)  🡲  5,874  🡲  5,800" }
     })
 
     signal formulaApplied()
@@ -1367,7 +1370,7 @@ Item {
                     // 2. 사용 가능한 기호 & 연산자 (White Active Theme)
                     Rectangle {
                         width: parent.width
-                        height: 64
+                        height: 90
                         radius: 10
                         color: "#1F1F1F"
                         border.width: 1.5
@@ -1455,6 +1458,47 @@ Item {
                                             cursorShape: Qt.PointingHandCursor
                                             onClicked: root.selectedOp = modelData
                                             onDoubleClicked: root.insertSymbol(modelData)
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Row 3: 수식 함수 (INTUP, INTDOWN)
+                            Row {
+                                spacing: 6
+                                Text {
+                                    text: "수식 함수:"
+                                    color: "#CCCCCC"
+                                    font.pixelSize: 11
+                                    font.bold: true
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 72
+                                }
+                                Repeater {
+                                    model: ["INTUP", "INTDOWN"]
+                                    delegate: Rectangle {
+                                        width: 62
+                                        height: 20
+                                        radius: 5
+                                        color: root.selectedOp === modelData ? "#FFFFFF" : (opHover4.containsMouse ? "#3A3A3A" : "#282828")
+                                        border.width: 1
+                                        border.color: root.selectedOp === modelData ? "#FFFFFF" : "#404040"
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: modelData
+                                            color: root.selectedOp === modelData ? "#121212" : "#CCCCCC"
+                                            font.pixelSize: 11
+                                            font.bold: true
+                                        }
+
+                                        MouseArea {
+                                            id: opHover4
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: root.selectedOp = modelData
+                                            onDoubleClicked: root.insertSymbol(modelData + "(")
                                         }
                                     }
                                 }

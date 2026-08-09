@@ -253,6 +253,40 @@ Value Evaluator::visit_function(const FunctionCallNode* node) {
         return ErrorType::ValueError;
     }
 
+    if (func_name == "INTUP") {
+        if (node->arguments.size() != 2) return ErrorType::ValueError;
+        Value val = visit(node->arguments[0].get());
+        if (std::holds_alternative<ErrorType>(val)) return val;
+        auto pNum = std::get_if<double>(&val);
+        if (!pNum) return ErrorType::ValueError;
+
+        Value nVal = visit(node->arguments[1].get());
+        if (std::holds_alternative<ErrorType>(nVal)) return nVal;
+        auto pN = std::get_if<double>(&nVal);
+        if (!pN) return ErrorType::ValueError;
+
+        int n = static_cast<int>(*pN);
+        double factor = std::pow(10.0, n);
+        return std::round(*pNum / factor) * factor;
+    }
+
+    if (func_name == "INTDOWN") {
+        if (node->arguments.size() != 2) return ErrorType::ValueError;
+        Value val = visit(node->arguments[0].get());
+        if (std::holds_alternative<ErrorType>(val)) return val;
+        auto pNum = std::get_if<double>(&val);
+        if (!pNum) return ErrorType::ValueError;
+
+        Value nVal = visit(node->arguments[1].get());
+        if (std::holds_alternative<ErrorType>(nVal)) return nVal;
+        auto pN = std::get_if<double>(&nVal);
+        if (!pN) return ErrorType::ValueError;
+
+        int n = static_cast<int>(*pN);
+        double factor = std::pow(10.0, std::max(0, n - 1));
+        return std::floor(*pNum / factor) * factor;
+    }
+
     return ErrorType::InvalidName;
 }
 
