@@ -6,6 +6,8 @@ Item {
 
     property int selectedMonth: 1 // 0 = 합계, 1~12 = 1월~12월
     property int selectedYear: 2026
+    property int lastValidMonth: (selectedMonth > 0 && selectedMonth <= 12) ? selectedMonth : 1
+    readonly property int activeMonth: selectedMonth > 0 ? selectedMonth : (lastValidMonth > 0 ? lastValidMonth : 1)
 
     signal monthChanged(int month)
 
@@ -18,6 +20,16 @@ Item {
 
     readonly property var monthNames: ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"]
 
+    onSelectedMonthChanged: {
+        if (selectedMonth > 0) {
+            lastValidMonth = selectedMonth
+            var targetIdx = selectedMonth - 1
+            if (pathView.currentIndex !== targetIdx) {
+                pathView.currentIndex = targetIdx
+            }
+        }
+    }
+
     // ─── 3D Horizontal Month Wheel Cylinder (1월 ~ 12월) ───
     PathView {
         id: pathView
@@ -27,6 +39,7 @@ Item {
         width: Math.min(800, parent.width - 120)
 
         model: 12
+        currentIndex: Math.max(0, Math.min(11, root.activeMonth - 1))
         pathItemCount: 3
         preferredHighlightBegin: 0.5
         preferredHighlightEnd: 0.5
@@ -34,24 +47,10 @@ Item {
         dragMargin: width / 3
 
         onCurrentIndexChanged: {
-            if (root.selectedMonth > 0) {
-                var m = currentIndex + 1
-                if (root.selectedMonth !== m) {
-                    root.selectedMonth = m
-                    root.monthChanged(m)
-                }
-            }
-        }
-
-        Connections {
-            target: root
-            function onSelectedMonthChanged() {
-                if (root.selectedMonth > 0) {
-                    var targetIdx = root.selectedMonth - 1
-                    if (pathView.currentIndex !== targetIdx) {
-                        pathView.currentIndex = targetIdx
-                    }
-                }
+            var m = currentIndex + 1
+            if (root.selectedMonth !== m) {
+                root.selectedMonth = m
+                root.monthChanged(m)
             }
         }
 
@@ -102,9 +101,9 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: root.monthNames[index]
-                font.pixelSize: (index === (root.selectedMonth - 1)) ? 32 : 22
+                font.pixelSize: (index === (root.activeMonth - 1)) ? 32 : 22
                 font.bold: true
-                color: (index === (root.selectedMonth - 1)) ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#666666"
+                color: (index === (root.activeMonth - 1)) ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#666666"
 
                 Behavior on color { ColorAnimation { duration: 200 } }
                 Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
