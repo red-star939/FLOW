@@ -566,9 +566,9 @@ Item {
                     text: parent.val !== 0
                           ? Number(parent.val).toLocaleString(Qt.locale("ko_KR"), "f", 0)
                           : "-"
-                    font.pixelSize: (index === (root.activeMonth - 1)) ? 18 : 14
+                    font.pixelSize: (root.selectedMonth > 0 && index === (root.selectedMonth - 1)) ? 18 : 14
                     font.bold: true
-                    color: parent.val !== 0 ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#666666"
+                    color: (root.selectedMonth > 0 && index === (root.selectedMonth - 1)) ? (parent.val !== 0 ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#666666") : "#666666"
 
                     Behavior on color { ColorAnimation { duration: 200 } }
                     Behavior on font.pixelSize { NumberAnimation { duration: 150 } }

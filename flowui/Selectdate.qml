@@ -47,10 +47,12 @@ Item {
         dragMargin: width / 3
 
         onCurrentIndexChanged: {
-            var m = currentIndex + 1
-            if (root.selectedMonth !== m) {
-                root.selectedMonth = m
-                root.monthChanged(m)
+            if (root.selectedMonth > 0) {
+                var m = currentIndex + 1
+                if (root.selectedMonth !== m) {
+                    root.selectedMonth = m
+                    root.monthChanged(m)
+                }
             }
         }
 
@@ -101,9 +103,9 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: root.monthNames[index]
-                font.pixelSize: (index === (root.activeMonth - 1)) ? 32 : 22
+                font.pixelSize: (root.selectedMonth > 0 && index === (root.selectedMonth - 1)) ? 32 : 22
                 font.bold: true
-                color: (index === (root.activeMonth - 1)) ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#666666"
+                color: (root.selectedMonth > 0 && index === (root.selectedMonth - 1)) ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#666666"
 
                 Behavior on color { ColorAnimation { duration: 200 } }
                 Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
@@ -132,9 +134,21 @@ Item {
             onWheel: (wheel) => {
                 var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
                 if (delta < 0) {
-                    pathView.incrementCurrentIndex()
+                    if (root.selectedMonth === 0) {
+                        var nextM = Math.min(12, root.lastValidMonth + 1)
+                        root.selectedMonth = nextM
+                        root.monthChanged(nextM)
+                    } else {
+                        pathView.incrementCurrentIndex()
+                    }
                 } else if (delta > 0) {
-                    pathView.decrementCurrentIndex()
+                    if (root.selectedMonth === 0) {
+                        var prevM = Math.max(1, root.lastValidMonth - 1)
+                        root.selectedMonth = prevM
+                        root.monthChanged(prevM)
+                    } else {
+                        pathView.decrementCurrentIndex()
+                    }
                 }
             }
         }
