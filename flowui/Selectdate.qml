@@ -9,6 +9,9 @@ Item {
     property int lastValidMonth: (selectedMonth > 0 && selectedMonth <= 12) ? selectedMonth : 1
     readonly property int activeMonth: selectedMonth > 0 ? selectedMonth : (lastValidMonth > 0 ? lastValidMonth : 1)
 
+    readonly property real wheelOffset: pathView.offset
+    readonly property int pathIndex: pathView.currentIndex
+
     signal monthChanged(int month)
 
     height: 60

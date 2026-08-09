@@ -20,7 +20,15 @@ Item {
     signal formulaRequested(string midUuid, string midName, Item buttonItem)
 
     property int lastValidMonth: (selectedMonth > 0 && selectedMonth <= 12) ? selectedMonth : 8
-    readonly property int activeMonth: selectedMonth > 0 ? selectedMonth : (lastValidMonth > 0 ? lastValidMonth : 8)
+    readonly property int activeMonth: selectedMonth > 0
+                                       ? selectedMonth
+                                       : (typeof monthSelector !== "undefined" && monthSelector.pathIndex >= 0
+                                          ? (monthSelector.pathIndex + 1)
+                                          : (lastValidMonth > 0 ? lastValidMonth : 8))
+
+    onActiveMonthChanged: {
+        calculateTotalValue()
+    }
 
     onSelectedMonthChanged: {
         if (selectedMonth > 0) {
@@ -52,7 +60,27 @@ Item {
         }
 
         var getMonthVal = function(m) {
-            if (m < 1 || m > monthsData.length) return 0.0
+            if (m < 1) {
+                if (typeof dbController !== "undefined" && root.selectedYear > 0) {
+                    var prevYearMids = dbController.getMIDItems(root.selectedYear - 1)
+                    if (prevYearMids && prevYearMids.length > 0) {
+                        for (var i = 0; i < prevYearMids.length; i++) {
+                            var pMid = prevYearMids[i]
+                            if ((root.uuid && pMid.uuid === root.uuid) || (pMid.mid && pMid.mid === root.midName)) {
+                                if (pMid.months && pMid.months.length >= 12) {
+                                    var decObj = pMid.months[11]
+                                    if (decObj) {
+                                        var dv = decObj.value !== undefined ? Number(decObj.value) : (decObj.formula_result !== undefined ? Number(decObj.formula_result) : 0.0)
+                                        return isNaN(dv) ? 0.0 : dv
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return 0.0
+            }
+            if (m > monthsData.length) return 0.0
             var mObj = monthsData[m - 1]
             if (!mObj) return 0.0
             var v = mObj.value !== undefined ? Number(mObj.value) : (mObj.formula_result !== undefined ? Number(mObj.formula_result) : 0.0)
@@ -61,7 +89,7 @@ Item {
 
         var targetM = root.activeMonth
         var currVal = getMonthVal(targetM)
-        var prevVal = (targetM > 1) ? getMonthVal(targetM - 1) : 0.0
+        var prevVal = getMonthVal(targetM - 1)
         root.totalValue = currVal - prevVal
     }
 
@@ -503,11 +531,13 @@ Item {
 
             model: (root.monthsData && root.monthsData.length === 12) ? root.monthsData : 12
             currentIndex: Math.max(0, Math.min(11, root.activeMonth - 1))
-            highlightMoveDuration: 150
+            offset: typeof monthSelector !== "undefined" ? monthSelector.wheelOffset : (root.activeMonth - 1)
+            highlightMoveDuration: 0
             pathItemCount: 3
             preferredHighlightBegin: 0.5
             preferredHighlightEnd: 0.5
             highlightRangeMode: PathView.StrictlyEnforceRange
+            interactive: false
             dragMargin: width / 3
 
             path: Path {
@@ -623,7 +653,7 @@ Item {
                     font.bold: true
                     scale: sumHoverHandler.hovered ? 1.18 : 1.0
                     Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
-                    Behavior on color { ColorAnimation { duration: 200 } }
+                    Behavior on color { ColorAnimation { duration: 250 } }
                     Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
                 }
             }
