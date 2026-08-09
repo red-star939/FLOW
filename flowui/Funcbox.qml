@@ -1367,7 +1367,7 @@ Item {
                     // 2. 사용 가능한 기호 & 연산자 (White Active Theme)
                     Rectangle {
                         width: parent.width
-                        height: 124
+                        height: 64
                         radius: 10
                         color: "#1F1F1F"
                         border.width: 1.5
@@ -1390,11 +1390,11 @@ Item {
                                     width: 72
                                 }
                                 Repeater {
-                                    model: ["+", "-", "*", "/", "$", "%", "^"]
+                                    model: ["+", "-", "*", "/", "%", "^"]
                                     delegate: Rectangle {
                                         width: 26
-                                        height: 24
-                                        radius: 6
+                                        height: 20
+                                        radius: 5
                                         color: root.selectedOp === modelData ? "#FFFFFF" : (opHover.containsMouse ? "#3A3A3A" : "#282828")
                                         border.width: 1
                                         border.color: root.selectedOp === modelData ? "#FFFFFF" : "#404040"
@@ -1403,7 +1403,7 @@ Item {
                                             anchors.centerIn: parent
                                             text: modelData
                                             color: root.selectedOp === modelData ? "#121212" : "#CCCCCC"
-                                            font.pixelSize: 12
+                                            font.pixelSize: 11
                                             font.bold: true
                                         }
 
@@ -1419,48 +1419,7 @@ Item {
                                 }
                             }
 
-                            // Row 2: 비교 연산자
-                            Row {
-                                spacing: 6
-                                Text {
-                                    text: "비교 연산자:"
-                                    color: "#CCCCCC"
-                                    font.pixelSize: 11
-                                    font.bold: true
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    width: 72
-                                }
-                                Repeater {
-                                    model: ["=", "!=", "<", "<=", ">", ">="]
-                                    delegate: Rectangle {
-                                        width: modelData.length > 1 ? 32 : 26
-                                        height: 24
-                                        radius: 6
-                                        color: root.selectedOp === modelData ? "#FFFFFF" : (opHover2.containsMouse ? "#3A3A3A" : "#282828")
-                                        border.width: 1
-                                        border.color: root.selectedOp === modelData ? "#FFFFFF" : "#404040"
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: modelData
-                                            color: root.selectedOp === modelData ? "#121212" : "#CCCCCC"
-                                            font.pixelSize: 12
-                                            font.bold: true
-                                        }
-
-                                        MouseArea {
-                                            id: opHover2
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: root.selectedOp = modelData
-                                            onDoubleClicked: root.insertSymbol(modelData)
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Row 3: 구분자 및 기호
+                            // Row 2: 구분자 및 기호
                             Row {
                                 spacing: 6
                                 Text {
@@ -1475,8 +1434,8 @@ Item {
                                     model: ["(", ")", ",", ":"]
                                     delegate: Rectangle {
                                         width: 26
-                                        height: 24
-                                        radius: 6
+                                        height: 20
+                                        radius: 5
                                         color: root.selectedOp === modelData ? "#FFFFFF" : (opHover3.containsMouse ? "#3A3A3A" : "#282828")
                                         border.width: 1
                                         border.color: root.selectedOp === modelData ? "#FFFFFF" : "#404040"
@@ -1485,7 +1444,7 @@ Item {
                                             anchors.centerIn: parent
                                             text: modelData
                                             color: root.selectedOp === modelData ? "#121212" : "#CCCCCC"
-                                            font.pixelSize: 12
+                                            font.pixelSize: 11
                                             font.bold: true
                                         }
 
@@ -1496,142 +1455,6 @@ Item {
                                             cursorShape: Qt.PointingHandCursor
                                             onClicked: root.selectedOp = modelData
                                             onDoubleClicked: root.insertSymbol(modelData)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // 3. 선택된 기호 설명 및 사용법 예시 카드
-                    Rectangle {
-                        id: explanationCard
-                        width: parent.width
-                        height: 82
-                        radius: 10
-                        color: "#1F1F1F"
-                        border.width: 1.5
-                        border.color: "#343434"
-
-                        property var currentDoc: root.operatorDocs[root.selectedOp] ? root.operatorDocs[root.selectedOp] : root.operatorDocs["+"]
-
-                        Column {
-                            anchors.fill: parent
-                            anchors.margins: 8
-                            spacing: 4
-
-                            Item {
-                                width: parent.width
-                                height: 20
-
-                                Text {
-                                    anchors.left: parent.left
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: explanationCard.currentDoc.name
-                                    color: "#FFFFFF"
-                                    font.pixelSize: 12
-                                    font.bold: true
-                                }
-
-                                Rectangle {
-                                    anchors.right: parent.right
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    width: 76
-                                    height: 20
-                                    radius: 10
-                                    color: addSymHover.containsMouse ? "#FFFFFF" : "#3A3A3A"
-                                    border.width: 1
-                                    border.color: addSymHover.containsMouse ? "#FFFFFF" : "#666666"
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "+ 수식에 추가"
-                                        color: addSymHover.containsMouse ? "#121212" : "#FFFFFF"
-                                        font.pixelSize: 10
-                                        font.bold: true
-                                    }
-
-                                    MouseArea {
-                                        id: addSymHover
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.insertSymbol(root.selectedOp)
-                                    }
-                                }
-                            }
-
-                            Text {
-                                text: explanationCard.currentDoc.desc
-                                color: "#DDDDDD"
-                                font.pixelSize: 11
-                            }
-
-                            Text {
-                                text: explanationCard.currentDoc.example
-                                color: "#FFD54F"
-                                font.pixelSize: 11
-                                font.bold: true
-                            }
-                        }
-                    }
-
-                    // 4. 사용 가능한 참조 항목 (ID / MID / 당일지출)
-                    Text {
-                        text: "사용 가능한 참조 항목 (클릭 시 수식에 자동 삽입)"
-                        color: "#CCCCCC"
-                        font.pixelSize: 12
-                        font.bold: true
-                    }
-
-                    Flickable {
-                        id: refFlickable
-                        width: parent.width
-                        height: 32
-                        contentWidth: refRow.width
-                        clip: true
-                        boundsBehavior: Flickable.StopAtBounds
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onWheel: (wheel) => {
-                                var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                refFlickable.contentX = Math.max(0, Math.min(refFlickable.contentWidth - refFlickable.width, refFlickable.contentX - delta))
-                            }
-                        }
-
-                        Row {
-                            id: refRow
-                            spacing: 6
-
-                            Repeater {
-                                model: root.referenceBlocks
-                                delegate: Rectangle {
-                                    height: 28
-                                    width: refText.implicitWidth + 18
-                                    radius: 14
-                                    color: refHover.containsMouse ? "#FFFFFF" : "#282828"
-                                    border.width: 1
-                                    border.color: refHover.containsMouse ? "#FFFFFF" : "#404040"
-
-                                    Text {
-                                        id: refText
-                                        anchors.centerIn: parent
-                                        text: modelData === "당일지출" ? "💳 " + modelData : "🏷️ " + modelData
-                                        color: refHover.containsMouse ? "#121212" : "#CCCCCC"
-                                        font.pixelSize: 11
-                                        font.bold: true
-                                    }
-
-                                    MouseArea {
-                                        id: refHover
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.insertSymbol(modelData)
-                                        onWheel: (wheel) => {
-                                            var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
-                                            refFlickable.contentX = Math.max(0, Math.min(refFlickable.contentWidth - refFlickable.width, refFlickable.contentX - delta))
                                         }
                                     }
                                 }
