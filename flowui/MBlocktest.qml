@@ -639,6 +639,9 @@ Item {
             expr = expr.replace(reg, "$1" + val);
         }
 
+        // Percentage operator: 10% -> (10/100)
+        expr = expr.replace(/([0-9\.]+|[A-Za-z0-9가-힣_]+|\))\s*%/g, "($1/100)");
+
         // Comparison operators: <> -> != , = -> ==
         expr = expr.replace(/<>/g, "!=");
         expr = expr.replace(/([^=<>]|^)=([^=]|$)/g, "$1==$2");

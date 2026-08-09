@@ -84,33 +84,29 @@ Value Evaluator::visit_binary(const BinaryOpNode* node) {
                 case TokenType::Slash:
                     if (*pR == 0.0) return ErrorType::DivisionByZero;
                     return *pL / *pR;
-                case TokenType::Percent:      return *pL * (*pR / 100.0);
                 case TokenType::Caret:        return std::pow(*pL, *pR);
-                // 비교 연산자 기능 비활성화
-                /*
                 case TokenType::Equal:        return *pL == *pR;
                 case TokenType::NotEqual:     return *pL != *pR;
                 case TokenType::LessThan:     return *pL < *pR;
                 case TokenType::LessEqual:    return *pL <= *pR;
                 case TokenType::GreaterThan:  return *pL > *pR;
                 case TokenType::GreaterEqual: return *pL >= *pR;
-                */
                 default: break;
             }
         }
-    } else if ([[maybe_unused]] auto pSL = std::get_if<std::string>(&left)) {
-        if ([[maybe_unused]] auto pSR = std::get_if<std::string>(&right)) {
+    } else if (auto pSL = std::get_if<std::string>(&left)) {
+        if (auto pSR = std::get_if<std::string>(&right)) {
             switch (node->op) {
-                // case TokenType::Equal:    return *pSL == *pSR;
-                // case TokenType::NotEqual: return *pSL != *pSR;
+                case TokenType::Equal:    return *pSL == *pSR;
+                case TokenType::NotEqual: return *pSL != *pSR;
                 default: break;
             }
         }
-    } else if ([[maybe_unused]] auto pBL = std::get_if<bool>(&left)) {
-        if ([[maybe_unused]] auto pBR = std::get_if<bool>(&right)) {
+    } else if (auto pBL = std::get_if<bool>(&left)) {
+        if (auto pBR = std::get_if<bool>(&right)) {
             switch (node->op) {
-                // case TokenType::Equal:    return *pBL == *pBR;
-                // case TokenType::NotEqual: return *pBL != *pBR;
+                case TokenType::Equal:    return *pBL == *pBR;
+                case TokenType::NotEqual: return *pBL != *pBR;
                 default: break;
             }
         }
