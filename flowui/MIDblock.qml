@@ -8,6 +8,17 @@ Item {
     property string uuid: ""
     property string midName: "MID 블록"
     property var monthsData: []
+    property real totalValue: 0
+    property int selectedYear: 2026
+    property int selectedMonth: 1
+    property Flickable parentFlickable: null
+
+    signal removeRequested(int index)
+    signal moveRequested(int fromIndex, int toIndex)
+    signal titleEdited(string newTitle)
+    signal editingFinished()
+    signal formulaRequested(string midUuid, string midName, Item buttonItem)
+
     property int lastValidMonth: (selectedMonth > 0 && selectedMonth <= 12) ? selectedMonth : 8
     readonly property int activeMonth: selectedMonth > 0 ? selectedMonth : (lastValidMonth > 0 ? lastValidMonth : 8)
 
