@@ -324,7 +324,7 @@ Item {
         Rectangle {
             id: popoverCard
             width: 560
-            height: 560
+            height: 470
             radius: 18
             color: "#1F1F1F"
             border.width: 1.5
@@ -1300,7 +1300,7 @@ Item {
                 id: advancedModeContainer
                 anchors {
                     top: headerDivider.bottom
-                    topMargin: 14
+                    topMargin: 16
                     left: parent.left
                     leftMargin: 18
                     right: parent.right
@@ -1312,7 +1312,7 @@ Item {
 
                 Column {
                     anchors.fill: parent
-                    spacing: 10
+                    spacing: 12
 
                     // 1. 수식 적용 대상 월 (TOP - 간편 모드와 동일한 위치 및 디자인)
                     Text {
@@ -1659,15 +1659,15 @@ Item {
                         }
                     }
 
-                    // 6. Action Buttons (Clear, Apply)
+                    // 5. Action Buttons (Clear, Apply) - Identical layout & dimensions to Simple Mode
                     Row {
                         anchors.right: parent.right
-                        spacing: 8
+                        spacing: 10
 
                         Rectangle {
-                            width: 80
-                            height: 32
-                            radius: 8
+                            width: 90
+                            height: 36
+                            radius: 10
                             color: clearHover.containsMouse ? "#3A2A2A" : "#2A1A1A"
                             border.width: 1
                             border.color: "#FF5F57"
@@ -1702,9 +1702,9 @@ Item {
                         }
 
                         Rectangle {
-                            width: 100
-                            height: 32
-                            radius: 8
+                            width: 110
+                            height: 36
+                            radius: 10
                             color: applyHover.containsMouse ? "#E0E0E0" : "#FFFFFF"
 
                             Text {
