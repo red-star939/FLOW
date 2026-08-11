@@ -23,6 +23,7 @@ qt_add_executable(appflowui
     ../engine/Lexer.cpp
     ../engine/Parser.cpp
     ../engine/Token.cpp
+    appicon.rc
 )
 
 target_include_directories(appflowui PRIVATE
@@ -73,7 +74,7 @@ target_link_libraries(appflowui
     PRIVATE Qt6::Quick
 )
 
-add_executable(launcher launcher.cpp)
+add_executable(launcher launcher.cpp appicon.rc)
 set_target_properties(launcher PROPERTIES WIN32_EXECUTABLE TRUE)
 
 add_executable(updater updater.cpp)
