@@ -13,6 +13,10 @@ if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/importedcontent/CMakeLists.txt")
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/importedcontent)
 endif()
 
+# Generate Windows Resource file with absolute path to icon file
+set(ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../iconset/icon4.ico")
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/appicon.rc" "IDI_ICON1 ICON DISCARDABLE \"${ICON_FILE}\"\n")
+
 qt_add_executable(appflowui
     main.cpp
     DBController.cpp
@@ -23,7 +27,7 @@ qt_add_executable(appflowui
     ../engine/Lexer.cpp
     ../engine/Parser.cpp
     ../engine/Token.cpp
-    appicon.rc
+    "${CMAKE_CURRENT_BINARY_DIR}/appicon.rc"
 )
 
 target_include_directories(appflowui PRIVATE
@@ -74,7 +78,7 @@ target_link_libraries(appflowui
     PRIVATE Qt6::Quick
 )
 
-add_executable(launcher launcher.cpp appicon.rc)
+add_executable(launcher launcher.cpp "${CMAKE_CURRENT_BINARY_DIR}/appicon.rc")
 set_target_properties(launcher PROPERTIES WIN32_EXECUTABLE TRUE)
 
 add_executable(updater updater.cpp)
