@@ -10,13 +10,13 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    QString iconPath = QCoreApplication::applicationDirPath() + "/iconset/icon4.ico";
+    QString iconPath = QCoreApplication::applicationDirPath() + "/icon_data/icon5.ico";
     if (QFile::exists(iconPath)) {
         app.setWindowIcon(QIcon(iconPath));
-    } else if (QFile::exists("iconset/icon4.ico")) {
-        app.setWindowIcon(QIcon("iconset/icon4.ico"));
-    } else if (QFile::exists("../iconset/icon4.ico")) {
-        app.setWindowIcon(QIcon("../iconset/icon4.ico"));
+    } else if (QFile::exists("icon_data/icon5.ico")) {
+        app.setWindowIcon(QIcon("icon_data/icon5.ico"));
+    } else if (QFile::exists("../icon_data/icon5.ico")) {
+        app.setWindowIcon(QIcon("../icon_data/icon5.ico"));
     }
 
     QQmlApplicationEngine engine;

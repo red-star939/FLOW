@@ -14,9 +14,10 @@
 namespace fs = std::filesystem;
 
 struct VersionInfo {
-    std::string branch = "flow_v1.0";
+    std::string tag = "v1.4_stable";
     int major = 1;
-    int minor = 0;
+    int minor = 4;
+    std::string sha = "";
 };
 
 // Reads version.json if exists
@@ -28,12 +29,24 @@ VersionInfo load_local_version() {
             std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
             ifs.close();
 
-            std::smatch mBranch, mVer;
-            if (std::regex_search(content, mBranch, std::regex("\"branch\"\\s*:\\s*\"([^\"]+)\""))) {
-                info.branch = mBranch[1].str();
+            std::smatch mTag, mBranch, mSha;
+            if (std::regex_search(content, mTag, std::regex("\"tag\"\\s*:\\s*\"([^\"]+)\""))) {
+                info.tag = mTag[1].str();
+            } else if (std::regex_search(content, mBranch, std::regex("\"branch\"\\s*:\\s*\"([^\"]+)\""))) {
+                std::string b = mBranch[1].str();
+                // Map legacy branch name e.g. flow_v1.4 -> v1.4_stable
+                std::smatch mB;
+                if (std::regex_search(b, mB, std::regex("flow_v(\\d+)\\.(\\d+)"))) {
+                    info.tag = "v" + mB[1].str() + "." + mB[2].str() + "_stable";
+                }
             }
+
+            if (std::regex_search(content, mSha, std::regex("\"sha\"\\s*:\\s*\"([^\"]+)\""))) {
+                info.sha = mSha[1].str();
+            }
+
             std::smatch m;
-            if (std::regex_search(info.branch, m, std::regex("flow_v(\\d+)\\.(\\d+)"))) {
+            if (std::regex_search(info.tag, m, std::regex("v(\\d+)\\.(\\d+)_stable"))) {
                 info.major = std::stoi(m[1].str());
                 info.minor = std::stoi(m[2].str());
             }
@@ -43,12 +56,13 @@ VersionInfo load_local_version() {
 }
 
 // Saves version.json
-void save_local_version(const std::string& branch, int major, int minor) {
+void save_local_version(const std::string& tag, int major, int minor, const std::string& sha) {
     try {
         std::ofstream ofs("version.json");
         ofs << "{\n";
-        ofs << "  \"branch\": \"" << branch << "\",\n";
-        ofs << "  \"version\": \"" << major << "." << minor << "\"\n";
+        ofs << "  \"tag\": \"" << tag << "\",\n";
+        ofs << "  \"version\": \"" << major << "." << minor << "\",\n";
+        ofs << "  \"sha\": \"" << sha << "\"\n";
         ofs << "}\n";
         ofs.close();
     } catch (...) {}
@@ -99,60 +113,78 @@ bool download_file(const std::string& url, const std::string& dest_path) {
 
 int main(int argc, char* argv[]) {
     std::cout << "==========================================" << std::endl;
-    std::cout << " FLOW Auto-Updater (Branch Release Sync)" << std::endl;
+    std::cout << " FLOW Auto-Updater (Stable Tag Sync)" << std::endl;
     std::cout << "==========================================" << std::endl;
 
     VersionInfo localVer = load_local_version();
-    std::cout << "[Updater] Current Local Branch Version: " << localVer.branch << " (v" << localVer.major << "." << localVer.minor << ")" << std::endl;
+    std::cout << "[Updater] Current Local Tag: " << localVer.tag << " (v" << localVer.major << "." << localVer.minor << ")"
+              << (localVer.sha.empty() ? "" : " [SHA: " + localVer.sha.substr(0, 7) + "]") << std::endl;
 
-    std::cout << "[Updater] Checking GitHub branches for updates..." << std::endl;
-    std::string branchesJson = http_get("https://api.github.com/repos/red-star939/FLOW/branches");
+    std::cout << "[Updater] Checking GitHub stable tags for updates..." << std::endl;
+    std::string tagsJson = http_get("https://api.github.com/repos/red-star939/FLOW/tags");
 
-    if (branchesJson.empty()) {
-        std::cout << "[Updater] Warning: Could not fetch branch info from GitHub (Offline or API limit)." << std::endl;
+    if (tagsJson.empty()) {
+        std::cout << "[Updater] Warning: Could not fetch tag info from GitHub (Offline or API limit)." << std::endl;
         std::cout << "[Updater] Continuing with current installation." << std::endl;
         return 0;
     }
 
-    std::regex bRegex("\"name\"\\s*:\\s*\"(flow_v(\\d+)\\.(\\d+))\"");
-    auto words_begin = std::sregex_iterator(branchesJson.begin(), branchesJson.end(), bRegex);
+    // Regex to match tag objects with name "vX.Y_stable" and their commit SHA
+    std::regex tagBlockRegex("\"name\"\\s*:\\s*\"(v(\\d+)\\.(\\d+)_stable)\"[^}]*?\"commit\"\\s*:\\s*\\{[^}]*?\"sha\"\\s*:\\s*\"([^\"]+)\"");
+    auto words_begin = std::sregex_iterator(tagsJson.begin(), tagsJson.end(), tagBlockRegex);
     auto words_end = std::sregex_iterator();
 
-    std::string latestBranch = localVer.branch;
+    std::string targetTag = localVer.tag;
     int maxMajor = localVer.major;
     int maxMinor = localVer.minor;
-    bool foundNewer = false;
+    std::string targetSha = localVer.sha;
+    bool foundNewVersion = false;
+    bool shaUpdated = false;
 
     for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
         std::smatch match = *i;
-        std::string bName = match[1].str();
+        std::string tagName = match[1].str();
         int maj = std::stoi(match[2].str());
         int min = std::stoi(match[3].str());
+        std::string sha = match[4].str();
 
-        std::cout << "[Updater] Found Remote Branch: " << bName << std::endl;
+        std::cout << "[Updater] Found Remote Stable Tag: " << tagName << " [SHA: " << sha.substr(0, 7) << "]" << std::endl;
 
         if (maj > maxMajor || (maj == maxMajor && min > maxMinor)) {
             maxMajor = maj;
             maxMinor = min;
-            latestBranch = bName;
-            foundNewer = true;
+            targetTag = tagName;
+            targetSha = sha;
+            foundNewVersion = true;
+        } else if (maj == localVer.major && min == localVer.minor) {
+            // Same version, check if commit SHA changed (recent upload on stable tag)
+            if (!sha.empty() && sha != localVer.sha) {
+                targetTag = tagName;
+                targetSha = sha;
+                shaUpdated = true;
+            }
         }
     }
 
-    if (!foundNewer) {
-        std::cout << "[Updater] Application is already up to date! (Latest: " << localVer.branch << ")" << std::endl;
+    if (!foundNewVersion && !shaUpdated) {
+        std::cout << "[Updater] Application is up to date! (Latest Stable Tag: " << localVer.tag << ")" << std::endl;
         return 0;
     }
 
-    std::cout << "[Updater] *** NEW BRANCH UPDATE FOUND: " << latestBranch << " ***" << std::endl;
-    std::cout << "[Updater] Downloading update package for " << latestBranch << "..." << std::endl;
+    if (foundNewVersion) {
+        std::cout << "[Updater] *** NEW STABLE VERSION FOUND: " << targetTag << " ***" << std::endl;
+    } else if (shaUpdated) {
+        std::cout << "[Updater] *** STABLE TAG RECENT UPDATE DETECTED: " << targetTag << " [New SHA: " << targetSha.substr(0, 7) << "] ***" << std::endl;
+    }
 
-    std::string zipUrl = "https://raw.githubusercontent.com/red-star939/FLOW/" + latestBranch + "/Flow_Release.zip";
+    std::cout << "[Updater] Downloading update package for " << targetTag << "..." << std::endl;
+
+    std::string zipUrl = "https://raw.githubusercontent.com/red-star939/FLOW/" + targetTag + "/Flow_Release.zip";
     std::string zipFile = "_update.zip";
 
     if (!download_file(zipUrl, zipFile)) {
         // Fallback to github.com/raw
-        zipUrl = "https://github.com/red-star939/FLOW/raw/" + latestBranch + "/Flow_Release.zip";
+        zipUrl = "https://github.com/red-star939/FLOW/raw/" + targetTag + "/Flow_Release.zip";
         if (!download_file(zipUrl, zipFile)) {
             std::cerr << "[Updater] Error: Failed to download update zip from " << zipUrl << std::endl;
             return 1;
@@ -207,7 +239,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "[Updater] Error copying files: " << e.what() << std::endl;
     }
 
-    save_local_version(latestBranch, maxMajor, maxMinor);
+    save_local_version(targetTag, maxMajor, maxMinor, targetSha);
 
     // Clean up temporary files
     try {
@@ -215,7 +247,7 @@ int main(int argc, char* argv[]) {
         fs::remove_all(tempDir);
     } catch (...) {}
 
-    std::cout << "[Updater] SUCCESS: Successfully updated to " << latestBranch << std::endl;
+    std::cout << "[Updater] SUCCESS: Successfully updated to " << targetTag << " [SHA: " << targetSha.substr(0, 7) << "]" << std::endl;
     std::cout << "[Updater] Total files updated: " << updatedFiles << ", Preserved user DB files: " << preservedFiles << std::endl;
     std::cout << "==========================================" << std::endl;
 

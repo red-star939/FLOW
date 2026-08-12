@@ -1,4 +1,5 @@
 {
-  "branch": "flow_v1.4",
-  "version": "1.4"
+  "tag": "v1.4_stable",
+  "version": "1.4",
+  "sha": "3f867355451640fedec5b2958efc52c7cbeabb1f"
 }
