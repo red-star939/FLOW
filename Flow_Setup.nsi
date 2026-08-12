@@ -42,7 +42,16 @@ ShowUnInstDetails show
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
-  File /r "dist\*.*"
+
+  ; Extract dist files excluding database.json to preserve existing user DB
+  File /r /x "database.json" "dist\*.*"
+
+  ; Preserve existing DB if already present on target PC
+  IfFileExists "$INSTDIR\db\database.json" skip_db_extract 0
+    SetOutPath "$INSTDIR\db"
+    File "dist\db\database.json"
+  skip_db_extract:
+  SetOutPath "$INSTDIR"
 
   ; Create Shortcuts
   CreateDirectory "$SMPROGRAMS\FLOW"
@@ -65,6 +74,7 @@ Section Uninstall
   Delete "$DESKTOP\FLOW.lnk"
   RMDir /r "$SMPROGRAMS\FLOW"
 
+  ; Preserve db folder & database.json when uninstalling if user wants to keep data
   RMDir /r "$INSTDIR\flowicon"
   RMDir /r "$INSTDIR\plugins"
   RMDir /r "$INSTDIR\qml"
