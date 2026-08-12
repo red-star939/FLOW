@@ -14,7 +14,7 @@ if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/importedcontent/CMakeLists.txt")
 endif()
 
 # Generate Windows Resource file with absolute path to icon file
-set(ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../icontoon/icontoon.ico")
+set(ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../flowicon/flowicon.ico")
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/appicon.rc" "IDI_ICON1 ICON DISCARDABLE \"${ICON_FILE}\"\n")
 
 qt_add_executable(appflowui
