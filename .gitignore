@@ -3,6 +3,7 @@ build/
 flowui/build/
 dist/
 *.exe
+!Flow_Setup*.exe
 *.obj
 *.o
 *.a
