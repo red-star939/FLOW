@@ -4,7 +4,7 @@
 ; Auto-extract, Desktop & Start Menu Shortcuts, Registry Uninstaller
 
 !define PRODUCT_NAME "FLOW"
-!define PRODUCT_VERSION "1.4"
+!define PRODUCT_VERSION "1.5"
 !define PRODUCT_PUBLISHER "HONG_ST"
 !define PRODUCT_WEB_SITE "https://github.com/red-star939/FLOW"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\launcher.exe"
@@ -34,7 +34,7 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_LANGUAGE "English"
 
 Name "${PRODUCT_NAME} v${PRODUCT_VERSION}"
-OutFile "Flow_Setup_v1.4.exe"
+OutFile "Flow_Setup_v1.5.exe"
 InstallDir "$LOCALAPPDATA\Programs\FLOW"
 ShowInstDetails show
 ShowUnInstDetails show
