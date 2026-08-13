@@ -179,16 +179,29 @@ int main(int argc, char* argv[]) {
 
     std::cout << "[Updater] Downloading update package for " << targetTag << "..." << std::endl;
 
-    std::string zipUrl = "https://raw.githubusercontent.com/red-star939/FLOW/" + targetTag + "/Flow_Release.zip";
     std::string zipFile = "_update.zip";
+    bool downloadSuccess = false;
 
-    if (!download_file(zipUrl, zipFile)) {
-        // Fallback to github.com/raw
-        zipUrl = "https://github.com/red-star939/FLOW/raw/" + targetTag + "/Flow_Release.zip";
-        if (!download_file(zipUrl, zipFile)) {
-            std::cerr << "[Updater] Error: Failed to download update zip from " << zipUrl << std::endl;
-            return 1;
+    std::vector<std::string> urls = {
+        "https://raw.githubusercontent.com/red-star939/FLOW/" + targetTag + "/Flow_Release.zip",
+        "https://raw.githubusercontent.com/red-star939/FLOW/flow_v1.5/Flow_Release.zip",
+        "https://raw.githubusercontent.com/red-star939/FLOW/main/Flow_Release.zip",
+        "https://github.com/red-star939/FLOW/raw/" + targetTag + "/Flow_Release.zip",
+        "https://github.com/red-star939/FLOW/raw/flow_v1.5/Flow_Release.zip",
+        "https://github.com/red-star939/FLOW/raw/main/Flow_Release.zip"
+    };
+
+    for (const auto& u : urls) {
+        std::cout << "[Updater] Checking update source: " << u << std::endl;
+        if (download_file(u, zipFile)) {
+            downloadSuccess = true;
+            break;
         }
+    }
+
+    if (!downloadSuccess) {
+        std::cerr << "[Updater] Error: Failed to download update zip package." << std::endl;
+        return 1;
     }
 
     std::cout << "[Updater] Extracting update package..." << std::endl;
