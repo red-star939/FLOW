@@ -35,6 +35,8 @@ public:
     // Graph Slot Settings API
     Q_INVOKABLE QVariantList getGraphSlotMids(int year);
     Q_INVOKABLE bool saveGraphSlotMids(int year, const QVariantList& slotMids);
+    Q_INVOKABLE QStringList getGraphSlotColors(int year);
+    Q_INVOKABLE bool saveGraphSlotColors(int year, const QStringList& colors);
 
     // Category Settings API
     Q_INVOKABLE QStringList getCategoryList(const QString& type);

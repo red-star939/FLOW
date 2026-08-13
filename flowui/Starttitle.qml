@@ -6,9 +6,42 @@ Item {
 
     signal startRequested()
 
+    property color bgColor: "#141414"
+    property color titleColor: "#FFFFFF"
+    property color subtitleColor: "#7A7A7A"
+
+    function updateTheme() {
+        var themeIdx = 0
+        if (typeof dbController !== "undefined" && typeof dbController.getSavedThemeIndex === "function") {
+            themeIdx = dbController.getSavedThemeIndex()
+        }
+        setTheme(themeIdx)
+    }
+
+    function setTheme(idx) {
+        if (idx === 1) { // Sage Green
+            bgColor = "#E0D9CF"
+            titleColor = "#578679"
+            subtitleColor = "#819E8A"
+        } else if (idx === 2) { // Carmine Red
+            bgColor = "#A62B2B"
+            titleColor = "#FFFFFF"
+            subtitleColor = "#D8D8D8"
+        } else { // Dark (Default)
+            bgColor = "#141414"
+            titleColor = "#FFFFFF"
+            subtitleColor = "#7A7A7A"
+        }
+    }
+
+    Component.onCompleted: {
+        updateTheme()
+    }
+
     Rectangle {
         anchors.fill: parent
-        color: "#141414"
+        color: root.bgColor
+        Behavior on color { ColorAnimation { duration: 250 } }
     }
 
     MouseArea {
@@ -41,11 +74,13 @@ Item {
 
             anchors.horizontalCenter: parent.horizontalCenter
 
-            color: "white"
+            color: root.titleColor
 
             font.pixelSize: 76
             font.weight: Font.DemiBold
             renderType: Text.NativeRendering
+
+            Behavior on color { ColorAnimation { duration: 250 } }
         }
 
         Text {
@@ -53,10 +88,12 @@ Item {
 
             anchors.horizontalCenter: parent.horizontalCenter
 
-            color: "#7A7A7A"
+            color: root.subtitleColor
 
             font.pixelSize: 16
             renderType: Text.NativeRendering
+
+            Behavior on color { ColorAnimation { duration: 250 } }
         }
     }
 

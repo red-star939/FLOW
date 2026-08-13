@@ -1,7 +1,510 @@
 {
   "config": {
-    "end_year": 2026,
-    "start_year": 2026
+    "start_year": 2026,
+    "end_year": 2030
   },
-  "years": []
+  "years": [
+    {
+      "year": 2025,
+      "description": "",
+      "is_active": true,
+      "mids": [
+        {
+          "uuid": "mid_1786609856906390300_2428",
+          "mid": "생활비용",
+          "months": [
+            { "month": 1, "formula": "" },
+            { "month": 2, "formula": "" },
+            { "month": 3, "formula": "" },
+            { "month": 4, "formula": "" },
+            { "month": 5, "formula": "" },
+            { "month": 6, "formula": "" },
+            { "month": 7, "formula": "" },
+            { "month": 8, "formula": "" },
+            { "month": 9, "formula": "" },
+            { "month": 10, "formula": "" },
+            { "month": 11, "formula": "" },
+            { "month": 12, "formula": "" }
+          ]
+        },
+        {
+          "uuid": "mid_1786609856906407300_2913",
+          "mid": "영업이익",
+          "months": [
+            { "month": 1, "formula": "" },
+            { "month": 2, "formula": "" },
+            { "month": 3, "formula": "" },
+            { "month": 4, "formula": "" },
+            { "month": 5, "formula": "" },
+            { "month": 6, "formula": "" },
+            { "month": 7, "formula": "" },
+            { "month": 8, "formula": "" },
+            { "month": 9, "formula": "" },
+            { "month": 10, "formula": "" },
+            { "month": 11, "formula": "" },
+            { "month": 12, "formula": "" }
+          ]
+        }
+      ],
+      "months": [
+        {
+          "month": 1,
+          "items": [
+          ]
+        },
+        {
+          "month": 2,
+          "items": [
+          ]
+        },
+        {
+          "month": 3,
+          "items": [
+          ]
+        },
+        {
+          "month": 4,
+          "items": [
+          ]
+        },
+        {
+          "month": 5,
+          "items": [
+          ]
+        },
+        {
+          "month": 6,
+          "items": [
+          ]
+        },
+        {
+          "month": 7,
+          "items": [
+          ]
+        },
+        {
+          "month": 8,
+          "items": [
+          ]
+        },
+        {
+          "month": 9,
+          "items": [
+          ]
+        },
+        {
+          "month": 10,
+          "items": [
+          ]
+        },
+        {
+          "month": 11,
+          "items": [
+          ]
+        },
+        {
+          "month": 12,
+          "items": [
+          ]
+        }
+      ]
+    },
+    {
+      "year": 2026,
+      "description": "",
+      "is_active": true,
+      "mids": [
+        {
+          "uuid": "mid_1786609856495284200_3358",
+          "mid": "생활비용",
+          "months": [
+            { "month": 1, "formula": "" },
+            { "month": 2, "formula": "" },
+            { "month": 3, "formula": "" },
+            { "month": 4, "formula": "" },
+            { "month": 5, "formula": "" },
+            { "month": 6, "formula": "" },
+            { "month": 7, "formula": "" },
+            { "month": 8, "formula": "월급" },
+            { "month": 9, "formula": "" },
+            { "month": 10, "formula": "" },
+            { "month": 11, "formula": "" },
+            { "month": 12, "formula": "" }
+          ]
+        },
+        {
+          "uuid": "mid_1786609856495326800_6044",
+          "mid": "영업이익",
+          "months": [
+            { "month": 1, "formula": "" },
+            { "month": 2, "formula": "" },
+            { "month": 3, "formula": "" },
+            { "month": 4, "formula": "" },
+            { "month": 5, "formula": "" },
+            { "month": 6, "formula": "" },
+            { "month": 7, "formula": "" },
+            { "month": 8, "formula": "당일지출" },
+            { "month": 9, "formula": "" },
+            { "month": 10, "formula": "" },
+            { "month": 11, "formula": "" },
+            { "month": 12, "formula": "" }
+          ]
+        }
+      ],
+      "months": [
+        {
+          "month": 1,
+          "items": [
+          ]
+        },
+        {
+          "month": 2,
+          "items": [
+          ]
+        },
+        {
+          "month": 3,
+          "items": [
+          ]
+        },
+        {
+          "month": 4,
+          "items": [
+          ]
+        },
+        {
+          "month": 5,
+          "items": [
+          ]
+        },
+        {
+          "month": 6,
+          "items": [
+          ]
+        },
+        {
+          "month": 7,
+          "items": [
+            {
+              "uuid": "id_1786611520370668800_6044",
+              "id": "ID 블록 1",
+              "total_value": 9000,
+              "sub_items": [
+                { "uuid": "sub_1786611523468_1", "sub_id": "새 항목", "value": 9000 }
+              ]
+            }
+          ]
+        },
+        {
+          "month": 8,
+          "items": [
+            {
+              "uuid": "id_1786610211493833100_3358",
+              "id": "월급",
+              "total_value": 1000,
+              "sub_items": [
+                { "uuid": "sub_1786610224299_1", "sub_id": "새 항목", "value": 1000 }
+              ]
+            }
+          ]
+        },
+        {
+          "month": 9,
+          "items": [
+          ]
+        },
+        {
+          "month": 10,
+          "items": [
+          ]
+        },
+        {
+          "month": 11,
+          "items": [
+          ]
+        },
+        {
+          "month": 12,
+          "items": [
+          ]
+        }
+      ]
+    },
+    {
+      "year": 2027,
+      "description": "",
+      "is_active": true,
+      "mids": [
+      ],
+      "months": [
+        {
+          "month": 1,
+          "items": [
+          ]
+        },
+        {
+          "month": 2,
+          "items": [
+          ]
+        },
+        {
+          "month": 3,
+          "items": [
+          ]
+        },
+        {
+          "month": 4,
+          "items": [
+          ]
+        },
+        {
+          "month": 5,
+          "items": [
+          ]
+        },
+        {
+          "month": 6,
+          "items": [
+          ]
+        },
+        {
+          "month": 7,
+          "items": [
+          ]
+        },
+        {
+          "month": 8,
+          "items": [
+          ]
+        },
+        {
+          "month": 9,
+          "items": [
+          ]
+        },
+        {
+          "month": 10,
+          "items": [
+          ]
+        },
+        {
+          "month": 11,
+          "items": [
+          ]
+        },
+        {
+          "month": 12,
+          "items": [
+          ]
+        }
+      ]
+    },
+    {
+      "year": 2028,
+      "description": "",
+      "is_active": true,
+      "mids": [
+      ],
+      "months": [
+        {
+          "month": 1,
+          "items": [
+          ]
+        },
+        {
+          "month": 2,
+          "items": [
+          ]
+        },
+        {
+          "month": 3,
+          "items": [
+          ]
+        },
+        {
+          "month": 4,
+          "items": [
+          ]
+        },
+        {
+          "month": 5,
+          "items": [
+          ]
+        },
+        {
+          "month": 6,
+          "items": [
+          ]
+        },
+        {
+          "month": 7,
+          "items": [
+          ]
+        },
+        {
+          "month": 8,
+          "items": [
+          ]
+        },
+        {
+          "month": 9,
+          "items": [
+          ]
+        },
+        {
+          "month": 10,
+          "items": [
+          ]
+        },
+        {
+          "month": 11,
+          "items": [
+          ]
+        },
+        {
+          "month": 12,
+          "items": [
+          ]
+        }
+      ]
+    },
+    {
+      "year": 2029,
+      "description": "",
+      "is_active": true,
+      "mids": [
+      ],
+      "months": [
+        {
+          "month": 1,
+          "items": [
+          ]
+        },
+        {
+          "month": 2,
+          "items": [
+          ]
+        },
+        {
+          "month": 3,
+          "items": [
+          ]
+        },
+        {
+          "month": 4,
+          "items": [
+          ]
+        },
+        {
+          "month": 5,
+          "items": [
+          ]
+        },
+        {
+          "month": 6,
+          "items": [
+          ]
+        },
+        {
+          "month": 7,
+          "items": [
+          ]
+        },
+        {
+          "month": 8,
+          "items": [
+          ]
+        },
+        {
+          "month": 9,
+          "items": [
+          ]
+        },
+        {
+          "month": 10,
+          "items": [
+          ]
+        },
+        {
+          "month": 11,
+          "items": [
+          ]
+        },
+        {
+          "month": 12,
+          "items": [
+          ]
+        }
+      ]
+    },
+    {
+      "year": 2030,
+      "description": "",
+      "is_active": true,
+      "mids": [
+      ],
+      "months": [
+        {
+          "month": 1,
+          "items": [
+          ]
+        },
+        {
+          "month": 2,
+          "items": [
+          ]
+        },
+        {
+          "month": 3,
+          "items": [
+          ]
+        },
+        {
+          "month": 4,
+          "items": [
+          ]
+        },
+        {
+          "month": 5,
+          "items": [
+          ]
+        },
+        {
+          "month": 6,
+          "items": [
+          ]
+        },
+        {
+          "month": 7,
+          "items": [
+          ]
+        },
+        {
+          "month": 8,
+          "items": [
+          ]
+        },
+        {
+          "month": 9,
+          "items": [
+          ]
+        },
+        {
+          "month": 10,
+          "items": [
+          ]
+        },
+        {
+          "month": 11,
+          "items": [
+          ]
+        },
+        {
+          "month": 12,
+          "items": [
+          ]
+        }
+      ]
+    }
+  ]
 }

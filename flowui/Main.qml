@@ -19,6 +19,11 @@ ApplicationWindow {
     Bgdash {
         id: bgdash
         anchors.fill: parent
+        onCurrentThemeIndexChanged: {
+            if (startTitle) {
+                startTitle.setTheme(bgdash.currentThemeIndex)
+            }
+        }
     }
 
     Starttitle {

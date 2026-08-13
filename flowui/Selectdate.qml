@@ -115,7 +115,7 @@ Item {
                 text: root.monthNames[index]
                 font.pixelSize: (root.selectedMonth > 0 && index === (root.selectedMonth - 1)) ? 32 : 22
                 font.bold: true
-                color: (root.selectedMonth > 0 && index === (root.selectedMonth - 1)) ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#666666"
+                color: (root.selectedMonth > 0 && index === (root.selectedMonth - 1)) ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#666666")
 
                 Behavior on color { ColorAnimation { duration: 200 } }
                 Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
@@ -177,7 +177,7 @@ Item {
             text: "합계"
             font.pixelSize: root.selectedMonth === 0 ? 26 : 22
             font.bold: true
-            color: root.selectedMonth === 0 ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#8E8E93"
+            color: root.selectedMonth === 0 ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#8E8E93")
 
             Behavior on color { ColorAnimation { duration: 250 } }
             Behavior on font.pixelSize { NumberAnimation { duration: 150 } }

@@ -267,7 +267,7 @@ Value Evaluator::visit_function(const FunctionCallNode* node) {
 
         int n = static_cast<int>(*pN);
         double factor = std::pow(10.0, n);
-        return std::round(*pNum / factor) * factor;
+        return std::ceil(*pNum / factor) * factor;
     }
 
     if (func_name == "INTDOWN") {
@@ -283,7 +283,7 @@ Value Evaluator::visit_function(const FunctionCallNode* node) {
         if (!pN) return ErrorType::ValueError;
 
         int n = static_cast<int>(*pN);
-        double factor = std::pow(10.0, std::max(0, n - 1));
+        double factor = std::pow(10.0, n);
         return std::floor(*pNum / factor) * factor;
     }
 

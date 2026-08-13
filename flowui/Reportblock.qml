@@ -138,6 +138,9 @@ Item {
         var nextIdx = (curIdx + 1) % slotColorPalette.length
         colors[slotIdx] = slotColorPalette[nextIdx]
         slotColors = colors
+        if (typeof dbController !== "undefined" && typeof dbController.saveGraphSlotColors === "function") {
+            dbController.saveGraphSlotColors(selectedYear, colors)
+        }
     }
 
     // Block 1 Setting Mode (Fade-Out State)
@@ -154,8 +157,16 @@ Item {
             var saved = dbController.getGraphSlotMids(selectedYear)
             if (saved && saved.length === 3) {
                 slotMids = saved
-                return
+            } else {
+                slotMids = [null, null, null]
             }
+            if (typeof dbController.getGraphSlotColors === "function") {
+                var savedColors = dbController.getGraphSlotColors(selectedYear)
+                if (savedColors && savedColors.length === 3) {
+                    slotColors = savedColors
+                }
+            }
+            return
         }
         slotMids = [null, null, null]
     }
@@ -421,7 +432,7 @@ Item {
                                     }
                                     Text {
                                         text: "Graph Analytics & Monthly Trend"
-                                        color: "#8E8E93"
+                                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#8E8E93"
                                         font.pixelSize: 12
                                     }
                                 }
@@ -432,7 +443,7 @@ Item {
                         Rectangle {
                             width: parent.width
                             height: 1
-                            color: "#333333"
+                            color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#333333"
                         }
 
                         // Slot Color Legend Indicators Row (Directly below horizontal divider line, Right-Aligned)
@@ -536,7 +547,7 @@ Item {
                                     anchors.bottom: parent.bottom
                                     anchors.bottomMargin: 20
                                     width: 1
-                                    color: "#333333"
+                                    color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#333333"
                                 }
 
                                 // ─── Chart Data Grid Area (가로축 1~12월 & 데이터 바) ───
@@ -555,7 +566,7 @@ Item {
                                         delegate: Rectangle {
                                             width: parent.width
                                             height: 1
-                                            color: index === 4 ? "#444444" : "#242424"
+                                            color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : (index === 4 ? "#444444" : "#242424")
                                             y: (chartDataArea.height - 20) * (index / 4.0)
                                         }
                                     }
@@ -564,7 +575,7 @@ Item {
                                     Rectangle {
                                         width: parent.width
                                         height: 1
-                                        color: "#444444"
+                                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#444444"
                                         y: chartDataArea.height - 20
                                     }
 
@@ -685,9 +696,9 @@ Item {
                     // Top Title Header when Settings are Open
                     Row {
                         anchors.left: parent.left
-                        anchors.leftMargin: 20
+                        anchors.leftMargin: 16
                         anchors.top: parent.top
-                        anchors.topMargin: 16
+                        anchors.topMargin: 17
                         spacing: 10
 
                         Rectangle {
@@ -711,13 +722,13 @@ Item {
                             spacing: 2
                             Text {
                                 text: "그래프 설정"
-                                color: "#FFFFFF"
+                                color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"
                                 font.pixelSize: 17
                                 font.bold: true
                             }
                             Text {
                                 text: "Graph Slot Configuration"
-                                color: "#8E8E93"
+                                color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#8E8E93"
                                 font.pixelSize: 12
                             }
                         }
@@ -980,9 +991,9 @@ Item {
                         width: 30
                         height: 30
                         radius: 15
-                        color: actionBtnHover.containsMouse ? "#FFFFFF" : "#3A3A3A"
+                        color: actionBtnHover.containsMouse ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#3A3A3A")
                         border.width: 1
-                        border.color: actionBtnHover.containsMouse ? "#FFFFFF" : "#4A4A4A"
+                        border.color: actionBtnHover.containsMouse ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#4A4A4A")
 
                         opacity: (block1MenuHoverZone.hovered || actionBtnHover.containsMouse) ? 1.0 : 0.0
                         visible: opacity > 0.0
@@ -997,7 +1008,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: root.graphSettingsOpen ? "×" : "≡"
-                            color: actionBtnHover.containsMouse ? "#121212" : "#DDDDDD"
+                            color: actionBtnHover.containsMouse ? "#121212" : "#FFFFFF"
                             font.pixelSize: root.graphSettingsOpen ? 16 : 14
                             font.bold: true
 
@@ -1087,7 +1098,7 @@ Item {
                                 }
                                 Text {
                                     text: "Daily Expense Difference Analysis"
-                                    color: "#8E8E93"
+                                    color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#8E8E93"
                                     font.pixelSize: 12
                                 }
                             }
@@ -1098,7 +1109,7 @@ Item {
                     Rectangle {
                         width: parent.width
                         height: 1
-                        color: "#333333"
+                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#333333"
                     }
 
                     // 1. Side-by-Side Dual Sub-Cards (전일 vs 금일 총액) - TOP
@@ -1118,7 +1129,7 @@ Item {
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: "전일 (" + root.yesterdayMonth + "/" + root.yesterdayDay + ")"
-                                    color: "#8E8E93"
+                                    color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#8E8E93"
                                     font.pixelSize: 11
                                     font.bold: true
                                 }
@@ -1133,17 +1144,20 @@ Item {
 
                                 Rectangle {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    width: yCntText.width + 10
-                                    height: 16
-                                    radius: 8
-                                    color: "#2C2C2E"
+                                    width: yCntText.width + 12
+                                    height: 18
+                                    radius: 9
+                                    color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#2C2C2E"
+                                    border.width: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? 1 : 0
+                                    border.color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "transparent"
 
                                     Text {
                                         id: yCntText
                                         anchors.centerIn: parent
                                         text: root.yesterdayDailyItems.length + "개 항목"
-                                        color: "#A0A0A0"
+                                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#A0A0A0"
                                         font.pixelSize: 9
+                                        font.bold: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2)
                                     }
                                 }
                             }
@@ -1153,7 +1167,7 @@ Item {
                         Rectangle {
                             width: 1
                             height: parent.height - 20
-                            color: "#333333"
+                            color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#333333"
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
@@ -1169,7 +1183,7 @@ Item {
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: "금일 (" + root.todayMonth + "/" + root.todayDay + ")"
-                                    color: "#00E5FF"
+                                    color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#00E5FF"
                                     font.pixelSize: 11
                                     font.bold: true
                                 }
@@ -1184,16 +1198,18 @@ Item {
 
                                 Rectangle {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    width: tCntText.width + 10
-                                    height: 16
-                                    radius: 8
-                                    color: "#1E2C33"
+                                    width: tCntText.width + 12
+                                    height: 18
+                                    radius: 9
+                                    color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#1E2C33"
+                                    border.width: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? 1 : 0
+                                    border.color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "transparent"
 
                                     Text {
                                         id: tCntText
                                         anchors.centerIn: parent
                                         text: root.todayDailyItems.length + "개 항목"
-                                        color: "#64D2FF"
+                                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#64D2FF"
                                         font.pixelSize: 9
                                         font.bold: true
                                     }
@@ -1206,7 +1222,7 @@ Item {
                     Rectangle {
                         width: parent.width
                         height: 1
-                        color: "#333333"
+                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#333333"
                     }
 
                     // 2. Hero Diff Analysis (지출 분석) - DIRECTLY BELOW
@@ -1220,7 +1236,7 @@ Item {
 
                             Text {
                                 text: root.diffExpenseAmount > 0 ? "▲ 지출 증가" : (root.diffExpenseAmount < 0 ? "▼ 지출 절감" : "– 변동 없음")
-                                color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#8E8E93")
+                                color: root.diffExpenseAmount > 0 ? ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#FF453A") : (root.diffExpenseAmount < 0 ? "#30D158" : "#8E8E93")
                                 font.pixelSize: 14
                                 font.bold: true
                             }
@@ -1236,7 +1252,7 @@ Item {
                                 width: pctText.width + 12
                                 height: 22
                                 radius: 11
-                                color: root.diffExpenseAmount > 0 ? "#FF453A" : (root.diffExpenseAmount < 0 ? "#30D158" : "#555555")
+                                color: root.diffExpenseAmount > 0 ? ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#FF453A") : (root.diffExpenseAmount < 0 ? "#30D158" : "#555555")
 
                                 Text {
                                     id: pctText

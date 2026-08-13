@@ -168,7 +168,7 @@ Rectangle {
 
                     Text {
                         text: "Daily Expenses"
-                        color: "#8E8E93"
+                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#8E8E93"
                         font.pixelSize: 12
                     }
                 }
@@ -195,7 +195,7 @@ Rectangle {
         Rectangle {
             width: parent.width
             height: 1
-            color: "#333333"
+            color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#333333"
         }
 
         // ─── SubID 블록 컴포넌트로 직접 구성된 당일지출 리스트 ───
@@ -286,7 +286,7 @@ Rectangle {
                     width: 26
                     height: 26
                     radius: 13
-                    color: subAddHoverHandler.hovered ? "#FFFFFF" : "#3A3A3A"
+                    color: subAddHoverHandler.hovered ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#3A3A3A")
                     opacity: subAddHoverHandler.hovered ? 1.0 : 0.0
                     visible: opacity > 0.0
 
@@ -328,7 +328,7 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 height: 1
-                color: "#3A3A3A"
+                color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#3A3A3A"
             }
 
             Column {
@@ -346,7 +346,7 @@ Rectangle {
                         anchors.leftMargin: 8
                         anchors.verticalCenter: parent.verticalCenter
                         text: rightdashRoot.selectedDay + "일 합계"
-                        color: "#AAAAAA"
+                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#AAAAAA"
                         font.pixelSize: 12
                         font.bold: true
                     }
@@ -356,7 +356,7 @@ Rectangle {
                         anchors.rightMargin: 12
                         anchors.verticalCenter: parent.verticalCenter
                         text: Number(rightdashRoot.totalDailyExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                        color: "#FF453A"
+                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#FF453A"
                         font.pixelSize: 13
                         font.bold: true
                         Behavior on color { ColorAnimation { duration: 250 } }
@@ -384,7 +384,7 @@ Rectangle {
                         anchors.rightMargin: 12
                         anchors.verticalCenter: parent.verticalCenter
                         text: Number(rightdashRoot.totalMonthlyDailyExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                        color: "#FF453A"
+                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#FF453A"
                         font.pixelSize: 14
                         font.bold: true
                         Behavior on color { ColorAnimation { duration: 250 } }

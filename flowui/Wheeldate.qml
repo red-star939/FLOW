@@ -135,7 +135,7 @@ Item {
                 text: (root.startYear + index).toString()
                 font.pixelSize: 28
                 font.bold: true
-                color: delegateItem.PathView.isCurrentItem ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#555555"
+                color: delegateItem.PathView.isCurrentItem ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#555555")
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
 

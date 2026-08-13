@@ -16,7 +16,7 @@ Item {
         }
     }
     signal colorSelected(string mainColor, string accentColor)
-    signal themeSelected(string mainBg, string cardBg, string borderCol, string textCol, string badgeBg, string dashBg, string idCardBg)
+    signal themeSelected(string mainBg, string cardBg, string borderCol, string textCol, string badgeBg, string dashBg, string idCardBg, int themeIdx)
 
     property string currentSystemColor: "#141414"
     property string currentAccentColor: "#00E5FF"
@@ -172,7 +172,7 @@ Item {
                             width: (parent.width - 28) / 3
                             height: 175
                             radius: 16
-                             color: index === 0 ? "#141414" : (index === 1 ? "#578679" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A")))
+                             color: index === 0 ? "#141414" : (index === 1 ? "#578679" : (index === 2 ? "#A62B2B" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A"))))
                              border.width: colorsetRoot.selectedCardIndex === index ? 2 : 1
                              border.color: colorsetRoot.selectedCardIndex === index ? "#FFFFFF" : (cardHover.containsMouse ? "#666666" : "#303030")
 
@@ -337,6 +337,83 @@ Item {
                                  }
                              }
 
+                             // Card 3 Content (Carmine Red Theme Preview)
+                             Column {
+                                 anchors.centerIn: parent
+                                 spacing: 12
+                                 visible: index === 2
+
+                                 // 5 Color Circles (1. #221616, 2. #B83E3E, 3. #FFFFFF, 4. #B83E3E, 5. #A62B2B)
+                                 Row {
+                                     anchors.horizontalCenter: parent.horizontalCenter
+                                     spacing: 5
+
+                                     // 1. 카드 배경색 (#221616)
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#221616"
+                                         border.width: 1
+                                         border.color: "#552222"
+                                     }
+
+                                     // 2. 테두리색 (#B83E3E)
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#B83E3E"
+                                     }
+
+                                     // 3. 글자색 (#FFFFFF)
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#FFFFFF"
+                                     }
+
+                                     // 4. 블록명 뱃지색 (#B83E3E)
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#B83E3E"
+                                     }
+
+                                     // 5. 상/하단 대시보드 색 (#A62B2B)
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#A62B2B"
+                                         border.width: 1
+                                         border.color: "#7A1C1C"
+                                     }
+                                 }
+
+                                 Column {
+                                     spacing: 3
+                                     anchors.horizontalCenter: parent.horizontalCenter
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "Carmine Red"
+                                         color: "#FFFFFF"
+                                         font.pixelSize: 13
+                                         font.bold: true
+                                     }
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "(클래식 카민 테마)"
+                                         color: "#F2B6B6"
+                                         font.pixelSize: 10
+                                     }
+                                 }
+                             }
+
                              MouseArea {
                                  id: cardHover
                                  anchors.fill: parent
@@ -350,11 +427,15 @@ Item {
                                      if (index === 0) {
                                          colorsetRoot.currentSystemColor = "#141414"
                                          colorsetRoot.currentAccentColor = "#00E5FF"
-                                         colorsetRoot.themeSelected("#141414", "#1F1F1F", "#343434", "#FFFFFF", "#222222", "#141414", "#1F1F1F")
+                                         colorsetRoot.themeSelected("#141414", "#1F1F1F", "#343434", "#FFFFFF", "#222222", "#141414", "#1F1F1F", 0)
                                      } else if (index === 1) {
                                          colorsetRoot.currentSystemColor = "#578679"
                                          colorsetRoot.currentAccentColor = "#819E8A"
-                                         colorsetRoot.themeSelected("#578679", "#E0D9CF", "#C2A17B", "#090A0B", "#819E8A", "#578679", "#819E8A")
+                                         colorsetRoot.themeSelected("#578679", "#E0D9CF", "#C2A17B", "#090A0B", "#819E8A", "#578679", "#819E8A", 1)
+                                     } else if (index === 2) {
+                                         colorsetRoot.currentSystemColor = "#A62B2B"
+                                         colorsetRoot.currentAccentColor = "#B83E3E"
+                                         colorsetRoot.themeSelected("#A62B2B", "#221616", "#FFFFFF", "#FFFFFF", "#B83E3E", "#A62B2B", "#331E1E", 2)
                                      }
                                  }
                              }

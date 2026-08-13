@@ -117,7 +117,8 @@ Item {
                 width: 16
                 height: 16
                 radius: 8
-                color: "#FF5F57"
+                color: subDelHover.containsMouse ? "#FF3B30" : "#FF5F57"
+                scale: subDelHover.containsMouse ? 1.25 : 1.0
 
                 anchors {
                     left: parent.left
@@ -125,10 +126,12 @@ Item {
                     verticalCenter: parent.verticalCenter
                 }
 
-                opacity: (leftHoverHandler.hovered || cardHover.hovered) ? 1.0 : 0.0
+                opacity: (leftHoverHandler.hovered || cardHover.hovered || subDelHover.containsMouse) ? 1.0 : 0.0
                 visible: opacity > 0.0
 
+                Behavior on color { ColorAnimation { duration: 150 } }
                 Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
 
                 Text {
                     anchors.centerIn: parent
@@ -136,12 +139,12 @@ Item {
                     color: "white"
                     font.pixelSize: 10
                     font.bold: true
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
                 }
 
                 MouseArea {
+                    id: subDelHover
                     anchors.fill: parent
+                    hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onPressed: (mouse) => {
                         mouse.accepted = true
@@ -166,9 +169,9 @@ Item {
             }
             height: 26
             radius: 13
-            color: titleHover.containsMouse ? "#2A2A2A" : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTitleBadgeBg : "#222222")
+            color: titleHover.containsMouse ? (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2 ? "#FFFFFF" : "#2A2A2A") : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTitleBadgeBg : "#222222")
             border.width: 1.5
-            border.color: titlePopup.visible ? "#FFFFFF" : (titleHover.containsMouse ? "#555555" : "#343434")
+            border.color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : (titlePopup.visible ? "#FFFFFF" : (titleHover.containsMouse ? "#555555" : "#343434"))
             scale: titleHover.containsMouse ? 1.12 : 1.0
             z: titlePopup.visible ? 10 : 1
 
@@ -180,7 +183,7 @@ Item {
                 id: titleTxt
                 anchors.centerIn: parent
                 text: root.title
-                color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"
+                color: (titleHover.containsMouse && typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#121212" : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
                 font.pixelSize: 12
                 font.bold: true
                 elide: Text.ElideRight
@@ -389,7 +392,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             width: 1
             height: parent.height - 12
-            color: "#3A3A3A"
+            color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#3A3A3A"
         }
 
         // ─── Single Cell / Value Input (Right Half) ───
@@ -470,7 +473,9 @@ Item {
             }
 
             opacity: (cardHover.hovered || subDragMouseArea.containsMouse) ? 1.0 : 0.35
+            scale: subDragMouseArea.containsMouse ? 1.2 : 1.0
             Behavior on opacity { NumberAnimation { duration: 150 } }
+            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
 
             Column {
                 anchors.centerIn: parent
@@ -487,6 +492,7 @@ Item {
                                 height: 2.5
                                 radius: 1.25
                                 color: subDragMouseArea.containsMouse ? "#FFFFFF" : "#777777"
+                                Behavior on color { ColorAnimation { duration: 150 } }
                             }
                         }
                     }

@@ -199,7 +199,8 @@ Item {
                 width: 18
                 height: 18
                 radius: 9
-                color: "#FF5F57"
+                color: delBtnHover.containsMouse ? "#FF3B30" : "#FF5F57"
+                scale: delBtnHover.containsMouse ? 1.25 : 1.0
 
                 anchors {
                     left: dragHandle.right
@@ -207,10 +208,12 @@ Item {
                     verticalCenter: parent.verticalCenter
                 }
 
-                opacity: leftHoverHandler.hovered ? 1.0 : 0.0
+                opacity: (leftHoverHandler.hovered || delBtnHover.containsMouse) ? 1.0 : 0.0
                 visible: opacity > 0.0
 
+                Behavior on color { ColorAnimation { duration: 150 } }
                 Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
 
                 Text {
                     anchors.centerIn: parent
@@ -222,7 +225,9 @@ Item {
                 }
 
                 MouseArea {
+                    id: delBtnHover
                     anchors.fill: parent
+                    hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: root.removeRequested(root.blockIndex)
                 }
@@ -243,9 +248,12 @@ Item {
                 Column {
                     anchors.centerIn: parent
                     spacing: 2
-                    opacity: leftHoverHandler.hovered || dragMouseArea.pressed ? 1.0 : 0.0
+                    opacity: (leftHoverHandler.hovered || dragMouseArea.containsMouse || dragMouseArea.pressed) ? 1.0 : 0.0
                     visible: opacity > 0.0
+                    scale: dragMouseArea.containsMouse ? 1.2 : 1.0
+
                     Behavior on opacity { NumberAnimation { duration: 150 } }
+                    Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
 
                     Repeater {
                         model: 3
@@ -257,7 +265,8 @@ Item {
                                     width: 3
                                     height: 3
                                     radius: 1.5
-                                    color: "#7A7A7A"
+                                    color: dragMouseArea.containsMouse ? "#FFFFFF" : "#7A7A7A"
+                                    Behavior on color { ColorAnimation { duration: 150 } }
                                 }
                             }
                         }
@@ -305,9 +314,9 @@ Item {
             height: 32
             width: titleTxt.implicitWidth + 26
             radius: 16
-            color: titleHover.containsMouse ? "#2A2A2A" : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTitleBadgeBg : "#222222")
+            color: titleHover.containsMouse ? (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2 ? "#FFFFFF" : "#2A2A2A") : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTitleBadgeBg : "#222222")
             border.width: 1.5
-            border.color: titlePopup.visible ? "#FFFFFF" : (titleHover.containsMouse ? "#555555" : "#343434")
+            border.color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : (titlePopup.visible ? "#FFFFFF" : (titleHover.containsMouse ? "#555555" : "#343434"))
             scale: titleHover.containsMouse ? 1.12 : 1.0
             z: titlePopup.visible ? 10 : 1
 
@@ -319,7 +328,7 @@ Item {
                 id: titleTxt
                 anchors.centerIn: parent
                 text: root.midName
-                color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"
+                color: (titleHover.containsMouse && typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#121212" : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
                 font.pixelSize: 15
                 font.bold: true
                 Behavior on color { ColorAnimation { duration: 250 } }
@@ -598,7 +607,7 @@ Item {
                           : "-"
                     font.pixelSize: (root.selectedMonth > 0 && index === (root.selectedMonth - 1)) ? 18 : 14
                     font.bold: true
-                    color: (root.selectedMonth > 0 && index === (root.selectedMonth - 1)) ? (parent.val !== 0 ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : "#666666") : "#666666"
+                    color: (root.selectedMonth > 0 && index === (root.selectedMonth - 1)) ? (parent.val !== 0 ? (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF") : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#666666")) : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#666666")
 
                     Behavior on color { ColorAnimation { duration: 200 } }
                     Behavior on font.pixelSize { NumberAnimation { duration: 150 } }
@@ -648,7 +657,7 @@ Item {
                     text: (root.totalValue > 0 ? "+" : "") + Number(root.totalValue).toLocaleString(Qt.locale("ko_KR"), "f", 0)
                     color: root.totalValue > 0
                            ? "#4CD964"
-                           : (root.totalValue < 0 ? "#FF3B30" : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"))
+                           : (root.totalValue < 0 ? ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#FF3B30") : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"))
                     font.pixelSize: (root.selectedMonth === 0) ? 18 : 16
                     font.bold: true
                     scale: sumHoverHandler.hovered ? 1.18 : 1.0
@@ -688,7 +697,7 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 radius: 13
-                color: funcMouseArea.containsMouse ? "#FFFFFF" : "#3A3A3A"
+                color: funcMouseArea.containsMouse ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#3A3A3A")
                 opacity: (funcHoverHandler.hovered || funcMouseArea.containsMouse) ? 1.0 : 0.0
                 visible: opacity > 0.0
 

@@ -229,9 +229,9 @@ Item {
                 height: 32
                 width: Math.max(90, titleTxt.implicitWidth + 28)
                 radius: 16
-                color: titleHover.containsMouse ? "#2A2A2A" : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTitleBadgeBg : "#222222")
+                color: titleHover.containsMouse ? (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2 ? "#FFFFFF" : "#2A2A2A") : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTitleBadgeBg : "#222222")
                 border.width: 1.5
-                border.color: titlePopup.visible ? "#FFFFFF" : (titleHover.containsMouse ? "#555555" : "#343434")
+                border.color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : (titlePopup.visible ? "#FFFFFF" : (titleHover.containsMouse ? "#555555" : "#343434"))
                 scale: titleHover.containsMouse ? 1.12 : 1.0
                 z: titlePopup.visible ? 10 : 1
 
@@ -243,7 +243,7 @@ Item {
                     id: titleTxt
                     anchors.centerIn: parent
                     text: root.title
-                    color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF"
+                    color: (titleHover.containsMouse && typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#121212" : (typeof bgdashRoot !== "undefined" ? bgdashRoot.themeTextColor : "#FFFFFF")
                     font.pixelSize: 16
                     font.bold: true
                     Behavior on color { ColorAnimation { duration: 250 } }
@@ -620,7 +620,7 @@ Item {
                         width: 26
                         height: 26
                         radius: 13
-                        color: subAddHoverHandler.hovered ? "#FFFFFF" : "#3A3A3A"
+                        color: subAddHoverHandler.hovered ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#3A3A3A")
                         opacity: subAddHoverHandler.hovered ? 1.0 : 0.0
                         visible: opacity > 0.0
 
@@ -683,13 +683,16 @@ Item {
                 width: 18
                 height: 18
                 radius: 9
-                color: "#FF5F57"
+                color: idDelHover.containsMouse ? "#FF3B30" : "#FF5F57"
+                scale: idDelHover.containsMouse ? 1.25 : 1.0
                 anchors.centerIn: parent
 
-                opacity: deleteHoverHandler.hovered ? 1.0 : 0.0
+                opacity: (deleteHoverHandler.hovered || idDelHover.containsMouse) ? 1.0 : 0.0
                 visible: opacity > 0.0
 
+                Behavior on color { ColorAnimation { duration: 150 } }
                 Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
 
                 Text {
                     anchors.centerIn: parent
@@ -697,12 +700,12 @@ Item {
                     color: "white"
                     font.pixelSize: 12
                     font.bold: true
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
                 }
 
                 MouseArea {
+                    id: idDelHover
                     anchors.fill: parent
+                    hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         root.removeRequested(root.blockIndex)
@@ -728,9 +731,11 @@ Item {
                 width: 20
                 height: 24
                 anchors.centerIn: parent
-                opacity: dragHoverHandler.hovered ? 1 : 0
+                opacity: (dragHoverHandler.hovered || dragMouseArea.containsMouse || dragMouseArea.pressed) ? 1 : 0
+                scale: dragMouseArea.containsMouse ? 1.2 : 1.0
 
                 Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
 
                 Column {
                     anchors.centerIn: parent
@@ -746,7 +751,8 @@ Item {
                                     width: 3
                                     height: 3
                                     radius: 1.5
-                                    color: "#7A7A7A"
+                                    color: dragMouseArea.containsMouse ? "#FFFFFF" : "#7A7A7A"
+                                    Behavior on color { ColorAnimation { duration: 150 } }
                                 }
                             }
                         }
@@ -801,7 +807,7 @@ Item {
                 anchors.right: parent.right
                 anchors.rightMargin: 12
                 height: 1
-                color: "#3A3A3A"
+                color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#3A3A3A"
             }
 
             Text {

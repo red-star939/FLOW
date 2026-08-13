@@ -326,9 +326,9 @@ Item {
             width: 560
             height: 470
             radius: 18
-            color: "#1F1F1F"
+            color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#221616" : "#1F1F1F"
             border.width: 1.5
-            border.color: "#343434"
+            border.color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#343434"
             z: 1
 
             MouseArea {
@@ -459,9 +459,9 @@ Item {
                     width: 30
                     height: 30
                     radius: 15
-                    color: closeHover.containsMouse ? "#FFFFFF" : "#3A3A3A"
+                    color: closeHover.containsMouse ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#3A3A3A")
                     border.width: 1
-                    border.color: closeHover.containsMouse ? "#FFFFFF" : "#4A4A4A"
+                    border.color: closeHover.containsMouse ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#4A4A4A")
                     scale: closeHover.containsMouse ? 1.08 : 1.0
 
                     Behavior on color { ColorAnimation { duration: 150 } }
@@ -477,7 +477,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "×"
-                        color: closeHover.containsMouse ? "#121212" : "#DDDDDD"
+                        color: closeHover.containsMouse ? "#121212" : "#FFFFFF"
                         font.pixelSize: 16
                         font.bold: true
 
@@ -501,7 +501,7 @@ Item {
                 anchors.right: parent.right
                 anchors.top: headerArea.bottom
                 height: 1
-                color: "#343434"
+                color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#343434"
             }
 
             // Hidden Shared Text Field for formula persistence

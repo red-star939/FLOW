@@ -490,6 +490,28 @@ bool DBController::saveGraphSlotMids(int year, const QVariantList& slotMids) {
     return true;
 }
 
+QStringList DBController::getGraphSlotColors(int year) {
+    QSettings settings("HONG_ST", "FlowApp");
+    QString key = QString("GraphSlotColors/%1").arg(year);
+    QStringList colors = settings.value(key).toStringList();
+    if (colors.size() < 3) {
+        QStringList defaultColors;
+        defaultColors << "#00E5FF" << "#FFD60A" << "#FF453A";
+        for (int i = colors.size(); i < 3; ++i) {
+            colors.append(defaultColors[i % 3]);
+        }
+        return defaultColors;
+    }
+    return colors;
+}
+
+bool DBController::saveGraphSlotColors(int year, const QStringList& colors) {
+    QSettings settings("HONG_ST", "FlowApp");
+    QString key = QString("GraphSlotColors/%1").arg(year);
+    settings.setValue(key, colors);
+    return true;
+}
+
 QStringList DBController::getCategoryList(const QString& type) {
     QSettings settings("HONG_ST", "FlowApp");
     QString key = QString("Categories/%1").arg(type);

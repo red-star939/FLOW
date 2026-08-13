@@ -10,6 +10,7 @@ Item {
     property bool colorsetVisible: false
 
     // System Theme Color Properties
+    property int currentThemeIndex: 0
     property string themeMainBg: "#141414"
     property string themeDashBg: "#141414"
     property string themeCardBg: "#1F1F1F"
@@ -18,7 +19,10 @@ Item {
     property string themeTextColor: "#FFFFFF"
     property string themeTitleBadgeBg: "#222222"
 
-    function applyTheme(mainBg, cardBg, borderCol, textCol, badgeBg, dashBg, idCardBg) {
+    function applyTheme(mainBg, cardBg, borderCol, textCol, badgeBg, dashBg, idCardBg, themeIdx) {
+        if (typeof themeIdx !== "undefined") {
+            currentThemeIndex = themeIdx
+        }
         themeMainBg = mainBg
         themeCardBg = cardBg
         themeBorderColor = borderCol
@@ -31,10 +35,13 @@ Item {
     Component.onCompleted: {
         if (typeof dbController !== "undefined" && typeof dbController.getSavedThemeIndex === "function") {
             var savedThemeIdx = dbController.getSavedThemeIndex();
+            currentThemeIndex = savedThemeIdx;
             if (savedThemeIdx === 1) {
-                applyTheme("#578679", "#E0D9CF", "#C2A17B", "#090A0B", "#819E8A", "#578679", "#578679");
+                applyTheme("#578679", "#E0D9CF", "#C2A17B", "#090A0B", "#819E8A", "#578679", "#578679", 1);
+            } else if (savedThemeIdx === 2) {
+                applyTheme("#A62B2B", "#221616", "#FFFFFF", "#FFFFFF", "#B83E3E", "#A62B2B", "#331E1E", 2);
             } else {
-                applyTheme("#141414", "#1F1F1F", "#343434", "#FFFFFF", "#222222", "#141414", "#141414");
+                applyTheme("#141414", "#1F1F1F", "#343434", "#FFFFFF", "#222222", "#141414", "#141414", 0);
             }
         }
     }
@@ -320,7 +327,7 @@ Item {
                             width: 28
                             height: 28
                             radius: 14
-                            color: midAddHover.containsMouse ? "#FFFFFF" : "#3A3A3A"
+                            color: midAddHover.containsMouse ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#3A3A3A")
                             opacity: (midAddFooterHover.hovered || midAddHover.containsMouse) ? 1.0 : 0.0
                             visible: opacity > 0.0
 
@@ -373,9 +380,9 @@ Item {
                         width: 38
                         height: 38
                         radius: 19
-                        color: menuHover.containsMouse ? "#323232" : "#282828"
+                        color: menuHover.containsMouse ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#282828")
                         border.width: 1
-                        border.color: menuHover.containsMouse ? "#555555" : "#3A3A3A"
+                        border.color: menuHover.containsMouse ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#3A3A3A")
                         anchors.centerIn: parent
 
                         opacity: (menuBtnZoneHover.hovered || menuHover.containsMouse) ? 1.0 : 0.0
@@ -394,7 +401,7 @@ Item {
                                     width: 16
                                     height: 2
                                     radius: 1
-                                    color: menuHover.containsMouse ? "#FFFFFF" : "#AAAAAA"
+                                    color: menuHover.containsMouse ? "#121212" : "#FFFFFF"
 
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                 }
@@ -524,45 +531,40 @@ Item {
                         }
                     }
 
-                    // ID 블록 추가 버튼 (+) 카드 - 합계 모드(monthSelector.selectedMonth == 0)에서는 비활성화
+                    // ID 블록 추가 버튼 (+) - 마우스가 근처에 다가가면 나타남
                     footer: Item {
+                        id: footerContainer
                         visible: monthSelector.selectedMonth !== 0
-                        width: visible ? 70 : 0
+                        width: visible ? 60 : 0
                         height: idBlocksView.height
 
                         HoverHandler {
                             id: idAddFooterHover
                         }
 
+                        // '+' 동그라미 버튼만 중앙에 배치 (마우스 접근 시 페이드인)
                         Rectangle {
-                            anchors.fill: parent
-                            anchors.margins: 4
+                            id: plusCircleBtn
+                            anchors.centerIn: parent
+                            width: 36
+                            height: 36
                             radius: 18
-                            color: addHover.containsMouse ? "#2C2C2C" : "#1F1F1F"
-                            border.width: 1
-                            border.color: addHover.containsMouse ? "#555555" : "#343434"
+                            color: addHover.containsMouse ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#3A3A3A")
+                            scale: addHover.containsMouse ? 1.2 : 1.0
                             opacity: (idAddFooterHover.hovered || addHover.containsMouse) ? 1.0 : 0.0
                             visible: opacity > 0.0
 
                             Behavior on color { ColorAnimation { duration: 150 } }
-                            Behavior on opacity { NumberAnimation { duration: 150 } }
+                            Behavior on opacity { NumberAnimation { duration: 180 } }
+                            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
 
-                            Rectangle {
+                            Text {
                                 anchors.centerIn: parent
-                                width: 34
-                                height: 34
-                                radius: 17
-                                color: addHover.containsMouse ? "#FFFFFF" : "#3A3A3A"
-
-                                Behavior on color { ColorAnimation { duration: 150 } }
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "+"
-                                    color: addHover.containsMouse ? "#202020" : "#CCCCCC"
-                                    font.pixelSize: 20
-                                    font.bold: true
-                                }
+                                text: "+"
+                                color: addHover.containsMouse ? "#121212" : "#FFFFFF"
+                                font.pixelSize: 22
+                                font.bold: true
+                                y: -1
                             }
 
                             MouseArea {
@@ -723,8 +725,8 @@ Item {
             }
         }
 
-        onThemeSelected: function(mainBg, cardBg, borderCol, textCol, badgeBg, dashBg, idCardBg) {
-            bgdashRoot.applyTheme(mainBg, cardBg, borderCol, textCol, badgeBg, dashBg, idCardBg)
+        onThemeSelected: function(mainBg, cardBg, borderCol, textCol, badgeBg, dashBg, idCardBg, themeIdx) {
+            bgdashRoot.applyTheme(mainBg, cardBg, borderCol, textCol, badgeBg, dashBg, idCardBg, themeIdx)
         }
 
         onCloseRequested: {

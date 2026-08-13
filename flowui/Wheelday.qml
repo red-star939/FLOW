@@ -135,7 +135,7 @@ Item {
                 text: (index + 1).toString()
                 font.pixelSize: delegateItem.PathView.isCurrentItem ? 22 : 16
                 font.bold: true
-                color: delegateItem.PathView.isCurrentItem ? "#FFFFFF" : "#666666"
+                color: delegateItem.PathView.isCurrentItem ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#666666")
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
 
