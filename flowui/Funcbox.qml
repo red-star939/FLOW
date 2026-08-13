@@ -298,7 +298,7 @@ Item {
     // Backdrop overlay (transparent, click outside to apply & close)
     Rectangle {
         anchors.fill: parent
-        color: "#15000000"
+        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A6221616" : "#15000000"
 
         MouseArea {
             anchors.fill: parent
@@ -1405,9 +1405,9 @@ Item {
                         width: parent.width
                         height: 38
                         radius: 8
-                        color: "#1F1F1F"
+                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#331E1E" : "#1F1F1F"
                         border.width: 1.5
-                        border.color: "#343434"
+                        border.color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#343434"
 
                         TextField {
                             id: formulaInputAdv
@@ -1452,9 +1452,9 @@ Item {
                         width: parent.width
                         height: 90
                         radius: 10
-                        color: "#1F1F1F"
+                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#331E1E" : "#1F1F1F"
                         border.width: 1.5
-                        border.color: "#343434"
+                        border.color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#343434"
 
                         Column {
                             anchors.fill: parent
@@ -1592,9 +1592,9 @@ Item {
                         width: parent.width
                         height: 84
                         radius: 10
-                        color: "#1F1F1F"
+                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#331E1E" : "#1F1F1F"
                         border.width: 1.5
-                        border.color: "#343434"
+                        border.color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#343434"
 
                         property var currentDoc: root.operatorDocs[root.selectedOp] ? root.operatorDocs[root.selectedOp] : root.operatorDocs["+"]
 
