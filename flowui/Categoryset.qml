@@ -250,6 +250,28 @@ Item {
                     width: parent.width
                     spacing: 14
 
+                    Row {
+                        spacing: 10
+                        width: parent.width
+
+                        Text {
+                            text: "02 - 02"
+                            color: "#555555"
+                            font.pixelSize: 15
+                            font.bold: true
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Text {
+                            text: "Category"
+                            color: "#FFFFFF"
+                            font.pixelSize: 17
+                            font.bold: true
+                            font.letterSpacing: 0.5
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+
                     Repeater {
                         model: [
                             { type: "MID", name: "MID 카테고리", list: categorysetRoot.midCategories },

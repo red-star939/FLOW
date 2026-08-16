@@ -151,11 +151,34 @@ Item {
                 width: parent.width
                 spacing: 14
 
-                Text {
-                    text: "시스템 테마 색상 카드 (Theme Cards)"
-                    color: "#8E8E93"
-                    font.pixelSize: 12
-                    font.bold: true
+                Row {
+                    spacing: 10
+                    width: parent.width
+
+                    Text {
+                        text: "02 - 01"
+                        color: "#555555"
+                        font.pixelSize: 15
+                        font.bold: true
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                        text: "System Color"
+                        color: "#FFFFFF"
+                        font.pixelSize: 17
+                        font.bold: true
+                        font.letterSpacing: 0.5
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                        text: "시스템 테마 색상 카드"
+                        color: "#8E8E93"
+                        font.pixelSize: 12
+                        font.bold: true
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
                 }
 
                 // 9 Cards Grid (3 Columns x 3 Rows, Height 145)
