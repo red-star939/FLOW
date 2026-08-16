@@ -81,9 +81,8 @@ target_link_libraries(appflowui
 add_executable(launcher launcher.cpp "${CMAKE_CURRENT_BINARY_DIR}/appicon.rc")
 set_target_properties(launcher PROPERTIES WIN32_EXECUTABLE TRUE)
 
-add_executable(updater updater.cpp "${CMAKE_CURRENT_BINARY_DIR}/appicon.rc")
-set_target_properties(updater PROPERTIES WIN32_EXECUTABLE TRUE)
-target_link_libraries(updater PRIVATE wininet comctl32 gdi32 user32)
+add_executable(updater updater.cpp)
+target_link_libraries(updater PRIVATE wininet)
 
 install(TARGETS appflowui launcher updater
     BUNDLE DESTINATION .

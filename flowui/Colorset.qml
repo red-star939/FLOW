@@ -543,7 +543,7 @@ Item {
 
                                      Text {
                                          anchors.horizontalCenter: parent.horizontalCenter
-                                         text: "Ice Blue"
+                                         text: "Wind Soft"
                                          color: "#101D20"
                                          font.pixelSize: 13
                                          font.bold: true
@@ -551,7 +551,7 @@ Item {
 
                                      Text {
                                          anchors.horizontalCenter: parent.horizontalCenter
-                                         text: "(아이스 블루 테마)"
+                                         text: "(윈드 소프트 테마)"
                                          color: "#547377"
                                          font.pixelSize: 10
                                      }
