@@ -1,8 +1,9 @@
 # Build directories and binaries
 build/
 flowui/build/
-dist/
-*.exe
+!dist/
+!dist/*.exe
+!dist/version.json
 !Flow_Setup*.exe
 *.obj
 *.o
