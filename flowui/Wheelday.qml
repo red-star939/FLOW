@@ -86,36 +86,36 @@ Item {
         }
 
         path: Path {
-            startX: 14
+            startX: 10
             startY: pathView.height / 2
 
-            PathAttribute { name: "itemScale"; value: 0.75 }
+            PathAttribute { name: "itemScale"; value: 0.72 }
             PathAttribute { name: "itemOpacity"; value: 0.35 }
-            PathAttribute { name: "itemAngle"; value: 30 }
+            PathAttribute { name: "itemAngle"; value: 25 }
             PathAttribute { name: "itemZ"; value: 1 }
 
             PathLine {
                 x: pathView.width / 2
                 y: pathView.height / 2
             }
-            PathAttribute { name: "itemScale"; value: 1.2 }
+            PathAttribute { name: "itemScale"; value: 1.15 }
             PathAttribute { name: "itemOpacity"; value: 1.0 }
             PathAttribute { name: "itemAngle"; value: 0 }
             PathAttribute { name: "itemZ"; value: 10 }
 
             PathLine {
-                x: pathView.width - 14
+                x: pathView.width - 10
                 y: pathView.height / 2
             }
-            PathAttribute { name: "itemScale"; value: 0.75 }
+            PathAttribute { name: "itemScale"; value: 0.72 }
             PathAttribute { name: "itemOpacity"; value: 0.35 }
-            PathAttribute { name: "itemAngle"; value: -30 }
+            PathAttribute { name: "itemAngle"; value: -25 }
             PathAttribute { name: "itemZ"; value: 1 }
         }
 
         delegate: Item {
             id: delegateItem
-            width: 50
+            width: 44
             height: 36
 
             z: PathView.itemZ !== undefined ? PathView.itemZ : 1
@@ -134,6 +134,7 @@ Item {
                 anchors.centerIn: parent
                 text: (index + 1).toString()
                 font.pixelSize: delegateItem.PathView.isCurrentItem ? 22 : 16
+                font.letterSpacing: 1.5
                 font.bold: true
                 color: delegateItem.PathView.isCurrentItem ? "#FFFFFF" : ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#666666")
                 horizontalAlignment: Text.AlignHCenter

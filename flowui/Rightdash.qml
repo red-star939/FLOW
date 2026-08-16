@@ -179,7 +179,7 @@ Rectangle {
                 id: dayWheel
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                width: 105
+                width: 130
                 height: 38
                 selectedYear: rightdashRoot.selectedYear
                 selectedMonth: rightdashRoot.activeMonth
