@@ -27,10 +27,14 @@ Item {
             bgColor = "#A62B2B"
             titleColor = "#FFFFFF"
             subtitleColor = "#D8D8D8"
-        } else if (idx === 3) { // Deep Navy
+        } else if (idx === 3) { // Midnight Blue
             bgColor = "#253874"
             titleColor = "#FFFFFF"
             subtitleColor = "#A2B5E8"
+        } else if (idx === 4) { // Ice Blue (#C3D5D7)
+            bgColor = "#C3D5D7"
+            titleColor = "#101D20"
+            subtitleColor = "#547377"
         } else { // Dark (Default)
             bgColor = "#141414"
             titleColor = "#FFFFFF"

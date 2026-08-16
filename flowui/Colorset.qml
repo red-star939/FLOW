@@ -172,7 +172,7 @@ Item {
                             width: (parent.width - 28) / 3
                             height: 175
                             radius: 16
-                             color: index === 0 ? "#141414" : (index === 1 ? "#578679" : (index === 2 ? "#A62B2B" : (index === 3 ? "#253874" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A")))))
+                             color: index === 0 ? "#141414" : (index === 1 ? "#578679" : (index === 2 ? "#A62B2B" : (index === 3 ? "#253874" : (index === 4 ? "#C3D5D7" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A"))))))
                              border.width: colorsetRoot.selectedCardIndex === index ? 2 : 1
                              border.color: colorsetRoot.selectedCardIndex === index ? "#FFFFFF" : (cardHover.containsMouse ? "#666666" : "#303030")
 
@@ -471,7 +471,7 @@ Item {
 
                                      Text {
                                          anchors.horizontalCenter: parent.horizontalCenter
-                                         text: "Deep Navy"
+                                         text: "Midnight Blue"
                                          color: "#FFFFFF"
                                          font.pixelSize: 13
                                          font.bold: true
@@ -479,8 +479,80 @@ Item {
 
                                      Text {
                                          anchors.horizontalCenter: parent.horizontalCenter
-                                         text: "(딥 네이비 테마)"
+                                         text: "(미드나이트 블루 테마)"
                                          color: "#A2B5E8"
+                                         font.pixelSize: 10
+                                     }
+                                 }
+                             }
+
+                             // Card 5 Content (Ice Blue Theme Preview #C3D5D7)
+                             Column {
+                                 anchors.centerIn: parent
+                                 spacing: 12
+                                 visible: index === 4
+
+                                 // 5 Color Circles (1. #EAF1F2, 2. #9BB6B9, 3. #101D20, 4. #7A9EA3, 5. #C3D5D7)
+                                 Row {
+                                     anchors.horizontalCenter: parent.horizontalCenter
+                                     spacing: 5
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#EAF1F2"
+                                         border.width: 1
+                                         border.color: "#9BB6B9"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#9BB6B9"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#101D20"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#7A9EA3"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#C3D5D7"
+                                         border.width: 1
+                                         border.color: "#A0B8BB"
+                                     }
+                                 }
+
+                                 Column {
+                                     spacing: 3
+                                     anchors.horizontalCenter: parent.horizontalCenter
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "Ice Blue"
+                                         color: "#101D20"
+                                         font.pixelSize: 13
+                                         font.bold: true
+                                     }
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "(아이스 블루 테마)"
+                                         color: "#547377"
                                          font.pixelSize: 10
                                      }
                                  }
@@ -512,6 +584,10 @@ Item {
                                          colorsetRoot.currentSystemColor = "#253874"
                                          colorsetRoot.currentAccentColor = "#3B5295"
                                          colorsetRoot.themeSelected("#253874", "#161F38", "#FFFFFF", "#FFFFFF", "#3B5295", "#253874", "#1A2544", 3)
+                                     } else if (index === 4) {
+                                         colorsetRoot.currentSystemColor = "#C3D5D7"
+                                         colorsetRoot.currentAccentColor = "#7A9EA3"
+                                         colorsetRoot.themeSelected("#C3D5D7", "#EAF1F2", "#9BB6B9", "#101D20", "#7A9EA3", "#C3D5D7", "#D4E3E5", 4)
                                      }
                                  }
                              }
