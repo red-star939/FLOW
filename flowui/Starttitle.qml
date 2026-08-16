@@ -19,10 +19,10 @@ Item {
     }
 
     function setTheme(idx) {
-        if (idx === 1) { // Sage Green
-            bgColor = "#E0D9CF"
-            titleColor = "#578679"
-            subtitleColor = "#819E8A"
+        if (idx === 1) { // Deep Forest (#366256)
+            bgColor = "#366256"
+            titleColor = "#FFFFFF"
+            subtitleColor = "#D5E3DF"
         } else if (idx === 2) { // Carmine Red
             bgColor = "#A62B2B"
             titleColor = "#FFFFFF"

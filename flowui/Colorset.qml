@@ -172,7 +172,7 @@ Item {
                             width: (parent.width - 28) / 3
                             height: 175
                             radius: 16
-                             color: index === 0 ? "#141414" : (index === 1 ? "#578679" : (index === 2 ? "#A62B2B" : (index === 3 ? "#253874" : (index === 4 ? "#C3D5D7" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A"))))))
+                             color: index === 0 ? "#141414" : (index === 1 ? "#366256" : (index === 2 ? "#A62B2B" : (index === 3 ? "#253874" : (index === 4 ? "#C3D5D7" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A"))))))
                              border.width: colorsetRoot.selectedCardIndex === index ? 2 : 1
                              border.color: colorsetRoot.selectedCardIndex === index ? "#FFFFFF" : (cardHover.containsMouse ? "#666666" : "#303030")
 
@@ -260,33 +260,33 @@ Item {
                                  }
                              }
 
-                             // Card 2 Content (Sage Green Theme Preview)
+                             // Card 2 Content (Deep Forest Theme Preview #366256)
                              Column {
                                  anchors.centerIn: parent
                                  spacing: 12
                                  visible: index === 1
 
-                                 // 5 Color Circles (1. #E0D9CF, 2. #C2A17B, 3. #090A0B, 4. #819E8A, 5. #578679)
+                                 // 5 Color Circles (1. #E6ECE9, 2. #527E72, 3. #090A0B, 4. #527E72, 5. #366256)
                                  Row {
                                      anchors.horizontalCenter: parent.horizontalCenter
                                      spacing: 5
 
-                                     // 1. 카드 배경색 (#E0D9CF)
+                                     // 1. 카드 배경색 (#E6ECE9)
                                      Rectangle {
                                          width: 20
                                          height: 20
                                          radius: 10
-                                         color: "#E0D9CF"
+                                         color: "#E6ECE9"
                                          border.width: 1
-                                         border.color: "#C8C0B5"
+                                         border.color: "#C5D4CE"
                                      }
 
-                                     // 2. 테두리색 (#C2A17B)
+                                     // 2. 테두리색 (#527E72)
                                      Rectangle {
                                          width: 20
                                          height: 20
                                          radius: 10
-                                         color: "#C2A17B"
+                                         color: "#527E72"
                                      }
 
                                      // 3. 글자색 (#090A0B)
@@ -297,22 +297,22 @@ Item {
                                          color: "#090A0B"
                                      }
 
-                                     // 4. 블록명 뱃지색 (#819E8A)
+                                     // 4. 블록명 뱃지색 (#527E72)
                                      Rectangle {
                                          width: 20
                                          height: 20
                                          radius: 10
-                                         color: "#819E8A"
+                                         color: "#527E72"
                                      }
 
-                                     // 5. 상/하단 대시보드 색 (#578679)
+                                     // 5. 상/하단 대시보드 색 (#366256)
                                      Rectangle {
                                          width: 20
                                          height: 20
                                          radius: 10
-                                         color: "#578679"
+                                         color: "#366256"
                                          border.width: 1
-                                         border.color: "#4A7367"
+                                         border.color: "#284A41"
                                      }
                                  }
 
@@ -322,7 +322,7 @@ Item {
 
                                      Text {
                                          anchors.horizontalCenter: parent.horizontalCenter
-                                         text: "Sage Green"
+                                         text: "Deep Forest"
                                          color: "#FFFFFF"
                                          font.pixelSize: 13
                                          font.bold: true
@@ -330,8 +330,8 @@ Item {
 
                                      Text {
                                          anchors.horizontalCenter: parent.horizontalCenter
-                                         text: "(내추럴 세이지 테마)"
-                                         color: "#E0D9CF"
+                                         text: "(딥 포레스트 테마)"
+                                         color: "#D5E3DF"
                                          font.pixelSize: 10
                                      }
                                  }
@@ -573,9 +573,9 @@ Item {
                                          colorsetRoot.currentAccentColor = "#00E5FF"
                                          colorsetRoot.themeSelected("#141414", "#1F1F1F", "#343434", "#FFFFFF", "#222222", "#141414", "#1F1F1F", 0)
                                      } else if (index === 1) {
-                                         colorsetRoot.currentSystemColor = "#578679"
-                                         colorsetRoot.currentAccentColor = "#819E8A"
-                                         colorsetRoot.themeSelected("#578679", "#E0D9CF", "#C2A17B", "#090A0B", "#819E8A", "#578679", "#819E8A", 1)
+                                         colorsetRoot.currentSystemColor = "#366256"
+                                         colorsetRoot.currentAccentColor = "#527E72"
+                                         colorsetRoot.themeSelected("#366256", "#E6ECE9", "#527E72", "#090A0B", "#527E72", "#366256", "#527E72", 1)
                                      } else if (index === 2) {
                                          colorsetRoot.currentSystemColor = "#A62B2B"
                                          colorsetRoot.currentAccentColor = "#B83E3E"
