@@ -23,8 +23,8 @@ Item {
             bgColor = "#366256"
             titleColor = "#FFFFFF"
             subtitleColor = "#D5E3DF"
-        } else if (idx === 2) { // Carmine Red
-            bgColor = "#A62B2B"
+        } else if (idx === 2) { // Classic Carmine (#872115)
+            bgColor = "#872115"
             titleColor = "#FFFFFF"
             subtitleColor = "#D8D8D8"
         } else if (idx === 3) { // Midnight Blue

@@ -172,7 +172,7 @@ Item {
                             width: (parent.width - 28) / 3
                             height: 145
                             radius: 16
-                             color: index === 0 ? "#141414" : (index === 1 ? "#366256" : (index === 2 ? "#A62B2B" : (index === 3 ? "#253874" : (index === 4 ? "#C3D5D7" : (index === 5 ? "#B9A69B" : (index === 6 ? "#C48D8B" : (index === 7 ? "#FFC001" : (index === 8 ? "#646289" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A"))))))))))
+                             color: index === 0 ? "#141414" : (index === 1 ? "#366256" : (index === 2 ? "#872115" : (index === 3 ? "#253874" : (index === 4 ? "#C3D5D7" : (index === 5 ? "#B9A69B" : (index === 6 ? "#C48D8B" : (index === 7 ? "#FFC001" : (index === 8 ? "#646289" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A"))))))))))
                              border.width: colorsetRoot.selectedCardIndex === index ? 2 : 1
                              border.color: colorsetRoot.selectedCardIndex === index ? "#FFFFFF" : (cardHover.containsMouse ? "#666666" : "#303030")
 
@@ -382,14 +382,14 @@ Item {
                                          color: "#B83E3E"
                                      }
 
-                                     // 5. 상/하단 대시보드 색 (#A62B2B)
+                                     // 5. 상/하단 대시보드 색 (#872115)
                                      Rectangle {
                                          width: 20
                                          height: 20
                                          radius: 10
-                                         color: "#A62B2B"
+                                         color: "#872115"
                                          border.width: 1
-                                         border.color: "#7A1C1C"
+                                         border.color: "#5C150D"
                                      }
                                  }
 
@@ -399,7 +399,7 @@ Item {
 
                                      Text {
                                          anchors.horizontalCenter: parent.horizontalCenter
-                                         text: "Carmine Red"
+                                         text: "Classic Carmine"
                                          color: "#FFFFFF"
                                          font.pixelSize: 13
                                          font.bold: true
@@ -408,7 +408,7 @@ Item {
                                      Text {
                                          anchors.horizontalCenter: parent.horizontalCenter
                                          text: "(클래식 카민 테마)"
-                                         color: "#F2B6B6"
+                                         color: "#D8D8D8"
                                          font.pixelSize: 10
                                      }
                                  }
@@ -865,9 +865,9 @@ Item {
                                          colorsetRoot.currentAccentColor = "#527E72"
                                          colorsetRoot.themeSelected("#366256", "#E6ECE9", "#527E72", "#090A0B", "#527E72", "#366256", "#527E72", 1)
                                      } else if (index === 2) {
-                                         colorsetRoot.currentSystemColor = "#A62B2B"
-                                         colorsetRoot.currentAccentColor = "#B83E3E"
-                                         colorsetRoot.themeSelected("#A62B2B", "#221616", "#FFFFFF", "#FFFFFF", "#B83E3E", "#A62B2B", "#331E1E", 2)
+                                         colorsetRoot.currentSystemColor = "#872115"
+                                         colorsetRoot.currentAccentColor = "#A83223"
+                                         colorsetRoot.themeSelected("#872115", "#221616", "#FFFFFF", "#FFFFFF", "#A83223", "#872115", "#331E1E", 2)
                                      } else if (index === 3) {
                                          colorsetRoot.currentSystemColor = "#253874"
                                          colorsetRoot.currentAccentColor = "#3B5295"

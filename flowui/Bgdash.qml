@@ -38,8 +38,8 @@ Item {
             currentThemeIndex = savedThemeIdx;
             if (savedThemeIdx === 1) { // Deep Forest (#366256)
                 applyTheme("#366256", "#E6ECE9", "#527E72", "#090A0B", "#527E72", "#366256", "#527E72", 1);
-            } else if (savedThemeIdx === 2) { // Carmine Red (#A62B2B)
-                applyTheme("#A62B2B", "#221616", "#FFFFFF", "#FFFFFF", "#B83E3E", "#A62B2B", "#331E1E", 2);
+            } else if (savedThemeIdx === 2) { // Classic Carmine (#872115)
+                applyTheme("#872115", "#221616", "#FFFFFF", "#FFFFFF", "#A83223", "#872115", "#331E1E", 2);
             } else if (savedThemeIdx === 3) { // Midnight Blue (#253874)
                 applyTheme("#253874", "#161F38", "#FFFFFF", "#FFFFFF", "#3B5295", "#253874", "#1A2544", 3);
             } else if (savedThemeIdx === 4) { // Wind Soft (#C3D5D7)
