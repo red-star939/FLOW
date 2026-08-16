@@ -79,29 +79,24 @@ void save_local_version(const std::string& tag, int major, int minor, const std:
     } catch (...) {}
 }
 
+// Pure WinINet HTTP GET Request (Zero Console Window)
 std::string http_get(const std::string& url) {
-    HINTERNET hInternet = InternetOpenA("FLOW-AutoUpdater", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+    HINTERNET hInternet = InternetOpenA("FLOW-AutoUpdater/1.5", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (!hInternet) return "";
-    HINTERNET hConnect = InternetOpenUrlA(hInternet, url.c_str(), "User-Agent: FLOW-AutoUpdater\r\n", -1L, INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_SECURE, 0);
+
+    DWORD flags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_SECURE;
+    HINTERNET hConnect = InternetOpenUrlA(hInternet, url.c_str(), "User-Agent: FLOW-AutoUpdater\r\n", -1L, flags, 0);
     if (!hConnect) {
-        hConnect = InternetOpenUrlA(hInternet, url.c_str(), "User-Agent: FLOW-AutoUpdater\r\n", -1L, INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE, 0);
+        flags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE;
+        hConnect = InternetOpenUrlA(hInternet, url.c_str(), "User-Agent: FLOW-AutoUpdater\r\n", -1L, flags, 0);
     }
     if (!hConnect) {
         InternetCloseHandle(hInternet);
-        std::string psCmd = "powershell -NoProfile -Command \"try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $r = Invoke-RestMethod -Uri '" + url + "' -Headers @{'User-Agent'='FLOW-AutoUpdater'}; $r | ConvertTo-Json -Compress | Out-File -FilePath '_http_tmp.txt' -Encoding utf8 } catch {}\"";
-        std::system(psCmd.c_str());
-        if (fs::exists("_http_tmp.txt")) {
-            std::ifstream ifs("_http_tmp.txt");
-            std::string res((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-            ifs.close();
-            fs::remove("_http_tmp.txt");
-            return res;
-        }
         return "";
     }
 
     std::string response;
-    char buffer[4096];
+    char buffer[8192];
     DWORD bytesRead = 0;
     while (InternetReadFile(hConnect, buffer, sizeof(buffer) - 1, &bytesRead) && bytesRead > 0) {
         buffer[bytesRead] = '\0';
@@ -112,15 +107,75 @@ std::string http_get(const std::string& url) {
     return response;
 }
 
+// Pure WinINet HTTP/HTTPS File Downloader (Zero Console Window)
 bool download_file(const std::string& url, const std::string& dest_path) {
     fs::path dest(dest_path);
     if (dest.has_parent_path()) {
-        fs::create_directories(dest.parent_path());
+        std::error_code ec;
+        fs::create_directories(dest.parent_path(), ec);
     }
 
-    std::string psCmd = "powershell -NoProfile -Command \"try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '" + url + "' -OutFile '" + dest_path + "' -Headers @{'User-Agent'='FLOW-AutoUpdater'} } catch { exit 1 }\"";
-    int ret = std::system(psCmd.c_str());
-    return ret == 0 && fs::exists(dest_path) && fs::file_size(dest_path) > 0;
+    HINTERNET hInternet = InternetOpenA("FLOW-AutoUpdater/1.5", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+    if (!hInternet) return false;
+
+    DWORD flags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_SECURE;
+    HINTERNET hConnect = InternetOpenUrlA(hInternet, url.c_str(), "User-Agent: FLOW-AutoUpdater\r\n", -1L, flags, 0);
+    if (!hConnect) {
+        flags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE;
+        hConnect = InternetOpenUrlA(hInternet, url.c_str(), "User-Agent: FLOW-AutoUpdater\r\n", -1L, flags, 0);
+    }
+
+    if (!hConnect) {
+        InternetCloseHandle(hInternet);
+        return false;
+    }
+
+    std::ofstream ofs(dest_path, std::ios::binary);
+    if (!ofs.is_open()) {
+        InternetCloseHandle(hConnect);
+        InternetCloseHandle(hInternet);
+        return false;
+    }
+
+    char buffer[16384];
+    DWORD bytesRead = 0;
+    while (InternetReadFile(hConnect, buffer, sizeof(buffer), &bytesRead) && bytesRead > 0) {
+        ofs.write(buffer, bytesRead);
+    }
+
+    ofs.close();
+    InternetCloseHandle(hConnect);
+    InternetCloseHandle(hInternet);
+
+    return fs::exists(dest_path) && fs::file_size(dest_path) > 0;
+}
+
+// Execute command silently with CREATE_NO_WINDOW flag (Zero CMD Popup)
+bool RunCommandNoWindow(const std::string& cmd, const std::string& workDir = "") {
+    STARTUPINFOA si = { sizeof(si) };
+    PROCESS_INFORMATION pi = { 0 };
+    si.dwFlags = STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_HIDE;
+
+    std::vector<char> cmdBuf(cmd.begin(), cmd.end());
+    cmdBuf.push_back('\0');
+
+    BOOL ret = CreateProcessA(
+        NULL, cmdBuf.data(), NULL, NULL, FALSE,
+        CREATE_NO_WINDOW,
+        NULL, workDir.empty() ? NULL : workDir.c_str(),
+        &si, &pi
+    );
+
+    if (ret) {
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        DWORD exitCode = 0;
+        GetExitCodeProcess(pi.hProcess, &exitCode);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        return exitCode == 0;
+    }
+    return false;
 }
 
 // Thread-safe UI update helpers
@@ -210,8 +265,7 @@ void PerformUpdateWorker(VersionInfo localVer, std::string remoteSha, std::strin
         UI_AddLog(L"[빌드] Qt MinGW 컴파일러 작동 중...");
 
         std::string buildCmd = "powershell -NoProfile -Command \"$env:PATH='C:\\Qt\\Tools\\mingw1310_64\\bin;C:\\Qt\\6.11.1\\mingw_64\\bin;' + $env:PATH; cd flowui; if (-not (Test-Path build)) { cmake -B build -G 'Ninja' -DCMAKE_C_COMPILER='C:/Qt/Tools/mingw1310_64/bin/gcc.exe' -DCMAKE_CXX_COMPILER='C:/Qt/Tools/mingw1310_64/bin/g++.exe' }; cmake --build build; if ($LASTEXITCODE -eq 0) { Copy-Item -Force build\\appflowui.exe ..\\Flow.exe; Copy-Item -Force build\\appflowui.exe ..\\dist\\Flow.exe }\"";
-        int buildRes = std::system(buildCmd.c_str());
-        if (buildRes == 0) {
+        if (RunCommandNoWindow(buildCmd)) {
             UI_AddLog(L"[성공] 현장 자동 컴파일 완료!");
         }
     }
@@ -282,10 +336,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
 
-        // Header Background
-        RECT rcClient;
-        GetClientRect(hWnd, &rcClient);
-
         // Draw FLOW Header Title
         SetBkMode(hdc, TRANSPARENT);
         SelectObject(hdc, g_hFontTitle);
@@ -294,7 +344,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
         SelectObject(hdc, g_hFontSub);
         SetTextColor(hdc, RGB(140, 140, 140));
-        TextOutW(hdc, 105, 26, L"자동 업데이트 시스템", 11);
+        TextOutW(hdc, 105, 26, L"자동 업데이트 진행 중...", 14);
 
         EndPaint(hWnd, &ps);
         break;
