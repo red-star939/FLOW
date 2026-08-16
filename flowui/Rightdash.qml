@@ -253,7 +253,9 @@ Rectangle {
                 onMoveRequested: function(fromIndex, toIndex) {
                     var clampedTo = Math.max(0, Math.min(rightdashRoot.dailyItems.length - 1, toIndex))
                     if (fromIndex !== clampedTo && typeof dbController !== "undefined") {
+                        rightdashRoot.isInternalEdit = false
                         dbController.moveDailyItem(rightdashRoot.selectedYear, rightdashRoot.activeMonth, rightdashRoot.selectedDay, fromIndex, clampedTo)
+                        rightdashRoot.refreshDailyData()
                     }
                 }
 
@@ -309,7 +311,14 @@ Rectangle {
 
                         onClicked: {
                             if (typeof dbController !== "undefined") {
+                                rightdashRoot.isInternalEdit = false
                                 dbController.addDailyItem(rightdashRoot.selectedYear, rightdashRoot.activeMonth, rightdashRoot.selectedDay, "새 항목", 0)
+                                rightdashRoot.refreshDailyData()
+                                Qt.callLater(function() {
+                                    if (dailyListView) {
+                                        dailyListView.positionViewAtEnd()
+                                    }
+                                })
                             }
                         }
                     }
