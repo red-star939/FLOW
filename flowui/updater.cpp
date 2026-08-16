@@ -14,9 +14,9 @@
 namespace fs = std::filesystem;
 
 struct VersionInfo {
-    std::string tag = "v1.4_stable";
+    std::string tag = "v1.5_stable";
     int major = 1;
-    int minor = 4;
+    int minor = 5;
     std::string sha = "";
 };
 
@@ -32,13 +32,6 @@ VersionInfo load_local_version() {
             std::smatch mTag, mBranch, mSha;
             if (std::regex_search(content, mTag, std::regex("\"tag\"\\s*:\\s*\"([^\"]+)\""))) {
                 info.tag = mTag[1].str();
-            } else if (std::regex_search(content, mBranch, std::regex("\"branch\"\\s*:\\s*\"([^\"]+)\""))) {
-                std::string b = mBranch[1].str();
-                // Map legacy branch name e.g. flow_v1.4 -> v1.4_stable
-                std::smatch mB;
-                if (std::regex_search(b, mB, std::regex("flow_v(\\d+)\\.(\\d+)"))) {
-                    info.tag = "v" + mB[1].str() + "." + mB[2].str() + "_stable";
-                }
             }
 
             if (std::regex_search(content, mSha, std::regex("\"sha\"\\s*:\\s*\"([^\"]+)\""))) {
@@ -104,8 +97,13 @@ std::string http_get(const std::string& url) {
     return response;
 }
 
-// Download binary file
+// Download raw file directly via PowerShell Invoke-WebRequest
 bool download_file(const std::string& url, const std::string& dest_path) {
+    fs::path dest(dest_path);
+    if (dest.has_parent_path()) {
+        fs::create_directories(dest.parent_path());
+    }
+
     std::string psCmd = "powershell -NoProfile -Command \"try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '" + url + "' -OutFile '" + dest_path + "' -Headers @{'User-Agent'='FLOW-AutoUpdater'} } catch { exit 1 }\"";
     int ret = std::system(psCmd.c_str());
     return ret == 0 && fs::exists(dest_path) && fs::file_size(dest_path) > 0;
@@ -113,155 +111,119 @@ bool download_file(const std::string& url, const std::string& dest_path) {
 
 int main(int argc, char* argv[]) {
     std::cout << "==========================================" << std::endl;
-    std::cout << " FLOW Auto-Updater (Stable Tag Sync)" << std::endl;
+    std::cout << " FLOW Differential Auto-Updater (Direct Sync)" << std::endl;
     std::cout << "==========================================" << std::endl;
 
     VersionInfo localVer = load_local_version();
     std::cout << "[Updater] Current Local Tag: " << localVer.tag << " (v" << localVer.major << "." << localVer.minor << ")"
               << (localVer.sha.empty() ? "" : " [SHA: " + localVer.sha.substr(0, 7) + "]") << std::endl;
 
-    std::cout << "[Updater] Checking GitHub stable tags for updates..." << std::endl;
-    std::string tagsJson = http_get("https://api.github.com/repos/red-star939/FLOW/tags");
+    // 1. Fetch remote commit info from GitHub (latest commit on main or v1.5_stable)
+    std::cout << "[Updater] Checking remote commit SHA from GitHub..." << std::endl;
+    std::string commitJson = http_get("https://api.github.com/repos/red-star939/FLOW/commits/main");
+    if (commitJson.empty()) {
+        commitJson = http_get("https://api.github.com/repos/red-star939/FLOW/commits/flow_v1.5");
+    }
 
-    if (tagsJson.empty()) {
-        std::cout << "[Updater] Warning: Could not fetch tag info from GitHub (Offline or API limit)." << std::endl;
-        std::cout << "[Updater] Continuing with current installation." << std::endl;
+    if (commitJson.empty()) {
+        std::cout << "[Updater] Warning: Offline or GitHub API rate limit reached." << std::endl;
+        std::cout << "[Updater] Launching existing FLOW application..." << std::endl;
         return 0;
     }
 
-    // Regex to match tag objects with name "vX.Y_stable" and their commit SHA
-    std::regex tagBlockRegex("\"name\"\\s*:\\s*\"(v(\\d+)\\.(\\d+)_stable)\"[^}]*?\"commit\"\\s*:\\s*\\{[^}]*?\"sha\"\\s*:\\s*\"([^\"]+)\"");
-    auto words_begin = std::sregex_iterator(tagsJson.begin(), tagsJson.end(), tagBlockRegex);
-    auto words_end = std::sregex_iterator();
+    std::string remoteSha = "";
+    std::smatch mSha;
+    if (std::regex_search(commitJson, mSha, std::regex("\"sha\"\\s*:\\s*\"([0-9a-f]{40})\""))) {
+        remoteSha = mSha[1].str();
+    }
 
-    std::string targetTag = localVer.tag;
-    int maxMajor = localVer.major;
-    int maxMinor = localVer.minor;
-    std::string targetSha = localVer.sha;
-    bool foundNewVersion = false;
-    bool shaUpdated = false;
+    if (remoteSha.empty()) {
+        std::cout << "[Updater] Warning: Could not parse remote commit SHA." << std::endl;
+        return 0;
+    }
 
-    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+    std::cout << "[Updater] Remote Commit SHA: " << remoteSha.substr(0, 7) << std::endl;
+
+    if (!localVer.sha.empty() && localVer.sha == remoteSha) {
+        std::cout << "[Updater] Application is 100% up-to-date! (SHA: " << remoteSha.substr(0, 7) << ")" << std::endl;
+        return 0;
+    }
+
+    std::cout << "[Updater] *** NEW COMMIT DETECTED: " << remoteSha.substr(0, 7) << " ***" << std::endl;
+    std::cout << "[Updater] Fetching modified file list..." << std::endl;
+
+    // 2. Extract list of changed files from commit JSON
+    std::regex fileRegex("\"filename\"\\s*:\\s*\"([^\"]+)\"");
+    auto file_begin = std::sregex_iterator(commitJson.begin(), commitJson.end(), fileRegex);
+    auto file_end = std::sregex_iterator();
+
+    std::vector<std::string> changedFiles;
+    for (std::sregex_iterator i = file_begin; i != file_end; ++i) {
         std::smatch match = *i;
-        std::string tagName = match[1].str();
-        int maj = std::stoi(match[2].str());
-        int min = std::stoi(match[3].str());
-        std::string sha = match[4].str();
+        std::string fname = match[1].str();
+        changedFiles.push_back(fname);
+    }
 
-        std::cout << "[Updater] Found Remote Stable Tag: " << tagName << " [SHA: " << sha.substr(0, 7) << "]" << std::endl;
+    // Default essential files if commit file list is empty
+    if (changedFiles.empty()) {
+        changedFiles = { "dist/Flow.exe", "version.json" };
+    }
 
-        if (maj > maxMajor || (maj == maxMajor && min > maxMinor)) {
-            maxMajor = maj;
-            maxMinor = min;
-            targetTag = tagName;
-            targetSha = sha;
-            foundNewVersion = true;
-        } else if (maj == localVer.major && min == localVer.minor) {
-            // Same version, check if commit SHA changed (recent upload on stable tag)
-            if (!sha.empty() && sha != localVer.sha) {
-                targetTag = tagName;
-                targetSha = sha;
-                shaUpdated = true;
+    size_t updatedCount = 0;
+    size_t skippedDataCount = 0;
+    bool sourceFilesChanged = false;
+
+    std::cout << "[Updater] Fetching changed raw files directly from GitHub..." << std::endl;
+    for (const auto& rawPath : changedFiles) {
+        // ─── CRITICAL DATA PROTECTION ───
+        // Do NOT overwrite user database files!
+        if (rawPath == "db/database.json" || rawPath == "db\\database.json" || rawPath.find(".db") != std::string::npos) {
+            std::cout << "[Updater] Data Protection: Skipping user database -> " << rawPath << std::endl;
+            skippedDataCount++;
+            continue;
+        }
+
+        // Map dist/Flow.exe -> Flow.exe in installation root if applicable
+        std::string destPath = rawPath;
+        if (destPath.rfind("dist/", 0) == 0 || destPath.rfind("dist\\", 0) == 0) {
+            destPath = destPath.substr(5);
+        }
+
+        std::string rawUrl = "https://raw.githubusercontent.com/red-star939/FLOW/" + remoteSha + "/" + rawPath;
+        std::cout << "[Updater] Syncing file: " << destPath << std::endl;
+
+        if (download_file(rawUrl, destPath)) {
+            updatedCount++;
+            if (rawPath.find("flowui/") != std::string::npos || rawPath.find("engine/") != std::string::npos) {
+                sourceFilesChanged = true;
             }
         }
     }
 
-    if (!foundNewVersion && !shaUpdated) {
-        std::cout << "[Updater] Application is up to date! (Latest Stable Tag: " << localVer.tag << ")" << std::endl;
-        return 0;
-    }
-
-    if (foundNewVersion) {
-        std::cout << "[Updater] *** NEW STABLE VERSION FOUND: " << targetTag << " ***" << std::endl;
-    } else if (shaUpdated) {
-        std::cout << "[Updater] *** STABLE TAG RECENT UPDATE DETECTED: " << targetTag << " [New SHA: " << targetSha.substr(0, 7) << "] ***" << std::endl;
-    }
-
-    std::cout << "[Updater] Downloading update package for " << targetTag << "..." << std::endl;
-
-    std::string zipFile = "_update.zip";
-    bool downloadSuccess = false;
-
-    std::vector<std::string> urls = {
-        "https://raw.githubusercontent.com/red-star939/FLOW/" + targetTag + "/Flow_Release.zip",
-        "https://raw.githubusercontent.com/red-star939/FLOW/flow_v1.5/Flow_Release.zip",
-        "https://raw.githubusercontent.com/red-star939/FLOW/main/Flow_Release.zip",
-        "https://github.com/red-star939/FLOW/raw/" + targetTag + "/Flow_Release.zip",
-        "https://github.com/red-star939/FLOW/raw/flow_v1.5/Flow_Release.zip",
-        "https://github.com/red-star939/FLOW/raw/main/Flow_Release.zip"
-    };
-
-    for (const auto& u : urls) {
-        std::cout << "[Updater] Checking update source: " << u << std::endl;
-        if (download_file(u, zipFile)) {
-            downloadSuccess = true;
-            break;
-        }
-    }
-
-    if (!downloadSuccess) {
-        std::cerr << "[Updater] Error: Failed to download update zip package." << std::endl;
-        return 1;
-    }
-
-    std::cout << "[Updater] Extracting update package..." << std::endl;
-    std::string tempDir = "_update_temp";
-    if (fs::exists(tempDir)) fs::remove_all(tempDir);
-
-    std::string unzipCmd = "powershell -NoProfile -Command \"Expand-Archive -Path '" + zipFile + "' -DestinationPath '" + tempDir + "' -Force\"";
-    if (std::system(unzipCmd.c_str()) != 0) {
-        std::cerr << "[Updater] Error: Failed to extract update package." << std::endl;
-        fs::remove(zipFile);
-        return 1;
-    }
-
-    std::cout << "[Updater] Applying updates while preserving user database..." << std::endl;
-
-    size_t updatedFiles = 0;
-    size_t preservedFiles = 0;
-
-    try {
-        for (const auto& entry : fs::recursive_directory_iterator(tempDir)) {
-            fs::path rel = fs::relative(entry.path(), tempDir);
-            fs::path dest = fs::current_path() / rel;
-
-            if (entry.is_directory()) {
-                fs::create_directories(dest);
-            } else {
-                std::string relStr = rel.generic_string();
-
-                // ─── CRITICAL DATA PROTECTION GUARANTEE ───
-                // Do NOT overwrite db/database.json or any .db user data files if they already exist in destination!
-                if ((relStr == "db/database.json" || relStr == "db\\database.json" || relStr.find(".db") != std::string::npos) && fs::exists(dest)) {
-                    std::cout << "[Updater] Data Protection: Preserving user database -> " << relStr << std::endl;
-                    preservedFiles++;
-                    continue;
-                }
-
-                // Skip updater's own temporary files
-                if (relStr == "_update.zip" || relStr.rfind("_update", 0) == 0) continue;
-
-                std::error_code ec;
-                fs::copy_file(entry.path(), dest, fs::copy_options::overwrite_existing, ec);
-                if (!ec) {
-                    updatedFiles++;
-                }
+    // 3. Automated Local Compilation if Qt environment is detected
+    if (sourceFilesChanged || !fs::exists("Flow.exe")) {
+        std::cout << "[Updater] Source changes detected. Checking local Qt build environment..." << std::endl;
+        bool hasQt = fs::exists("C:\\Qt\\6.11.1\\mingw_64\\bin\\qmake.exe") || fs::exists("C:\\Qt\\Tools\\mingw1310_64\\bin\\g++.exe");
+        if (hasQt && fs::exists("flowui\\CMakeLists.txt")) {
+            std::cout << "[Updater] Automating local Qt CMake compilation..." << std::endl;
+            std::string buildCmd = "powershell -NoProfile -Command \"$env:PATH='C:\\Qt\\Tools\\mingw1310_64\\bin;C:\\Qt\\6.11.1\\mingw_64\\bin;' + $env:PATH; cd flowui; cmake --build build; if ($LASTEXITCODE -eq 0) { Copy-Item -Force build\\appflowui.exe ..\\Flow.exe }\"";
+            int buildRes = std::system(buildCmd.c_str());
+            if (buildRes == 0) {
+                std::cout << "[Updater] SUCCESS: Automated local compilation succeeded!" << std::endl;
             }
         }
-    } catch (const std::exception& e) {
-        std::cerr << "[Updater] Error copying files: " << e.what() << std::endl;
     }
 
-    save_local_version(targetTag, maxMajor, maxMinor, targetSha);
+    // Always fetch latest compiled Flow.exe binary if not already updated
+    if (!fs::exists("Flow.exe") || sourceFilesChanged) {
+        std::string exeUrl = "https://raw.githubusercontent.com/red-star939/FLOW/" + remoteSha + "/dist/Flow.exe";
+        download_file(exeUrl, "Flow.exe");
+    }
 
-    // Clean up temporary files
-    try {
-        fs::remove(zipFile);
-        fs::remove_all(tempDir);
-    } catch (...) {}
+    save_local_version("v1.5_stable", 1, 5, remoteSha);
 
-    std::cout << "[Updater] SUCCESS: Successfully updated to " << targetTag << " [SHA: " << targetSha.substr(0, 7) << "]" << std::endl;
-    std::cout << "[Updater] Total files updated: " << updatedFiles << ", Preserved user DB files: " << preservedFiles << std::endl;
+    std::cout << "[Updater] SUCCESS: Synchronized " << updatedCount << " modified files (Preserved DBs: " << skippedDataCount << ")" << std::endl;
+    std::cout << "[Updater] Updated to Commit SHA: " << remoteSha.substr(0, 7) << std::endl;
     std::cout << "==========================================" << std::endl;
 
     return 0;
