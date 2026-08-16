@@ -172,7 +172,7 @@ Item {
                             width: (parent.width - 28) / 3
                             height: 175
                             radius: 16
-                             color: index === 0 ? "#141414" : (index === 1 ? "#578679" : (index === 2 ? "#A62B2B" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A"))))
+                             color: index === 0 ? "#141414" : (index === 1 ? "#578679" : (index === 2 ? "#A62B2B" : (index === 3 ? "#253874" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A")))))
                              border.width: colorsetRoot.selectedCardIndex === index ? 2 : 1
                              border.color: colorsetRoot.selectedCardIndex === index ? "#FFFFFF" : (cardHover.containsMouse ? "#666666" : "#303030")
 
@@ -414,6 +414,78 @@ Item {
                                  }
                              }
 
+                             // Card 4 Content (Deep Navy Theme Preview #253874)
+                             Column {
+                                 anchors.centerIn: parent
+                                 spacing: 12
+                                 visible: index === 3
+
+                                 // 5 Color Circles (1. #161F38, 2. #3B5295, 3. #FFFFFF, 4. #3B5295, 5. #253874)
+                                 Row {
+                                     anchors.horizontalCenter: parent.horizontalCenter
+                                     spacing: 5
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#161F38"
+                                         border.width: 1
+                                         border.color: "#3B5295"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#3B5295"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#FFFFFF"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#3B5295"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#253874"
+                                         border.width: 1
+                                         border.color: "#4A68BD"
+                                     }
+                                 }
+
+                                 Column {
+                                     spacing: 3
+                                     anchors.horizontalCenter: parent.horizontalCenter
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "Deep Navy"
+                                         color: "#FFFFFF"
+                                         font.pixelSize: 13
+                                         font.bold: true
+                                     }
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "(딥 네이비 테마)"
+                                         color: "#A2B5E8"
+                                         font.pixelSize: 10
+                                     }
+                                 }
+                             }
+
                              MouseArea {
                                  id: cardHover
                                  anchors.fill: parent
@@ -436,6 +508,10 @@ Item {
                                          colorsetRoot.currentSystemColor = "#A62B2B"
                                          colorsetRoot.currentAccentColor = "#B83E3E"
                                          colorsetRoot.themeSelected("#A62B2B", "#221616", "#FFFFFF", "#FFFFFF", "#B83E3E", "#A62B2B", "#331E1E", 2)
+                                     } else if (index === 3) {
+                                         colorsetRoot.currentSystemColor = "#253874"
+                                         colorsetRoot.currentAccentColor = "#3B5295"
+                                         colorsetRoot.themeSelected("#253874", "#161F38", "#FFFFFF", "#FFFFFF", "#3B5295", "#253874", "#1A2544", 3)
                                      }
                                  }
                              }
