@@ -31,7 +31,7 @@ Item {
             bgColor = "#253874"
             titleColor = "#FFFFFF"
             subtitleColor = "#A2B5E8"
-        } else if (idx === 4) { // Ice Blue (#C3D5D7)
+        } else if (idx === 4) { // Wind Soft (#C3D5D7)
             bgColor = "#C3D5D7"
             titleColor = "#101D20"
             subtitleColor = "#547377"
