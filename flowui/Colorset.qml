@@ -172,7 +172,7 @@ Item {
                             width: (parent.width - 28) / 3
                             height: 145
                             radius: 16
-                             color: index === 0 ? "#141414" : (index === 1 ? "#366256" : (index === 2 ? "#872115" : (index === 3 ? "#253874" : (index === 4 ? "#C3D5D7" : (index === 5 ? "#B9A69B" : (index === 6 ? "#C48D8B" : (index === 7 ? "#FFC001" : (index === 8 ? "#646289" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A"))))))))))
+                             color: index === 0 ? "#141414" : (index === 1 ? "#366256" : (index === 2 ? "#872115" : (index === 3 ? "#253874" : (index === 4 ? "#C3D5D7" : (index === 5 ? "#B9A69B" : (index === 6 ? "#C48D8B" : (index === 7 ? "#DA950C" : (index === 8 ? "#646289" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A"))))))))))
                              border.width: colorsetRoot.selectedCardIndex === index ? 2 : 1
                              border.color: colorsetRoot.selectedCardIndex === index ? "#FFFFFF" : (cardHover.containsMouse ? "#666666" : "#303030")
 
@@ -747,9 +747,9 @@ Item {
                                          width: 20
                                          height: 20
                                          radius: 10
-                                         color: "#FFC001"
+                                         color: "#DA950C"
                                          border.width: 1
-                                         border.color: "#C99700"
+                                         border.color: "#B87D0A"
                                      }
                                  }
 
@@ -760,7 +760,7 @@ Item {
                                      Text {
                                          anchors.horizontalCenter: parent.horizontalCenter
                                          text: "Amber Gold"
-                                         color: "#1E1A00"
+                                         color: "#FFFFFF"
                                          font.pixelSize: 13
                                          font.bold: true
                                      }
@@ -768,7 +768,7 @@ Item {
                                      Text {
                                          anchors.horizontalCenter: parent.horizontalCenter
                                          text: "(엠버 골드 테마)"
-                                         color: "#664F00"
+                                         color: "#F7E6C4"
                                          font.pixelSize: 10
                                      }
                                  }
@@ -885,9 +885,9 @@ Item {
                                          colorsetRoot.currentAccentColor = "#A66E6C"
                                          colorsetRoot.themeSelected("#C48D8B", "#F7EFEB", "#A66E6C", "#261817", "#A66E6C", "#C48D8B", "#A66E6C", 6)
                                      } else if (index === 7) {
-                                         colorsetRoot.currentSystemColor = "#FFC001"
-                                         colorsetRoot.currentAccentColor = "#D9A300"
-                                         colorsetRoot.themeSelected("#FFC001", "#FFFBF0", "#D9A300", "#1E1A00", "#D9A300", "#FFC001", "#E5AD00", 7)
+                                         colorsetRoot.currentSystemColor = "#DA950C"
+                                         colorsetRoot.currentAccentColor = "#B87D0A"
+                                         colorsetRoot.themeSelected("#DA950C", "#FFFBF0", "#B87D0A", "#1E1A00", "#B87D0A", "#DA950C", "#C4850A", 7)
                                      } else if (index === 8) {
                                          colorsetRoot.currentSystemColor = "#646289"
                                          colorsetRoot.currentAccentColor = "#8A87B3"

@@ -43,10 +43,10 @@ Item {
             bgColor = "#C48D8B"
             titleColor = "#FFFFFF"
             subtitleColor = "#F2E1E0"
-        } else if (idx === 7) { // Amber Gold (#FFC001)
-            bgColor = "#FFC001"
-            titleColor = "#1E1A00"
-            subtitleColor = "#664F00"
+        } else if (idx === 7) { // Amber Gold (#DA950C)
+            bgColor = "#DA950C"
+            titleColor = "#FFFFFF"
+            subtitleColor = "#F7E6C4"
         } else if (idx === 8) { // Twilight Purple (#646289)
             bgColor = "#646289"
             titleColor = "#FFFFFF"

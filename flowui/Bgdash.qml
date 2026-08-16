@@ -48,8 +48,8 @@ Item {
                 applyTheme("#B9A69B", "#F5F0ED", "#968378", "#221A16", "#968378", "#B9A69B", "#968378", 5);
             } else if (savedThemeIdx === 6) { // Dusty Rose (#C48D8B)
                 applyTheme("#C48D8B", "#F7EFEB", "#A66E6C", "#261817", "#A66E6C", "#C48D8B", "#A66E6C", 6);
-            } else if (savedThemeIdx === 7) { // Amber Gold (#FFC001)
-                applyTheme("#FFC001", "#FFFBF0", "#D9A300", "#1E1A00", "#D9A300", "#FFC001", "#E5AD00", 7);
+            } else if (savedThemeIdx === 7) { // Amber Gold (#DA950C)
+                applyTheme("#DA950C", "#FFFBF0", "#B87D0A", "#1E1A00", "#B87D0A", "#DA950C", "#C4850A", 7);
             } else if (savedThemeIdx === 8) { // Twilight Purple (#646289)
                 applyTheme("#646289", "#1E1C2E", "#8A87B3", "#FFFFFF", "#8A87B3", "#646289", "#29263D", 8);
             } else { // Dark (#141414)
