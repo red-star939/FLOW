@@ -111,14 +111,14 @@ bool download_file(const std::string& url, const std::string& dest_path) {
 
 int main(int argc, char* argv[]) {
     std::cout << "==========================================" << std::endl;
-    std::cout << " FLOW Differential Auto-Updater (Direct Sync)" << std::endl;
+    std::cout << " FLOW Differential Auto-Updater & Builder" << std::endl;
     std::cout << "==========================================" << std::endl;
 
     VersionInfo localVer = load_local_version();
     std::cout << "[Updater] Current Local Tag: " << localVer.tag << " (v" << localVer.major << "." << localVer.minor << ")"
               << (localVer.sha.empty() ? "" : " [SHA: " + localVer.sha.substr(0, 7) + "]") << std::endl;
 
-    // 1. Fetch remote commit info from GitHub (latest commit on main or v1.5_stable)
+    // 1. Fetch remote commit info from GitHub (latest commit on main or flow_v1.5)
     std::cout << "[Updater] Checking remote commit SHA from GitHub..." << std::endl;
     std::string commitJson = http_get("https://api.github.com/repos/red-star939/FLOW/commits/main");
     if (commitJson.empty()) {
@@ -144,12 +144,15 @@ int main(int argc, char* argv[]) {
 
     std::cout << "[Updater] Remote Commit SHA: " << remoteSha.substr(0, 7) << std::endl;
 
+    // ─── NO UPDATE NEEDED CHECK ───
     if (!localVer.sha.empty() && localVer.sha == remoteSha) {
-        std::cout << "[Updater] Application is 100% up-to-date! (SHA: " << remoteSha.substr(0, 7) << ")" << std::endl;
+        std::cout << "[Updater] Application is 100% up-to-date! No build needed." << std::endl;
+        std::cout << "==========================================" << std::endl;
         return 0;
     }
 
-    std::cout << "[Updater] *** NEW COMMIT DETECTED: " << remoteSha.substr(0, 7) << " ***" << std::endl;
+    // ─── UPDATE DETECTED: SYNC & BUILD ───
+    std::cout << "[Updater] *** UPDATE DETECTED: " << remoteSha.substr(0, 7) << " ***" << std::endl;
     std::cout << "[Updater] Fetching modified file list..." << std::endl;
 
     // 2. Extract list of changed files from commit JSON
@@ -164,7 +167,6 @@ int main(int argc, char* argv[]) {
         changedFiles.push_back(fname);
     }
 
-    // Default essential files if commit file list is empty
     if (changedFiles.empty()) {
         changedFiles = { "dist/Flow.exe", "version.json" };
     }
@@ -175,15 +177,13 @@ int main(int argc, char* argv[]) {
 
     std::cout << "[Updater] Fetching changed raw files directly from GitHub..." << std::endl;
     for (const auto& rawPath : changedFiles) {
-        // ─── CRITICAL DATA PROTECTION ───
-        // Do NOT overwrite user database files!
+        // Data Protection: Do NOT overwrite user database files
         if (rawPath == "db/database.json" || rawPath == "db\\database.json" || rawPath.find(".db") != std::string::npos) {
-            std::cout << "[Updater] Data Protection: Skipping user database -> " << rawPath << std::endl;
+            std::cout << "[Updater] Data Protection: Preserving user database -> " << rawPath << std::endl;
             skippedDataCount++;
             continue;
         }
 
-        // Map dist/Flow.exe -> Flow.exe in installation root if applicable
         std::string destPath = rawPath;
         if (destPath.rfind("dist/", 0) == 0 || destPath.rfind("dist\\", 0) == 0) {
             destPath = destPath.substr(5);
@@ -200,30 +200,29 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // 3. Automated Local Compilation if Qt environment is detected
-    if (sourceFilesChanged || !fs::exists("Flow.exe")) {
-        std::cout << "[Updater] Source changes detected. Checking local Qt build environment..." << std::endl;
-        bool hasQt = fs::exists("C:\\Qt\\6.11.1\\mingw_64\\bin\\qmake.exe") || fs::exists("C:\\Qt\\Tools\\mingw1310_64\\bin\\g++.exe");
-        if (hasQt && fs::exists("flowui\\CMakeLists.txt")) {
-            std::cout << "[Updater] Automating local Qt CMake compilation..." << std::endl;
-            std::string buildCmd = "powershell -NoProfile -Command \"$env:PATH='C:\\Qt\\Tools\\mingw1310_64\\bin;C:\\Qt\\6.11.1\\mingw_64\\bin;' + $env:PATH; cd flowui; cmake --build build; if ($LASTEXITCODE -eq 0) { Copy-Item -Force build\\appflowui.exe ..\\Flow.exe }\"";
-            int buildRes = std::system(buildCmd.c_str());
-            if (buildRes == 0) {
-                std::cout << "[Updater] SUCCESS: Automated local compilation succeeded!" << std::endl;
-            }
+    // 3. Automatic Local Build Execution when updates exist
+    std::cout << "[Updater] Updates detected. Executing automated local compilation..." << std::endl;
+    bool hasQt = fs::exists("C:\\Qt\\6.11.1\\mingw_64\\bin\\qmake.exe") || fs::exists("C:\\Qt\\Tools\\mingw1310_64\\bin\\g++.exe");
+    if (hasQt && fs::exists("flowui\\CMakeLists.txt")) {
+        std::cout << "[Updater] Compiling updated C++/QML code with MinGW..." << std::endl;
+        std::string buildCmd = "powershell -NoProfile -Command \"$env:PATH='C:\\Qt\\Tools\\mingw1310_64\\bin;C:\\Qt\\6.11.1\\mingw_64\\bin;' + $env:PATH; cd flowui; if (-not (Test-Path build)) { cmake -B build -G 'Ninja' -DCMAKE_C_COMPILER='C:/Qt/Tools/mingw1310_64/bin/gcc.exe' -DCMAKE_CXX_COMPILER='C:/Qt/Tools/mingw1310_64/bin/g++.exe' }; cmake --build build; if ($LASTEXITCODE -eq 0) { Copy-Item -Force build\\appflowui.exe ..\\Flow.exe; Copy-Item -Force build\\appflowui.exe ..\\dist\\Flow.exe }\"";
+        int buildRes = std::system(buildCmd.c_str());
+        if (buildRes == 0) {
+            std::cout << "[Updater] SUCCESS: Automated local compilation completed!" << std::endl;
+        } else {
+            std::cout << "[Updater] Build notice: Fetching pre-compiled executable..." << std::endl;
+            std::string exeUrl = "https://raw.githubusercontent.com/red-star939/FLOW/" + remoteSha + "/dist/Flow.exe";
+            download_file(exeUrl, "Flow.exe");
         }
-    }
-
-    // Always fetch latest compiled Flow.exe binary if not already updated
-    if (!fs::exists("Flow.exe") || sourceFilesChanged) {
+    } else {
+        // Fallback if no local Qt toolchain is installed
         std::string exeUrl = "https://raw.githubusercontent.com/red-star939/FLOW/" + remoteSha + "/dist/Flow.exe";
         download_file(exeUrl, "Flow.exe");
     }
 
     save_local_version("v1.5_stable", 1, 5, remoteSha);
 
-    std::cout << "[Updater] SUCCESS: Synchronized " << updatedCount << " modified files (Preserved DBs: " << skippedDataCount << ")" << std::endl;
-    std::cout << "[Updater] Updated to Commit SHA: " << remoteSha.substr(0, 7) << std::endl;
+    std::cout << "[Updater] SUCCESS: Update completed & synchronized to SHA: " << remoteSha.substr(0, 7) << std::endl;
     std::cout << "==========================================" << std::endl;
 
     return 0;
