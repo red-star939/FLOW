@@ -360,12 +360,13 @@ Item {
             // ─────────────────────────────────────────────────────────────
             Rectangle {
                 id: mainLargeBlock
-                width: Math.max(460, Math.floor((parent.width - 16) * 0.63))
-                height: parent.height - 4
+                width: Math.floor((parent.width - 16) * 0.63)
+                height: parent.height
                 radius: 16
                 color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeDashBg : "#141414"
                 border.width: 1.5
                 border.color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeBorderColor : "#343434"
+                clip: true
 
                 Behavior on color { ColorAnimation { duration: 250 } }
                 Behavior on border.color { ColorAnimation { duration: 250 } }
@@ -504,9 +505,10 @@ Item {
                         Rectangle {
                             id: mainChartBox
                             width: parent.width
-                            height: parent.height - (root.getActiveSlots().length > 0 ? 80 : 58)
+                            height: Math.max(40, parent.height - (root.getActiveSlots().length > 0 ? 80 : 58))
                             color: "transparent"
                             border.width: 0
+                            clip: true
 
                             property real chartMax: root.getChartMaxVal()
 
@@ -613,7 +615,8 @@ Item {
 
                                                             property real barVal: activeSlotsList.length > 0 ? root.getSlotMonthValue(modelData.data, monthNum) : root.getMonthlyTotal(monthNum)
                                                             property real barMax: mainChartBox.chartMax
-                                                            property real calcH: barMax > 0 ? Math.max(4, Math.min(parent.parent.parent.height - 8, (barVal / barMax) * (parent.parent.parent.height - 8))) : 4
+                                                            property real availH: Math.max(10, parent.parent.parent.height - 6)
+                                                            property real calcH: barMax > 0 ? Math.max(2, Math.min(availH, (barVal / barMax) * availH)) : 2
                                                             height: calcH
                                                             radius: 3
                                                             color: activeSlotsList.length > 0 ? root.getSlotColor(modelData.slotIdx) : (mBarHover.containsMouse ? "#FFFFFF" : "#3D3D3D")
@@ -1036,8 +1039,8 @@ Item {
             // ─────────────────────────────────────────────────────────────
             Rectangle {
                 id: equalBlock1
-                width: Math.max(300, (parent.width - 16) - Math.floor((parent.width - 16) * 0.63))
-                height: parent.height - 4
+                width: parent.width - 16 - mainLargeBlock.width
+                height: parent.height
                 radius: 16
                 color: typeof bgdashRoot !== "undefined" ? bgdashRoot.themeDashBg : "#141414"
                 border.width: 1.5
@@ -1114,8 +1117,9 @@ Item {
 
                     // 1. Side-by-Side Dual Sub-Cards (전일 vs 금일 총액) - TOP
                     Row {
+                        id: dualSubCardsRow
                         width: parent.width
-                        height: 80
+                        height: Math.max(45, Math.min(80, Math.floor((parent.height - 70) * 0.45)))
 
                         // Yesterday Card
                         Item {
@@ -1124,13 +1128,13 @@ Item {
 
                             Column {
                                 anchors.centerIn: parent
-                                spacing: 4
+                                spacing: Math.max(1, Math.min(4, Math.floor((parent.height - 40) / 4)))
 
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: "전일 (" + root.yesterdayMonth + "/" + root.yesterdayDay + ")"
                                     color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#8E8E93"
-                                    font.pixelSize: 11
+                                    font.pixelSize: Math.max(9, Math.min(11, Math.floor(parent.height / 6.5)))
                                     font.bold: true
                                 }
 
@@ -1138,15 +1142,15 @@ Item {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: Number(root.yesterdayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
                                     color: "#DDDDDD"
-                                    font.pixelSize: 15
+                                    font.pixelSize: Math.max(10, Math.min(15, Math.floor(parent.height / 4.5)))
                                     font.bold: true
                                 }
 
                                 Rectangle {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     width: yCntText.width + 12
-                                    height: 18
-                                    radius: 9
+                                    height: Math.max(14, Math.min(18, Math.floor(parent.height / 4.2)))
+                                    radius: height / 2
                                     color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#2C2C2E"
                                     border.width: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? 1 : 0
                                     border.color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "transparent"
@@ -1156,7 +1160,7 @@ Item {
                                         anchors.centerIn: parent
                                         text: root.yesterdayDailyItems.length + "개 항목"
                                         color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#A0A0A0"
-                                        font.pixelSize: 9
+                                        font.pixelSize: Math.max(8, Math.min(9, Math.floor(parent.height / 2)))
                                         font.bold: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2)
                                     }
                                 }
@@ -1166,7 +1170,7 @@ Item {
                         // Vertical Divider between Yesterday & Today
                         Rectangle {
                             width: 1
-                            height: parent.height - 20
+                            height: Math.max(20, parent.height - 20)
                             color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#333333"
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -1178,13 +1182,13 @@ Item {
 
                             Column {
                                 anchors.centerIn: parent
-                                spacing: 4
+                                spacing: Math.max(1, Math.min(4, Math.floor((parent.height - 40) / 4)))
 
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: "금일 (" + root.todayMonth + "/" + root.todayDay + ")"
                                     color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#00E5FF"
-                                    font.pixelSize: 11
+                                    font.pixelSize: Math.max(9, Math.min(11, Math.floor(parent.height / 6.5)))
                                     font.bold: true
                                 }
 
@@ -1192,15 +1196,15 @@ Item {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: Number(root.todayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
                                     color: "#FFFFFF"
-                                    font.pixelSize: 15
+                                    font.pixelSize: Math.max(10, Math.min(15, Math.floor(parent.height / 4.5)))
                                     font.bold: true
                                 }
 
                                 Rectangle {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     width: tCntText.width + 12
-                                    height: 18
-                                    radius: 9
+                                    height: Math.max(14, Math.min(18, Math.floor(parent.height / 4.2)))
+                                    radius: height / 2
                                     color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#1E2C33"
                                     border.width: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? 1 : 0
                                     border.color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "transparent"
@@ -1210,7 +1214,7 @@ Item {
                                         anchors.centerIn: parent
                                         text: root.todayDailyItems.length + "개 항목"
                                         color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#64D2FF"
-                                        font.pixelSize: 9
+                                        font.pixelSize: Math.max(8, Math.min(9, Math.floor(parent.height / 2)))
                                         font.bold: true
                                     }
                                 }
@@ -1228,38 +1232,42 @@ Item {
                     // 2. Hero Diff Analysis (지출 분석) - DIRECTLY BELOW
                     Item {
                         width: parent.width
-                        height: Math.max(80, equalBlock1.height - 188)
+                        height: Math.max(30, parent.height - 34 - 1 - dualSubCardsRow.height - 1 - 40)
 
                         Row {
                             anchors.centerIn: parent
-                            spacing: 8
+                            spacing: Math.max(3, Math.min(8, Math.floor(parent.width / 40)))
+                            width: Math.min(parent.width, implicitWidth)
 
                             Text {
                                 text: root.diffExpenseAmount > 0 ? "▲ 지출 증가" : (root.diffExpenseAmount < 0 ? "▼ 지출 절감" : "– 변동 없음")
                                 color: root.diffExpenseAmount > 0 ? ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#FF453A") : (root.diffExpenseAmount < 0 ? "#30D158" : "#8E8E93")
-                                font.pixelSize: 14
+                                font.pixelSize: Math.max(9, Math.min(14, Math.floor(parent.width / 22)))
                                 font.bold: true
+                                anchors.verticalCenter: parent.verticalCenter
                             }
 
                             Text {
                                 text: (root.diffExpenseAmount > 0 ? "+" : "") + Number(root.diffExpenseAmount).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
                                 color: "#FFFFFF"
-                                font.pixelSize: 20
+                                font.pixelSize: Math.max(11, Math.min(19, Math.floor(parent.width / 16)))
                                 font.bold: true
+                                anchors.verticalCenter: parent.verticalCenter
                             }
 
                             Rectangle {
-                                width: pctText.width + 12
-                                height: 22
-                                radius: 11
+                                width: pctText.width + 10
+                                height: Math.max(16, Math.min(22, Math.floor(parent.height / 3)))
+                                radius: height / 2
                                 color: root.diffExpenseAmount > 0 ? ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#FF453A") : (root.diffExpenseAmount < 0 ? "#30D158" : "#555555")
+                                anchors.verticalCenter: parent.verticalCenter
 
                                 Text {
                                     id: pctText
                                     anchors.centerIn: parent
                                     text: (root.diffExpenseAmount > 0 ? "+" : "") + root.diffExpensePercent.toFixed(1) + "%"
                                     color: "#FFFFFF"
-                                    font.pixelSize: 11
+                                    font.pixelSize: Math.max(8, Math.min(11, Math.floor(parent.height / 4)))
                                     font.bold: true
                                 }
                             }
