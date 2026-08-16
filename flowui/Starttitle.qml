@@ -35,6 +35,10 @@ Item {
             bgColor = "#C3D5D7"
             titleColor = "#101D20"
             subtitleColor = "#547377"
+        } else if (idx === 5) { // Warm Taupe (#B9A69B)
+            bgColor = "#B9A69B"
+            titleColor = "#FFFFFF"
+            subtitleColor = "#EAE3DE"
         } else { // Dark (Default)
             bgColor = "#141414"
             titleColor = "#FFFFFF"

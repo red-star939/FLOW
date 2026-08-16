@@ -36,11 +36,17 @@ Item {
         if (typeof dbController !== "undefined" && typeof dbController.getSavedThemeIndex === "function") {
             var savedThemeIdx = dbController.getSavedThemeIndex();
             currentThemeIndex = savedThemeIdx;
-            if (savedThemeIdx === 1) {
-                applyTheme("#578679", "#E0D9CF", "#C2A17B", "#090A0B", "#819E8A", "#578679", "#578679", 1);
-            } else if (savedThemeIdx === 2) {
+            if (savedThemeIdx === 1) { // Deep Forest (#366256)
+                applyTheme("#366256", "#E6ECE9", "#527E72", "#090A0B", "#527E72", "#366256", "#527E72", 1);
+            } else if (savedThemeIdx === 2) { // Carmine Red (#A62B2B)
                 applyTheme("#A62B2B", "#221616", "#FFFFFF", "#FFFFFF", "#B83E3E", "#A62B2B", "#331E1E", 2);
-            } else {
+            } else if (savedThemeIdx === 3) { // Midnight Blue (#253874)
+                applyTheme("#253874", "#161F38", "#FFFFFF", "#FFFFFF", "#3B5295", "#253874", "#1A2544", 3);
+            } else if (savedThemeIdx === 4) { // Wind Soft (#C3D5D7)
+                applyTheme("#C3D5D7", "#EAF1F2", "#9BB6B9", "#101D20", "#7A9EA3", "#C3D5D7", "#D4E3E5", 4);
+            } else if (savedThemeIdx === 5) { // Warm Taupe (#B9A69B)
+                applyTheme("#B9A69B", "#F5F0ED", "#968378", "#221A16", "#968378", "#B9A69B", "#968378", 5);
+            } else { // Dark (#141414)
                 applyTheme("#141414", "#1F1F1F", "#343434", "#FFFFFF", "#222222", "#141414", "#141414", 0);
             }
         }
