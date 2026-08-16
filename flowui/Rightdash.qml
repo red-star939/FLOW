@@ -178,8 +178,9 @@ Rectangle {
             Wheelday {
                 id: dayWheel
                 anchors.right: parent.right
+                anchors.rightMargin: -8
                 anchors.verticalCenter: parent.verticalCenter
-                width: 130
+                width: 118
                 height: 38
                 selectedYear: rightdashRoot.selectedYear
                 selectedMonth: rightdashRoot.activeMonth

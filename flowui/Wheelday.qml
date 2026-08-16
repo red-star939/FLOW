@@ -86,7 +86,7 @@ Item {
         }
 
         path: Path {
-            startX: 10
+            startX: 6
             startY: pathView.height / 2
 
             PathAttribute { name: "itemScale"; value: 0.72 }
@@ -104,7 +104,7 @@ Item {
             PathAttribute { name: "itemZ"; value: 10 }
 
             PathLine {
-                x: pathView.width - 10
+                x: pathView.width - 6
                 y: pathView.height / 2
             }
             PathAttribute { name: "itemScale"; value: 0.72 }
@@ -115,7 +115,7 @@ Item {
 
         delegate: Item {
             id: delegateItem
-            width: 44
+            width: 38
             height: 36
 
             z: PathView.itemZ !== undefined ? PathView.itemZ : 1
