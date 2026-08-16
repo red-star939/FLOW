@@ -39,6 +39,18 @@ Item {
             bgColor = "#B9A69B"
             titleColor = "#FFFFFF"
             subtitleColor = "#EAE3DE"
+        } else if (idx === 6) { // Dusty Rose (#C48D8B)
+            bgColor = "#C48D8B"
+            titleColor = "#FFFFFF"
+            subtitleColor = "#F2E1E0"
+        } else if (idx === 7) { // Amber Gold (#FFC001)
+            bgColor = "#FFC001"
+            titleColor = "#1E1A00"
+            subtitleColor = "#664F00"
+        } else if (idx === 8) { // Twilight Purple (#646289)
+            bgColor = "#646289"
+            titleColor = "#FFFFFF"
+            subtitleColor = "#D2D0E6"
         } else { // Dark (Default)
             bgColor = "#141414"
             titleColor = "#FFFFFF"

@@ -46,6 +46,12 @@ Item {
                 applyTheme("#C3D5D7", "#EAF1F2", "#9BB6B9", "#101D20", "#7A9EA3", "#C3D5D7", "#D4E3E5", 4);
             } else if (savedThemeIdx === 5) { // Warm Taupe (#B9A69B)
                 applyTheme("#B9A69B", "#F5F0ED", "#968378", "#221A16", "#968378", "#B9A69B", "#968378", 5);
+            } else if (savedThemeIdx === 6) { // Dusty Rose (#C48D8B)
+                applyTheme("#C48D8B", "#F7EFEB", "#A66E6C", "#261817", "#A66E6C", "#C48D8B", "#A66E6C", 6);
+            } else if (savedThemeIdx === 7) { // Amber Gold (#FFC001)
+                applyTheme("#FFC001", "#FFFBF0", "#D9A300", "#1E1A00", "#D9A300", "#FFC001", "#E5AD00", 7);
+            } else if (savedThemeIdx === 8) { // Twilight Purple (#646289)
+                applyTheme("#646289", "#1E1C2E", "#8A87B3", "#FFFFFF", "#8A87B3", "#646289", "#29263D", 8);
             } else { // Dark (#141414)
                 applyTheme("#141414", "#1F1F1F", "#343434", "#FFFFFF", "#222222", "#141414", "#141414", 0);
             }

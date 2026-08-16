@@ -55,7 +55,7 @@ Item {
     Rectangle {
         id: card
         width: 580
-        height: 620
+        height: 660
         anchors.centerIn: parent
         radius: 24
         color: "#202020"
@@ -146,7 +146,7 @@ Item {
                 color: "#333333"
             }
 
-            // 6 Cards Section (Card 1: Original System Color, Cards 2~6: Empty)
+            // 9 Cards Section (Card 1: Original Dark, Cards 2~9: System Colors)
             Column {
                 width: parent.width
                 spacing: 14
@@ -158,21 +158,21 @@ Item {
                     font.bold: true
                 }
 
-                // 6 Cards Grid (3 Columns x 2 Rows, Height 175)
+                // 9 Cards Grid (3 Columns x 3 Rows, Height 145)
                 Grid {
                     columns: 3
                     spacing: 14
                     width: parent.width
 
                     Repeater {
-                        model: 6
+                        model: 9
 
                         delegate: Rectangle {
                             id: themeCard
                             width: (parent.width - 28) / 3
-                            height: 175
+                            height: 145
                             radius: 16
-                             color: index === 0 ? "#141414" : (index === 1 ? "#366256" : (index === 2 ? "#A62B2B" : (index === 3 ? "#253874" : (index === 4 ? "#C3D5D7" : (index === 5 ? "#B9A69B" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A")))))))
+                             color: index === 0 ? "#141414" : (index === 1 ? "#366256" : (index === 2 ? "#A62B2B" : (index === 3 ? "#253874" : (index === 4 ? "#C3D5D7" : (index === 5 ? "#B9A69B" : (index === 6 ? "#C48D8B" : (index === 7 ? "#FFC001" : (index === 8 ? "#646289" : (cardHover.containsMouse ? "#2A2A2A" : (colorsetRoot.selectedCardIndex === index ? "#262626" : "#1A1A1A"))))))))))
                              border.width: colorsetRoot.selectedCardIndex === index ? 2 : 1
                              border.color: colorsetRoot.selectedCardIndex === index ? "#FFFFFF" : (cardHover.containsMouse ? "#666666" : "#303030")
 
@@ -630,6 +630,222 @@ Item {
                                  }
                              }
 
+                             // Card 7 Content (Dusty Rose Theme Preview #C48D8B)
+                             Column {
+                                 anchors.centerIn: parent
+                                 spacing: 12
+                                 visible: index === 6
+
+                                 // 5 Color Circles (1. #F7EFEB, 2. #A66E6C, 3. #261817, 4. #A66E6C, 5. #C48D8B)
+                                 Row {
+                                     anchors.horizontalCenter: parent.horizontalCenter
+                                     spacing: 5
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#F7EFEB"
+                                         border.width: 1
+                                         border.color: "#A66E6C"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#A66E6C"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#261817"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#A66E6C"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#C48D8B"
+                                         border.width: 1
+                                         border.color: "#965E5C"
+                                     }
+                                 }
+
+                                 Column {
+                                     spacing: 3
+                                     anchors.horizontalCenter: parent.horizontalCenter
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "Dusty Rose"
+                                         color: "#FFFFFF"
+                                         font.pixelSize: 13
+                                         font.bold: true
+                                     }
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "(더스티 로즈 테마)"
+                                         color: "#F2E1E0"
+                                         font.pixelSize: 10
+                                     }
+                                 }
+                             }
+
+                             // Card 8 Content (Amber Gold Theme Preview #FFC001)
+                             Column {
+                                 anchors.centerIn: parent
+                                 spacing: 12
+                                 visible: index === 7
+
+                                 // 5 Color Circles (1. #FFFBF0, 2. #D9A300, 3. #1E1A00, 4. #D9A300, 5. #FFC001)
+                                 Row {
+                                     anchors.horizontalCenter: parent.horizontalCenter
+                                     spacing: 5
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#FFFBF0"
+                                         border.width: 1
+                                         border.color: "#D9A300"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#D9A300"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#1E1A00"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#D9A300"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#FFC001"
+                                         border.width: 1
+                                         border.color: "#C99700"
+                                     }
+                                 }
+
+                                 Column {
+                                     spacing: 3
+                                     anchors.horizontalCenter: parent.horizontalCenter
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "Amber Gold"
+                                         color: "#1E1A00"
+                                         font.pixelSize: 13
+                                         font.bold: true
+                                     }
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "(엠버 골드 테마)"
+                                         color: "#664F00"
+                                         font.pixelSize: 10
+                                     }
+                                 }
+                             }
+
+                             // Card 9 Content (Twilight Purple Theme Preview #646289)
+                             Column {
+                                 anchors.centerIn: parent
+                                 spacing: 12
+                                 visible: index === 8
+
+                                 // 5 Color Circles (1. #1E1C2E, 2. #8A87B3, 3. #FFFFFF, 4. #8A87B3, 5. #646289)
+                                 Row {
+                                     anchors.horizontalCenter: parent.horizontalCenter
+                                     spacing: 5
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#1E1C2E"
+                                         border.width: 1
+                                         border.color: "#8A87B3"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#8A87B3"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#FFFFFF"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#8A87B3"
+                                     }
+
+                                     Rectangle {
+                                         width: 20
+                                         height: 20
+                                         radius: 10
+                                         color: "#646289"
+                                         border.width: 1
+                                         border.color: "#4C4A6E"
+                                     }
+                                 }
+
+                                 Column {
+                                     spacing: 3
+                                     anchors.horizontalCenter: parent.horizontalCenter
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "Twilight Purple"
+                                         color: "#FFFFFF"
+                                         font.pixelSize: 13
+                                         font.bold: true
+                                     }
+
+                                     Text {
+                                         anchors.horizontalCenter: parent.horizontalCenter
+                                         text: "(트와일라잇 퍼플 테마)"
+                                         color: "#D2D0E6"
+                                         font.pixelSize: 10
+                                     }
+                                 }
+                             }
+
                              MouseArea {
                                  id: cardHover
                                  anchors.fill: parent
@@ -664,6 +880,18 @@ Item {
                                          colorsetRoot.currentSystemColor = "#B9A69B"
                                          colorsetRoot.currentAccentColor = "#968378"
                                          colorsetRoot.themeSelected("#B9A69B", "#F5F0ED", "#968378", "#221A16", "#968378", "#B9A69B", "#968378", 5)
+                                     } else if (index === 6) {
+                                         colorsetRoot.currentSystemColor = "#C48D8B"
+                                         colorsetRoot.currentAccentColor = "#A66E6C"
+                                         colorsetRoot.themeSelected("#C48D8B", "#F7EFEB", "#A66E6C", "#261817", "#A66E6C", "#C48D8B", "#A66E6C", 6)
+                                     } else if (index === 7) {
+                                         colorsetRoot.currentSystemColor = "#FFC001"
+                                         colorsetRoot.currentAccentColor = "#D9A300"
+                                         colorsetRoot.themeSelected("#FFC001", "#FFFBF0", "#D9A300", "#1E1A00", "#D9A300", "#FFC001", "#E5AD00", 7)
+                                     } else if (index === 8) {
+                                         colorsetRoot.currentSystemColor = "#646289"
+                                         colorsetRoot.currentAccentColor = "#8A87B3"
+                                         colorsetRoot.themeSelected("#646289", "#1E1C2E", "#8A87B3", "#FFFFFF", "#8A87B3", "#646289", "#29263D", 8)
                                      }
                                  }
                              }
