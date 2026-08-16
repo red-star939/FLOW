@@ -552,7 +552,7 @@ Item {
                                     color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#333333"
                                 }
 
-                                // ─── Chart Data Grid Area (가로축 1~12월 & 데이터 바) ───
+                                // ─── Chart Data Grid Area (가로축 1~12월 & 데이터 바 - Flickable Scrollable) ───
                                 Item {
                                     id: chartDataArea
                                     anchors.left: yAxisArea.right
@@ -561,110 +561,165 @@ Item {
                                     anchors.top: parent.top
                                     anchors.bottom: parent.bottom
 
-                                    // Horizontal Gridlines (세로축 금액 등분 가로줄)
-                                    Repeater {
-                                        model: 5
+                                    Flickable {
+                                        id: chartFlickable
+                                        anchors.fill: parent
+                                        contentWidth: Math.max(parent.width, 450)
+                                        contentHeight: parent.height
+                                        clip: true
+                                        boundsBehavior: Flickable.DragAndOvershootBounds
+                                        flickDeceleration: 1500
+                                        maximumFlickVelocity: 3000
 
-                                        delegate: Rectangle {
-                                            width: parent.width
-                                            height: 1
-                                            color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : (index === 4 ? "#444444" : "#242424")
-                                            y: (chartDataArea.height - 20) * (index / 4.0)
+                                        property real targetContentX: contentX
+
+                                        Behavior on targetContentX {
+                                            id: chartScrollAnim
+                                            enabled: !chartFlickable.moving && !chartFlickable.dragging
+                                            NumberAnimation {
+                                                duration: 250
+                                                easing.type: Easing.OutQuad
+                                            }
                                         }
-                                    }
 
-                                    // X-Axis Axis Bottom Line
-                                    Rectangle {
-                                        width: parent.width
-                                        height: 1
-                                        color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#444444"
-                                        y: chartDataArea.height - 20
-                                    }
+                                        onTargetContentXChanged: {
+                                            if (!chartFlickable.moving && !chartFlickable.dragging) {
+                                                chartFlickable.contentX = targetContentX;
+                                            }
+                                        }
 
-                                    // ─── 12 Months Columns Row (가로축 1월~12월) ───
-                                    Row {
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.top: parent.top
-                                        anchors.bottom: parent.bottom
-                                        anchors.bottomMargin: 20
-                                        spacing: Math.max(2, (width - (12 * 30)) / 11)
+                                        onContentXChanged: {
+                                            if (chartFlickable.moving || chartFlickable.flicking || chartFlickable.dragging) {
+                                                chartFlickable.targetContentX = chartFlickable.contentX;
+                                            }
+                                        }
 
-                                        Repeater {
-                                            model: 12
+                                        // Horizontal Mouse Wheel & Drag Handler
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            z: -1
+                                            acceptedButtons: Qt.NoButton
+                                            onWheel: (wheel) => {
+                                                var delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+                                                if (delta !== 0) {
+                                                    var maxScroll = Math.max(0, chartFlickable.contentWidth - chartFlickable.width)
+                                                    var step = delta * 1.3
+                                                    var newTarget = Math.max(0, Math.min(maxScroll, chartFlickable.targetContentX - step))
+                                                    chartFlickable.targetContentX = newTarget
+                                                }
+                                            }
+                                        }
 
-                                            delegate: Item {
-                                                width: 30
-                                                height: parent.height
+                                        Item {
+                                            width: chartFlickable.contentWidth
+                                            height: chartFlickable.contentHeight
 
-                                                property int monthNum: index + 1
-                                                property var activeSlotsList: root.getActiveSlots()
+                                            // Horizontal Gridlines (세로축 금액 등분 가로줄)
+                                            Repeater {
+                                                model: 5
 
-                                                // Vertical Bars for Active Slots
-                                                Row {
-                                                    anchors.bottom: parent.bottom
-                                                    anchors.horizontalCenter: parent.horizontalCenter
-                                                    spacing: 2
+                                                delegate: Rectangle {
+                                                    width: parent.width
+                                                    height: 1
+                                                    color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : (index === 4 ? "#444444" : "#242424")
+                                                    y: (parent.height - 20) * (index / 4.0)
+                                                }
+                                            }
 
-                                                    Repeater {
-                                                        model: activeSlotsList.length > 0 ? activeSlotsList : 1
+                                            // X-Axis Axis Bottom Line
+                                            Rectangle {
+                                                width: parent.width
+                                                height: 1
+                                                color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#444444"
+                                                y: parent.height - 20
+                                            }
 
-                                                        delegate: Rectangle {
+                                            // ─── 12 Months Columns Row (가로축 1월~12월) ───
+                                            Row {
+                                                anchors.left: parent.left
+                                                anchors.right: parent.right
+                                                anchors.top: parent.top
+                                                anchors.bottom: parent.bottom
+                                                anchors.bottomMargin: 20
+                                                spacing: Math.max(2, (width - (12 * 30)) / 11)
+
+                                                Repeater {
+                                                    model: 12
+
+                                                    delegate: Item {
+                                                        width: 30
+                                                        height: parent.height
+
+                                                        property int monthNum: index + 1
+                                                        property var activeSlotsList: root.getActiveSlots()
+
+                                                        // Vertical Bars for Active Slots
+                                                        Row {
                                                             anchors.bottom: parent.bottom
-                                                            width: activeSlotsList.length > 1 ? Math.max(6, (24 / activeSlotsList.length)) : 22
+                                                            anchors.horizontalCenter: parent.horizontalCenter
+                                                            spacing: 2
 
-                                                            property real barVal: activeSlotsList.length > 0 ? root.getSlotMonthValue(modelData.data, monthNum) : root.getMonthlyTotal(monthNum)
-                                                            property real barMax: mainChartBox.chartMax
-                                                            property real availH: Math.max(10, parent.parent.parent.height - 6)
-                                                            property real calcH: barMax > 0 ? Math.max(2, Math.min(availH, (barVal / barMax) * availH)) : 2
-                                                            height: calcH
-                                                            radius: 3
-                                                            color: activeSlotsList.length > 0 ? root.getSlotColor(modelData.slotIdx) : (mBarHover.containsMouse ? "#FFFFFF" : "#3D3D3D")
+                                                            Repeater {
+                                                                model: activeSlotsList.length > 0 ? activeSlotsList : 1
 
-                                                            Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                                                                delegate: Rectangle {
+                                                                    anchors.bottom: parent.bottom
+                                                                    width: activeSlotsList.length > 1 ? Math.max(6, (24 / activeSlotsList.length)) : 22
 
-                                                            MouseArea {
-                                                                id: mBarHover
-                                                                anchors.fill: parent
-                                                                hoverEnabled: true
-                                                            }
+                                                                    property real barVal: activeSlotsList.length > 0 ? root.getSlotMonthValue(modelData.data, monthNum) : root.getMonthlyTotal(monthNum)
+                                                                    property real barMax: mainChartBox.chartMax
+                                                                    property real availH: Math.max(10, parent.parent.parent.parent.height - 6)
+                                                                    property real calcH: barMax > 0 ? Math.max(2, Math.min(availH, (barVal / barMax) * availH)) : 2
+                                                                    height: calcH
+                                                                    radius: 3
+                                                                    color: activeSlotsList.length > 0 ? root.getSlotColor(modelData.slotIdx) : (mBarHover.containsMouse ? "#FFFFFF" : "#3D3D3D")
 
-                                                            // Tooltip on Hover
-                                                            Rectangle {
-                                                                visible: mBarHover.containsMouse
-                                                                anchors.bottom: parent.top
-                                                                anchors.bottomMargin: 4
-                                                                anchors.horizontalCenter: parent.horizontalCenter
-                                                                width: tipTxt.width + 12
-                                                                height: 24
-                                                                radius: 5
-                                                                color: "#2C2C2C"
-                                                                border.width: 1
-                                                                border.color: "#555555"
-                                                                z: 100
+                                                                    Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
 
-                                                                Text {
-                                                                    id: tipTxt
-                                                                    anchors.centerIn: parent
-                                                                    text: Number(parent.parent.barVal).toLocaleString(Qt.locale("ko_KR"), "f", 0)
-                                                                    color: "#FFFFFF"
-                                                                    font.pixelSize: 12
-                                                                    font.bold: true
+                                                                    MouseArea {
+                                                                        id: mBarHover
+                                                                        anchors.fill: parent
+                                                                        hoverEnabled: true
+                                                                    }
+
+                                                                    // Tooltip on Hover
+                                                                    Rectangle {
+                                                                        visible: mBarHover.containsMouse
+                                                                        anchors.bottom: parent.top
+                                                                        anchors.bottomMargin: 4
+                                                                        anchors.horizontalCenter: parent.horizontalCenter
+                                                                        width: tipTxt.width + 12
+                                                                        height: 24
+                                                                        radius: 5
+                                                                        color: "#2C2C2C"
+                                                                        border.width: 1
+                                                                        border.color: "#555555"
+                                                                        z: 100
+
+                                                                        Text {
+                                                                            id: tipTxt
+                                                                            anchors.centerIn: parent
+                                                                            text: Number(parent.parent.barVal).toLocaleString(Qt.locale("ko_KR"), "f", 0)
+                                                                            color: "#FFFFFF"
+                                                                            font.pixelSize: 12
+                                                                            font.bold: true
+                                                                        }
+                                                                    }
                                                                 }
                                                             }
                                                         }
-                                                    }
-                                                }
 
-                                                // X-Axis Month Label (1월 ~ 12월)
-                                                Text {
-                                                    anchors.top: parent.bottom
-                                                    anchors.topMargin: 2
-                                                    anchors.horizontalCenter: parent.horizontalCenter
-                                                    text: monthNum + "월"
-                                                    color: "#AAAAAA"
-                                                    font.pixelSize: 12
-                                                    font.bold: true
+                                                        // X-Axis Month Label (1월 ~ 12월)
+                                                        Text {
+                                                            anchors.top: parent.bottom
+                                                            anchors.topMargin: 2
+                                                            anchors.horizontalCenter: parent.horizontalCenter
+                                                            text: monthNum + "월"
+                                                            color: "#AAAAAA"
+                                                            font.pixelSize: 12
+                                                            font.bold: true
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -1119,7 +1174,7 @@ Item {
                     Row {
                         id: dualSubCardsRow
                         width: parent.width
-                        height: Math.max(45, Math.min(80, Math.floor((parent.height - 70) * 0.45)))
+                        height: Math.max(55, Math.min(95, Math.floor((parent.height - 60) * 0.48)))
 
                         // Yesterday Card
                         Item {
@@ -1128,13 +1183,13 @@ Item {
 
                             Column {
                                 anchors.centerIn: parent
-                                spacing: Math.max(1, Math.min(4, Math.floor((parent.height - 40) / 4)))
+                                spacing: Math.max(2, Math.min(5, Math.floor((parent.height - 40) / 4)))
 
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: "전일 (" + root.yesterdayMonth + "/" + root.yesterdayDay + ")"
                                     color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#D8D8D8" : "#8E8E93"
-                                    font.pixelSize: Math.max(9, Math.min(11, Math.floor(parent.height / 6.5)))
+                                    font.pixelSize: Math.max(11, Math.min(15, Math.floor(equalBlock1.width / 24)))
                                     font.bold: true
                                 }
 
@@ -1142,14 +1197,14 @@ Item {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: Number(root.yesterdayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
                                     color: "#DDDDDD"
-                                    font.pixelSize: Math.max(10, Math.min(15, Math.floor(parent.height / 4.5)))
+                                    font.pixelSize: Math.max(14, Math.min(22, Math.floor(equalBlock1.width / 17)))
                                     font.bold: true
                                 }
 
                                 Rectangle {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    width: yCntText.width + 12
-                                    height: Math.max(14, Math.min(18, Math.floor(parent.height / 4.2)))
+                                    width: yCntText.width + 14
+                                    height: Math.max(18, Math.min(24, Math.floor(parent.height / 3.8)))
                                     radius: height / 2
                                     color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#2C2C2E"
                                     border.width: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? 1 : 0
@@ -1160,8 +1215,8 @@ Item {
                                         anchors.centerIn: parent
                                         text: root.yesterdayDailyItems.length + "개 항목"
                                         color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#A0A0A0"
-                                        font.pixelSize: Math.max(8, Math.min(9, Math.floor(parent.height / 2)))
-                                        font.bold: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2)
+                                        font.pixelSize: Math.max(10, Math.min(13, Math.floor(equalBlock1.width / 27)))
+                                        font.bold: true
                                     }
                                 }
                             }
@@ -1170,7 +1225,7 @@ Item {
                         // Vertical Divider between Yesterday & Today
                         Rectangle {
                             width: 1
-                            height: Math.max(20, parent.height - 20)
+                            height: Math.max(25, parent.height - 16)
                             color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#333333"
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -1182,13 +1237,13 @@ Item {
 
                             Column {
                                 anchors.centerIn: parent
-                                spacing: Math.max(1, Math.min(4, Math.floor((parent.height - 40) / 4)))
+                                spacing: Math.max(2, Math.min(5, Math.floor((parent.height - 40) / 4)))
 
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: "금일 (" + root.todayMonth + "/" + root.todayDay + ")"
                                     color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#00E5FF"
-                                    font.pixelSize: Math.max(9, Math.min(11, Math.floor(parent.height / 6.5)))
+                                    font.pixelSize: Math.max(11, Math.min(15, Math.floor(equalBlock1.width / 24)))
                                     font.bold: true
                                 }
 
@@ -1196,14 +1251,14 @@ Item {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: Number(root.todayTotalExpense).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
                                     color: "#FFFFFF"
-                                    font.pixelSize: Math.max(10, Math.min(15, Math.floor(parent.height / 4.5)))
+                                    font.pixelSize: Math.max(14, Math.min(22, Math.floor(equalBlock1.width / 17)))
                                     font.bold: true
                                 }
 
                                 Rectangle {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    width: tCntText.width + 12
-                                    height: Math.max(14, Math.min(18, Math.floor(parent.height / 4.2)))
+                                    width: tCntText.width + 14
+                                    height: Math.max(18, Math.min(24, Math.floor(parent.height / 3.8)))
                                     radius: height / 2
                                     color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#A62B2B" : "#1E2C33"
                                     border.width: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? 1 : 0
@@ -1214,7 +1269,7 @@ Item {
                                         anchors.centerIn: parent
                                         text: root.todayDailyItems.length + "개 항목"
                                         color: (typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#FFFFFF" : "#64D2FF"
-                                        font.pixelSize: Math.max(8, Math.min(9, Math.floor(parent.height / 2)))
+                                        font.pixelSize: Math.max(10, Math.min(13, Math.floor(equalBlock1.width / 27)))
                                         font.bold: true
                                     }
                                 }
@@ -1232,17 +1287,17 @@ Item {
                     // 2. Hero Diff Analysis (지출 분석) - DIRECTLY BELOW
                     Item {
                         width: parent.width
-                        height: Math.max(30, parent.height - 34 - 1 - dualSubCardsRow.height - 1 - 40)
+                        height: Math.max(35, parent.height - 34 - 1 - dualSubCardsRow.height - 1 - 36)
 
                         Row {
                             anchors.centerIn: parent
-                            spacing: Math.max(3, Math.min(8, Math.floor(parent.width / 40)))
+                            spacing: Math.max(4, Math.min(10, Math.floor(parent.width / 35)))
                             width: Math.min(parent.width, implicitWidth)
 
                             Text {
                                 text: root.diffExpenseAmount > 0 ? "▲ 지출 증가" : (root.diffExpenseAmount < 0 ? "▼ 지출 절감" : "– 변동 없음")
                                 color: root.diffExpenseAmount > 0 ? ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#FF453A") : (root.diffExpenseAmount < 0 ? "#30D158" : "#8E8E93")
-                                font.pixelSize: Math.max(9, Math.min(14, Math.floor(parent.width / 22)))
+                                font.pixelSize: Math.max(12, Math.min(17, Math.floor(equalBlock1.width / 20)))
                                 font.bold: true
                                 anchors.verticalCenter: parent.verticalCenter
                             }
@@ -1250,14 +1305,14 @@ Item {
                             Text {
                                 text: (root.diffExpenseAmount > 0 ? "+" : "") + Number(root.diffExpenseAmount).toLocaleString(Qt.locale("ko_KR"), "f", 0) + "원"
                                 color: "#FFFFFF"
-                                font.pixelSize: Math.max(11, Math.min(19, Math.floor(parent.width / 16)))
+                                font.pixelSize: Math.max(15, Math.min(25, Math.floor(equalBlock1.width / 14)))
                                 font.bold: true
                                 anchors.verticalCenter: parent.verticalCenter
                             }
 
                             Rectangle {
-                                width: pctText.width + 10
-                                height: Math.max(16, Math.min(22, Math.floor(parent.height / 3)))
+                                width: pctText.width + 12
+                                height: Math.max(20, Math.min(26, Math.floor(parent.height / 2.8)))
                                 radius: height / 2
                                 color: root.diffExpenseAmount > 0 ? ((typeof bgdashRoot !== "undefined" && bgdashRoot.currentThemeIndex === 2) ? "#3388FF" : "#FF453A") : (root.diffExpenseAmount < 0 ? "#30D158" : "#555555")
                                 anchors.verticalCenter: parent.verticalCenter
@@ -1267,7 +1322,7 @@ Item {
                                     anchors.centerIn: parent
                                     text: (root.diffExpenseAmount > 0 ? "+" : "") + root.diffExpensePercent.toFixed(1) + "%"
                                     color: "#FFFFFF"
-                                    font.pixelSize: Math.max(8, Math.min(11, Math.floor(parent.height / 4)))
+                                    font.pixelSize: Math.max(10, Math.min(13, Math.floor(equalBlock1.width / 25)))
                                     font.bold: true
                                 }
                             }
