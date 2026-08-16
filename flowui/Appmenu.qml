@@ -89,11 +89,11 @@ Item {
                 ?
                 [
                         {
-                        num:"01",
+                        num:"02 - 01",
                         name:"System Color"
                         },
                         {
-                        num:"02",
+                        num:"02 - 02",
                         name:"Category"
                         }
                 ]

@@ -93,7 +93,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
 
                     Text {
-                        text: "01"
+                        text: "02 - 01"
                         color: "#555555"
                         font.pixelSize: 18
                         font.bold: true

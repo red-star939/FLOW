@@ -168,7 +168,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
 
                     Text {
-                        text: "02"
+                        text: "02 - 02"
                         color: "#555555"
                         font.pixelSize: 18
                         font.bold: true
@@ -176,11 +176,11 @@ Item {
                     }
 
                     Text {
-                        text: "Category Setting"
+                        text: "Category"
                         color: "#FFFFFF"
-                        font.pixelSize: 22
+                        font.pixelSize: 24
                         font.bold: true
-                        font.letterSpacing: 0.5
+                        font.letterSpacing: 1
                         anchors.verticalCenter: parent.verticalCenter
                     }
                 }
